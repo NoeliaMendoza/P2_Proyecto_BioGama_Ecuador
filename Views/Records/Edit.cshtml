@@ -1,0 +1,69 @@
+@model BioGamaEcuador.Models.Record
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Record</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="SpeciesId" class="control-label"></label>
+                <select asp-for="SpeciesId" class="form-control" asp-items="ViewBag.SpeciesId"></select>
+                <span asp-validation-for="SpeciesId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationId" class="control-label"></label>
+                <select asp-for="LocationId" class="form-control" asp-items="ViewBag.LocationId"></select>
+                <span asp-validation-for="LocationId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ResearcherId" class="control-label"></label>
+                <select asp-for="ResearcherId" class="form-control" asp-items="ViewBag.ResearcherId"></select>
+                <span asp-validation-for="ResearcherId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DiscoveryDate" class="control-label"></label>
+                <input asp-for="DiscoveryDate" class="form-control" />
+                <span asp-validation-for="DiscoveryDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ObservedQuantity" class="control-label"></label>
+                <input asp-for="ObservedQuantity" class="form-control" />
+                <span asp-validation-for="ObservedQuantity" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Observations" class="control-label"></label>
+                <input asp-for="Observations" class="form-control" />
+                <span asp-validation-for="Observations" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="CreatedAt" class="control-label"></label>
+                <input asp-for="CreatedAt" class="form-control" />
+                <span asp-validation-for="CreatedAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
