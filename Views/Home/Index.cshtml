@@ -1,8 +1,228 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<div class="text-center py-5">
+    <h1 class="display-4 text-success fw-bold">BioGama Ecuador</h1>
+    <p class="lead text-muted">Centraliza el conocimiento sobre la biodiversidad del país.</p>
+    <hr class="my-4" />
+    <p>El Ecuador es uno de los países más biodiversos del mundo, pero gran parte de esa información sigue dispersa en
+        documentos físicos o sistemas desconectados. BioGama Ecuador es una plataforma web que permite centralizar el
+        registro de especies de flora, fauna y hongos presentes en el territorio nacional, facilitando el trabajo de
+        investigadores y biólogos que documentan hallazgos en reservas naturales del país.</p>
+        <div class="d-flex justify-content-center gap-2 flex-wrap mt-4">
+            <a asp-controller="Public" asp-action="Catalogo" class="btn btn-success btn-lg">Ver catálogo público</a>
+            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-success btn-lg">Acceder como
+                investigador</a>
+            </div>
+        </div>
+
+        <section class="home-feature py-5">
+            <style>
+                    .home-feature {
+                        background: #f8fbfa;
+                        border: 1px solid #dbe3e3;
+                        border-radius: 1rem;
+                        padding: 2rem;
+                        margin-bottom: 2rem;
+                    }
+
+                    .home-feature .feature-grid {
+                        display: grid;
+                        gap: 1.5rem;
+                        grid-template-columns: 1fr;
+                    }
+
+                    .feature-card {
+                        background: #ffffff;
+                        border: 1px solid #dbe3e3;
+                        border-radius: 1rem;
+                        overflow: hidden;
+                        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05);
+                    }
+
+                    .feature-card img {
+                        width: 100%;
+                        display: block;
+                        object-fit: cover;
+                        min-height: 240px;
+                    }
+
+                    .feature-content {
+                        padding: 1.5rem;
+                    }
+
+                    .feature-content h2 {
+                        margin-top: 0;
+                        color: #13332d;
+                    }
+
+                    .feature-content p {
+                        color: #4b5563;
+                        line-height: 1.75;
+                    }
+
+                    .feature-actions {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 1rem;
+                        margin-top: 1.5rem;
+                    }
+
+                    .feature-actions .btn-primary {
+                        background: #2f6f4e;
+                        color: #ffffff;
+                        border-color: #2f6f4e;
+                    }
+
+                    .feature-actions .btn-secondary {
+                        border: 1px solid #2f6f4e;
+                        color: #2f6f4e;
+                        background: transparent;
+                    }
+
+                    @@media (min-width: 768px) {
+                        .home-feature .feature-grid {
+                            grid-template-columns: 1.2fr 0.8fr;
+                            align-items: center;
+                        }
+                    }
+            </style>
+
+            <div class="feature-grid">
+                <div class="feature-card feature-content">
+                    <h2>Un lugar para la biodiversidad del Ecuador</h2>
+                    <p>BioGama Ecuador centraliza información dispersa en documentos físicos y sistemas desconectados, para que
+                        administradores, investigadores y usuarios públicos trabajen sobre un mismo catálogo de especies,
+                        reservas y ubicaciones.</p>
+                        <div class="feature-actions">
+                            <a asp-controller="Public" asp-action="Catalogo" class="btn btn-primary">Ver catálogo público</a>
+                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-secondary">Ingresar al sistema</a>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <img src="https://www.mashpilodge.com/wp-content/uploads/2017/06/Mashpi-Lodge-Cloud-Forest.webp"
+                             alt="Bosque en Ecuador" />
+                    </div>
+                </div>
+            </section>
+
+            <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+                <div class="col">
+                    <div class="card h-100 border-success shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">Administrador</h5>
+                            <p class="card-text text-muted">Gestiona el catálogo general, familias taxonómicas, reservas naturales y
+                                ubicaciones de monitoreo.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card h-100 border-success shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title text-success">Investigador</h5>
+                                <p class="card-text text-muted">Registra hallazgos de campo en las reservas naturales y documenta cada
+                                    especie.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 border-success shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title text-success">Usuario público</h5>
+                                    <p class="card-text text-muted">Consulta la información registrada sin modificar datos, desde cualquier
+                                        dispositivo.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* ── Acceso público, visible para todos ── *@
+                        <div class="row justify-content-center mb-4">
+                            <div class="col-md-8">
+                                <div class="card border-success shadow-sm">
+                                    <div class="card-body text-center py-4">
+                                        <h4 class="card-title"><i class="fa-solid fa-book-open text-success"></i> Catálogo Público de Especies
+                                        </h4>
+                                        <p class="card-text text-muted">Explora la biodiversidad registrada sin necesidad de iniciar sesión.</p>
+                                        <a asp-controller="Public" asp-action="Catalogo" class="btn btn-success">
+                                            <i class="fa-solid fa-magnifying-glass me-1"></i>Ver catálogo
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <h5 class="text-muted mb-3"><i class="fa-solid fa-lock-open"></i> Módulos de gestión</h5>
+                            <div class="row row-cols-1 row-cols-md-3 g-4 mt-2">
+                                <div class="col">
+                                    <div class="card h-100 border-success">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><i class="fa-solid fa-sitemap"></i> Familias</h5>
+                                            <p class="card-text">Clasificación taxonómica superior de los organismos registrados.</p>
+                                            <a asp-controller="Families" asp-action="Index" class="btn btn-outline-success btn-sm">Ver familias</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card h-100 border-success">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><i class="fa-solid fa-paw"></i> Especies</h5>
+                                            <p class="card-text">Catálogo maestro de especies de flora, fauna y hongos.</p>
+                                            <a asp-controller="Species" asp-action="Index" class="btn btn-outline-success btn-sm">Ver especies</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card h-100 border-success">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><i class="fa-solid fa-user-graduate"></i> Investigadores</h5>
+                                            <p class="card-text">Personal científico que realiza el trabajo de campo.</p>
+                                            <a asp-controller="Researchers" asp-action="Index" class="btn btn-outline-success btn-sm">Ver
+                                                investigadores</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="card h-100 border-success">
+                                            <div class="card-body">
+                                                <h5 class="card-title"><i class="fa-solid fa-mountain-sun"></i> Reservas Naturales</h5>
+                                                <p class="card-text">Áreas protegidas del Sistema Nacional de Áreas Protegidas del Ecuador.</p>
+                                                <a asp-controller="NaturalReserves" asp-action="Index" class="btn btn-outline-success btn-sm">Ver
+                                                    reservas</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card h-100 border-success">
+                                                <div class="card-body">
+                                                    <h5 class="card-title"><i class="fa-solid fa-location-dot"></i> Ubicaciones</h5>
+                                                    <p class="card-text">Puntos geográficos específicos dentro de cada reserva natural.</p>
+                                                    <a asp-controller="Locations" asp-action="Index" class="btn btn-outline-success btn-sm">Ver
+                                                        ubicaciones</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="card h-100 border-success">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title"><i class="fa-solid fa-clipboard-list"></i> Registros</h5>
+                                                        <p class="card-text">Bitácora histórica de hallazgos vinculando especie, ubicación e investigador.</p>
+                                                        <a asp-controller="Records" asp-action="Index" class="btn btn-outline-success btn-sm">Ver registros</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    } else
+                                    {
+                                        <div class="text-center text-muted mt-4">
+                                            <p><i class="fa-solid fa-circle-info me-1"></i>
+                                                ¿Eres investigador o administrador?
+                                                <a asp-area="Identity" asp-page="/Account/Login">Inicia sesión</a> para acceder a los módulos de gestión.
+                                            </p>
+                                        </div>
+                                    }
+
+                                    

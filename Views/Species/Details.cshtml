@@ -1,72 +1,89 @@
 @model BioGamaEcuador.Models.Species
-
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = Model.CommonName;
 }
 
-<h1>Details</h1>
-
-<div>
-    <h4>Species</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CommonName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CommonName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ScientificName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ScientificName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ConservationStatus)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ConservationStatus)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImageUrl)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageUrl)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsEndemic)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsEndemic)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Family)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Family.Kingdom)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsActive)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsActive)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedAt)
-        </dd>
-    </dl>
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Volver al listado</a>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<div class="card shadow-sm">
+    <div class="row g-0">
+        <div class="col-md-4 bg-light d-flex align-items-center justify-content-center p-3">
+            @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+            {
+                var imageUrl = Model.ImageUrl.Trim();
+                var imageSrc = imageUrl;
+                var isAbsolute = Uri.TryCreate(imageUrl, UriKind.Absolute, out _);
+                if (isAbsolute)
+                {
+                    imageSrc = imageUrl.Contains(" ") ? imageUrl.Replace(" ", "%20") : imageUrl;
+                }
+                else
+                {
+                    if (!imageUrl.StartsWith("~/") && !imageUrl.StartsWith("/"))
+                    {
+                        imageUrl = "~/images/" + imageUrl.TrimStart('/');
+                    }
+                    imageSrc = Url.Content(imageUrl);
+                }
+
+                <img src="@imageSrc" alt="@Model.CommonName" class="img-fluid rounded"
+                     style="max-height:350px; object-fit:cover;" />
+            }
+            else
+            {
+                <div class="text-muted text-center">
+                    <div class="border rounded-circle d-inline-flex align-items-center justify-content-center"
+                         style="width:88px;height:88px;">
+                        <span class="fs-3">?</span>
+                    </div>
+                    <p class="mt-3 mb-0 small">Sin imagen disponible</p>
+                </div>
+            }
+        </div>
+        <div class="col-md-8">
+            <div class="card-body">
+                <h3 class="card-title mb-1">@Model.CommonName</h3>
+                <p class="text-muted fst-italic mb-3">@Model.ScientificName</p>
+
+                @{
+                    var badgeColor = Model.ConservationStatus?.ToUpper() switch
+                    {
+                        "EN PELIGRO" => "danger",
+                        "VULNERABLE" => "warning text-dark",
+                        "CASI AMENAZADO" => "secondary",
+                        "PREOCUPACIÓN MENOR" => "secondary",
+                        _ => "secondary"
+                    };
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.ConservationStatus))
+                {
+                    <span class="badge bg-@badgeColor mb-3">@Model.ConservationStatus</span>
+                }
+                @if (Model.IsEndemic)
+                {
+                    <span class="badge bg-secondary mb-3 ms-1">Endémica</span>
+                }
+
+                <hr />
+
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Familia</dt>
+                    <dd class="col-sm-8">@(Model.Family?.Name ?? "—")</dd>
+
+                    <dt class="col-sm-4 text-muted">Descripción</dt>
+                    <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.Description) ? "—" : Model.Description)</dd>
+
+                    <dt class="col-sm-4 text-muted">Registrado</dt>
+                    <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy")</dd>
+                </dl>
+
+                <div class="mt-4 d-flex flex-wrap gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">Editar</a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-sm">Eliminar</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

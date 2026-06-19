@@ -1,47 +1,39 @@
 @model BioGamaEcuador.Models.Family
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Familia";
 }
 
-<h1>Edit</h1>
-
-<h4>Family</h4>
+<h2>Editar Familia</h2>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
+            <input type="hidden" asp-for="CreatedAt" />
+            <input type="hidden" asp-for="IsActive" />
+            <div class="form-group mb-3">
+                <label asp-for="Name" class="control-label">Nombre de la familia</label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Kingdom" class="control-label"></label>
-                <input asp-for="Kingdom" class="form-control" />
+            <div class="form-group mb-3">
+                <label asp-for="Kingdom" class="control-label">Reino</label>
+                <select asp-for="Kingdom" class="form-control">
+                    <option value="">-- Seleccione un reino --</option>
+                    <option value="Animal">Animal</option>
+                    <option value="Vegetal">Vegetal</option>
+                    <option value="Fungi">Fungi</option>
+                </select>
                 <span asp-validation-for="Kingdom" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
-                </label>
-            </div>
             <div class="form-group">
-                <label asp-for="CreatedAt" class="control-label"></label>
-                <input asp-for="CreatedAt" class="form-control" />
-                <span asp-validation-for="CreatedAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Guardar cambios" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

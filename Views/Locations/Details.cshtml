@@ -1,60 +1,45 @@
 @model BioGamaEcuador.Models.Location
+@{ ViewData["Title"] = Model.PlaceName; }
 
-@{
-    ViewData["Title"] = "Details";
-}
-
-<h1>Details</h1>
-
-<div>
-    <h4>Location</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PlaceName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PlaceName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Altitude)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Altitude)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Latitude)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Latitude)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Longitude)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Longitude)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.NaturalReserve)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.NaturalReserve.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsActive)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsActive)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedAt)
-        </dd>
-    </dl>
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-arrow-left me-1"></i>Volver al listado</a>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fa-solid fa-location-dot me-2"></i>@Model.PlaceName</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card border-0 bg-light p-3 text-center h-100">
+                    <div style="font-size:2rem;"><i class="fa-solid fa-mountain text-secondary"></i></div>
+                    <div class="small text-muted mt-1">Altitud</div>
+                    <div class="fw-bold">@Model.Altitude m.s.n.m.</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light p-3 text-center h-100">
+                    <div style="font-size:2rem;"><i class="fa-solid fa-globe text-info"></i></div>
+                    <div class="small text-muted mt-1">Coordenadas</div>
+                    <div class="fw-bold">Lat: @Model.Latitude°</div>
+                    <div class="fw-bold">Lon: @Model.Longitude°</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light p-3 text-center h-100">
+                    <div style="font-size:2rem;"><i class="fa-solid fa-leaf text-success"></i></div>
+                    <div class="small text-muted mt-1">Reserva natural</div>
+                    <div class="fw-bold">@(Model.NaturalReserve?.Name ?? "—")</div>
+                </div>
+            </div>
+        </div>
+        <dl class="row mb-0">
+            <dt class="col-sm-4"><i class="fa-solid fa-calendar-days me-1 text-muted"></i>Registrado el</dt>
+            <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy")</dd>
+        </dl>
+        <div class="mt-4 d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen me-1"></i>Editar</a>
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash me-1"></i>Eliminar</a>
+        </div>
+    </div>
 </div>

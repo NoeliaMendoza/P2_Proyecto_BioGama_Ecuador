@@ -1,0 +1,142 @@
+/* Public catalog — neutral, less 'chilloso' card styles */
+:root {
+    --bg-card: #ffffff;
+    --muted-text: #4b5563;
+    --soft-border: #e6efe6;
+    --accent: #2f6f4e;
+}
+
+.catalogo-hero {
+    background: linear-gradient(90deg, rgba(47, 111, 78, 0.06), rgba(255, 255, 255, 0));
+    padding: 2.2rem 0;
+}
+.catalogo-hero h1 {
+    color: var(--accent);
+    font-weight: 600;
+}
+.catalogo-hero .lead {
+    color: var(--muted-text);
+}
+.badge-total {
+    background: transparent;
+    color: var(--muted-text);
+}
+
+/* Cards */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--soft-border);
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(15, 23, 42, 0.04);
+}
+.card .card-body {
+    padding: 1rem;
+}
+.card-title {
+    color: #163b2b;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+.card-text {
+    color: var(--muted-text);
+}
+
+/* Images */
+.card-img-top {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+    width: 100%;
+}
+
+/* Badges and metadata */
+.badge {
+    font-size: 0.75rem;
+    border-radius: 6px;
+}
+.badge.bg-warning {
+    background: #ffdca8;
+    color: #5a3b00;
+}
+.badge.bg-info {
+    background: #dbeafe;
+    color: #064e3b;
+}
+.badge.bg-secondary {
+    background: #eef2f7;
+    color: #1f2937;
+}
+
+/* Detail card */
+.detalle-card {
+    background: var(--bg-card);
+    border: 1px solid var(--soft-border);
+    border-radius: 10px;
+    padding: 0.75rem;
+    box-shadow: 0 1px 6px rgba(15, 23, 42, 0.04);
+}
+.detalle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+.detalle-nombre-cientifico {
+    font-size: 1.35rem;
+    margin: 0;
+    color: #0f3b2c;
+}
+.detalle-nombre-comun {
+    font-size: 1rem;
+    margin: 0;
+    color: var(--muted-text);
+}
+.detalle-imagen {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid var(--soft-border);
+    box-shadow: none;
+}
+
+/* Responsive tweaks */
+@media (max-width: 767px) {
+    .card-img-top {
+        height: 180px;
+    }
+}
+
+/* Form controls slight spacing */
+.catalogo-filtros .form-label {
+    font-size: 0.9rem;
+}
+
+/* Reduce visual noise on buttons */
+.btn-success {
+    background: #2f6f4e;
+    border-color: #2f6f4e;
+}
+.btn-outline-success {
+    color: #2f6f4e;
+    border-color: #cfe9dd;
+}
+
+/* Small utility */
+.text-muted.small {
+    color: var(--muted-text);
+}
+
+/* Prevent overly bright colors from libraries */
+.estado-badge {
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+/* Keep footer subdued */
+footer {
+    background: transparent;
+}

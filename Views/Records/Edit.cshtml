@@ -1,69 +1,74 @@
 @model BioGamaEcuador.Models.Record
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Registro";
+    var isCurrentInvestigator = ViewData["IsCurrentInvestigator"] as bool? ?? false;
+    var currentResearcherName = ViewData["CurrentResearcherName"] as string ?? string.Empty;
 }
 
-<h1>Edit</h1>
-
-<h4>Record</h4>
+<h2>Editar Registro</h2>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="SpeciesId" class="control-label"></label>
-                <select asp-for="SpeciesId" class="form-control" asp-items="ViewBag.SpeciesId"></select>
+            <input type="hidden" asp-for="CreatedAt" />
+            <input type="hidden" asp-for="IsActive" />
+            <div class="form-group mb-3">
+                <label asp-for="SpeciesId" class="control-label">Especie</label>
+                <select asp-for="SpeciesId" class="form-control" asp-items="ViewBag.SpeciesId">
+                    <option value="">-- Seleccione una especie --</option>
+                </select>
                 <span asp-validation-for="SpeciesId" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="LocationId" class="control-label"></label>
-                <select asp-for="LocationId" class="form-control" asp-items="ViewBag.LocationId"></select>
+            <div class="form-group mb-3">
+                <label asp-for="LocationId" class="control-label">Ubicación</label>
+                <select asp-for="LocationId" class="form-control" asp-items="ViewBag.LocationId">
+                    <option value="">-- Seleccione una ubicación --</option>
+                </select>
                 <span asp-validation-for="LocationId" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="ResearcherId" class="control-label"></label>
-                <select asp-for="ResearcherId" class="form-control" asp-items="ViewBag.ResearcherId"></select>
+            <div class="form-group mb-3">
+                <label asp-for="ResearcherId" class="control-label">Investigador</label>
+                @if (isCurrentInvestigator)
+                {
+                    <input type="hidden" asp-for="ResearcherId" />
+                    <input class="form-control" value="@currentResearcherName" readonly />
+                }
+                else
+                {
+                    <select asp-for="ResearcherId" class="form-control" asp-items="ViewBag.ResearcherId">
+                        <option value="">-- Seleccione un investigador --</option>
+                    </select>
+                }
                 <span asp-validation-for="ResearcherId" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="DiscoveryDate" class="control-label"></label>
-                <input asp-for="DiscoveryDate" class="form-control" />
+            <div class="form-group mb-3">
+                <label asp-for="DiscoveryDate" class="control-label">Fecha del hallazgo</label>
+                <input asp-for="DiscoveryDate" type="date" class="form-control" />
                 <span asp-validation-for="DiscoveryDate" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="ObservedQuantity" class="control-label"></label>
+            <div class="form-group mb-3">
+                <label asp-for="ObservedQuantity" class="control-label">Cantidad observada</label>
                 <input asp-for="ObservedQuantity" class="form-control" />
                 <span asp-validation-for="ObservedQuantity" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Observations" class="control-label"></label>
-                <input asp-for="Observations" class="form-control" />
+            <div class="form-group mb-3">
+                <label asp-for="Observations" class="control-label">Observaciones</label>
+                <textarea asp-for="Observations" class="form-control" rows="3"></textarea>
                 <span asp-validation-for="Observations" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
-                </label>
-            </div>
             <div class="form-group">
-                <label asp-for="CreatedAt" class="control-label"></label>
-                <input asp-for="CreatedAt" class="form-control" />
-                <span asp-validation-for="CreatedAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Guardar cambios" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

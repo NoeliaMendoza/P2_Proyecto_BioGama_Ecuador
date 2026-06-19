@@ -1,15 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BioGamaEcuador.Data;
 using BioGamaEcuador.Models;
 
 namespace BioGamaEcuador.Controllers
 {
+    [Authorize]
     public class FamiliesController : Controller
     {
         private readonly AppDbContext _context;
@@ -19,45 +16,67 @@ namespace BioGamaEcuador.Controllers
             _context = context;
         }
 
-        // GET: Families
-        public async Task<IActionResult> Index()
+        [Authorize(Roles = "Administrador,Investigador,UsuarioPublico")]
+        public async Task<IActionResult> Index(string busqueda, string reino, int pagina = 1)
         {
-            return View(await _context.Families.ToListAsync());
+            const int tamano = 50;
+
+            var query = _context.Families.AsNoTracking().Where(f => f.IsActive);
+            if (!string.IsNullOrWhiteSpace(busqueda))
+            {
+                query = query.Where(f => EF.Functions.ILike(f.Name, $"%{busqueda}%") || EF.Functions.ILike(f.Kingdom, $"%{busqueda}%"));
+            }
+            if (!string.IsNullOrWhiteSpace(reino))
+            {
+                query = query.Where(f => f.Kingdom == reino);
+            }
+
+            int total = await query.CountAsync();
+
+            ViewBag.PaginaActual = pagina;
+            ViewBag.TotalPaginas = (int)Math.Ceiling(total / (double)tamano);
+            ViewBag.TotalItems = total;
+
+            var datos = await query
+                .OrderBy(f => f.Id)
+                .Skip((pagina - 1) * tamano)
+                .Take(tamano)
+                .ToListAsync();
+
+            ViewBag.Busqueda = busqueda;
+            ViewBag.Kingdoms = await _context.Families.Select(f => f.Kingdom).Where(k => !string.IsNullOrEmpty(k)).Distinct().OrderBy(k => k).ToListAsync();
+            ViewBag.ReinoFiltro = reino;
+
+            return View(datos);
         }
 
-        // GET: Families/Details/5
+        [Authorize(Roles = "Administrador,Investigador,UsuarioPublico")]
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var family = await _context.Families
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (family == null)
-            {
-                return NotFound();
-            }
+            if (family == null) return NotFound();
 
             return View(family);
         }
 
-        // GET: Families/Create
+        [Authorize(Roles = "Administrador,Investigador")]
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Families/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Kingdom,IsActive,CreatedAt")] Family family)
+        [Authorize(Roles = "Administrador,Investigador")]
+        public async Task<IActionResult> Create([Bind("Name,Kingdom")] Family family)
         {
             if (ModelState.IsValid)
             {
+                family.IsActive = true;
+                family.CreatedAt = DateTime.UtcNow;
                 _context.Add(family);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -65,93 +84,77 @@ namespace BioGamaEcuador.Controllers
             return View(family);
         }
 
-        // GET: Families/Edit/5
+        [Authorize(Roles = "Administrador,Investigador")]
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var family = await _context.Families.FindAsync(id);
-            if (family == null)
-            {
-                return NotFound();
-            }
+            if (family == null) return NotFound();
             return View(family);
         }
 
-        // POST: Families/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Investigador")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Kingdom,IsActive,CreatedAt")] Family family)
         {
-            if (id != family.Id)
-            {
-                return NotFound();
-            }
+            if (id != family.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    var created = family.CreatedAt;
+                    if (created.Kind == DateTimeKind.Local)
+                    {
+                        created = created.ToUniversalTime();
+                    }
+                    else if (created.Kind == DateTimeKind.Unspecified)
+                    {
+                        created = DateTime.SpecifyKind(created, DateTimeKind.Utc);
+                    }
+                    family.CreatedAt = created;
+
                     _context.Update(family);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!FamilyExists(family.Id))
-                    {
+                    if (!_context.Families.Any(e => e.Id == family.Id))
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
                 return RedirectToAction(nameof(Index));
             }
             return View(family);
         }
 
-        // GET: Families/Delete/5
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var family = await _context.Families
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (family == null)
-            {
-                return NotFound();
-            }
+            if (family == null) return NotFound();
 
             return View(family);
         }
 
-        // POST: Families/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var family = await _context.Families.FindAsync(id);
             if (family != null)
             {
-                _context.Families.Remove(family);
+                family.IsActive = false;
+                await _context.SaveChangesAsync();
             }
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool FamilyExists(int id)
-        {
-            return _context.Families.Any(e => e.Id == id);
         }
     }
 }

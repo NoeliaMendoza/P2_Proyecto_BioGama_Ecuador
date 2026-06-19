@@ -1,72 +1,60 @@
 @model BioGamaEcuador.Models.Species
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Especie";
 }
 
-<h1>Edit</h1>
-
-<h4>Species</h4>
+<h2>Editar Especie</h2>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="CommonName" class="control-label"></label>
+            <input type="hidden" asp-for="CreatedAt" />
+            <input type="hidden" asp-for="IsActive" />
+            <div class="form-group mb-3">
+                <label asp-for="CommonName" class="control-label">Nombre común</label>
                 <input asp-for="CommonName" class="form-control" />
                 <span asp-validation-for="CommonName" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="ScientificName" class="control-label"></label>
+            <div class="form-group mb-3">
+                <label asp-for="ScientificName" class="control-label">Nombre científico</label>
                 <input asp-for="ScientificName" class="form-control" />
                 <span asp-validation-for="ScientificName" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="ConservationStatus" class="control-label"></label>
+            <div class="form-group mb-3">
+                <label asp-for="ConservationStatus" class="control-label">Estado de conservación</label>
                 <input asp-for="ConservationStatus" class="form-control" />
                 <span asp-validation-for="ConservationStatus" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="control-label">Descripción</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="ImageUrl" class="control-label"></label>
+            <div class="form-group mb-3">
+                <label asp-for="ImageUrl" class="control-label">URL de imagen</label>
                 <input asp-for="ImageUrl" class="form-control" />
                 <span asp-validation-for="ImageUrl" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsEndemic" /> @Html.DisplayNameFor(model => model.IsEndemic)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="FamilyId" class="control-label"></label>
-                <select asp-for="FamilyId" class="form-control" asp-items="ViewBag.FamilyId"></select>
+            <div class="form-group mb-3">
+                <label asp-for="FamilyId" class="control-label">Familia</label>
+                <select asp-for="FamilyId" class="form-control" asp-items="ViewBag.FamilyId">
+                    <option value="">-- Seleccione una familia --</option>
+                </select>
                 <span asp-validation-for="FamilyId" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
-                </label>
+            <div class="form-check mb-3">
+                <input class="form-check-input" asp-for="IsEndemic" />
+                <label class="form-check-label" asp-for="IsEndemic">Endémica</label>
             </div>
             <div class="form-group">
-                <label asp-for="CreatedAt" class="control-label"></label>
-                <input asp-for="CreatedAt" class="form-control" />
-                <span asp-validation-for="CreatedAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Guardar cambios" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

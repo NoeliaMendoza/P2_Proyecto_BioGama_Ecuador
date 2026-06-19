@@ -1,0 +1,106 @@
+@model BioGamaEcuador.Models.Species
+
+@{
+    ViewData["Title"] = Model.ScientificName;
+    Layout = "_LayoutPublic";
+}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h1 class="h3 mb-1">@Model.CommonName</h1>
+            <p class="text-muted mb-0"><em>@Model.ScientificName</em></p>
+            <p class="small text-muted mt-2">Registrado: @Model.CreatedAt.ToString("dd/MM/yyyy")</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-info text-dark me-1">@(Model.ConservationStatus ?? "N/D")</span>
+            @if (Model.IsEndemic)
+            {
+                <span class="badge bg-warning text-dark">Endémica</span>
+            }
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="row g-0">
+            <div class="col-md-5 bg-light d-flex align-items-center justify-content-center p-3">
+                @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+                {
+                    var imageUrl = Model.ImageUrl.Trim();
+                    var imageSrc = imageUrl;
+                    var isAbsolute = Uri.TryCreate(imageUrl, UriKind.Absolute, out _);
+                    if (isAbsolute)
+                    {
+                        imageSrc = imageUrl.Contains(" ") ? imageUrl.Replace(" ", "%20") : imageUrl;
+                    }
+                    else
+                    {
+                        if (!imageUrl.StartsWith("~/") && !imageUrl.StartsWith("/"))
+                        {
+                            imageUrl = "~/images/" + imageUrl.TrimStart('/');
+                        }
+                        imageSrc = Url.Content(imageUrl);
+                    }
+
+                    <img src="@imageSrc" alt="@Model.CommonName" class="img-fluid rounded w-100"
+                         style="max-height:420px; object-fit:cover;" />
+                }
+                else
+                {
+                    <div class="text-muted text-center">
+                        <i class="bi bi-image" style="font-size:48px;color:#6b7280;"></i>
+                        <p class="mt-2 small">@(Model.Family?.Name ?? Model.CommonName ?? "Especie")</p>
+                    </div>
+                }
+            </div>
+            <div class="col-md-7">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h4 class="card-title">Ficha técnica</h4>
+                        <table class="table table-borderless table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <th class="w-25">Nombre científico</th>
+                                    <td><em>@Model.ScientificName</em></td>
+                                </tr>
+                                <tr>
+                                    <th>Nombre común</th>
+                                    <td>@Model.CommonName</td>
+                                </tr>
+                                <tr>
+                                    <th>Familia</th>
+                                    <td>@(Model.Family?.Name ?? "—")</td>
+                                </tr>
+                                <tr>
+                                    <th>Estado</th>
+                                    <td>@(Model.ConservationStatus ?? "—")</td>
+                                </tr>
+                                <tr>
+                                    <th>Endémica</th>
+                                    <td>@(Model.IsEndemic ? "Sí" : "No")</td>
+                                </tr>
+                                @if (!string.IsNullOrWhiteSpace(Model.Description))
+                                {
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <td>@Model.Description</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <a asp-controller="Public" asp-action="Catalogo" class="btn btn-outline-secondary btn-sm">Volver
+                            al catálogo</a>
+                            <a asp-controller="Species" asp-action="Edit" asp-route-id="@Model.Id"
+                               class="btn btn-primary btn-sm">Editar</a>
+                            <a asp-controller="Species" asp-action="Delete" asp-route-id="@Model.Id"
+                               class="btn btn-outline-danger btn-sm">Eliminar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

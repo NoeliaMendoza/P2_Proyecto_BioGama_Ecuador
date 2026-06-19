@@ -1,0 +1,50 @@
+﻿@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Registrarse";
+}
+
+<div class="d-flex align-items-center justify-content-center min-vh-75">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-6">
+            <div class="card border-success shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h2 class="card-title mb-0">@ViewData["Title"]</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Crea una cuenta para comenzar a registrar y gestionar observaciones de campo.
+                    </p>
+                    <hr />
+                    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Email" class="form-control" autocomplete="username"
+                                   aria-required="true" placeholder="name@example.com" />
+                            <label for="Input_Email">Correo electrónico</label>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Password" class="form-control" autocomplete="new-password"
+                                   aria-required="true" placeholder="password" />
+                            <label for="Input_Password">Contraseña</label>
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password"
+                                   aria-required="true" placeholder="password" />
+                            <label for="Input_ConfirmPassword">Confirmar contraseña</label>
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                        </div>
+                        <div class="d-grid mb-3">
+                            <button id="registerSubmit" type="submit" class="btn btn-success btn-lg">Crear
+                                cuenta</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @section Scripts {
+            <partial name="_ValidationScriptsPartial" />
+        }
