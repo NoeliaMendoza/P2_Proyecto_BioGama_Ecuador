@@ -21,6 +21,16 @@ namespace BioGamaEcuador.Controllers
             _context = context;
         }
 
+        private static DateTime ToUtcKind(DateTime value)
+        {
+            return value.Kind switch
+            {
+                DateTimeKind.Utc => value,
+                DateTimeKind.Local => value.ToUniversalTime(),
+                _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+            };
+        }
+
         // GET: Researchers
         [Authorize(Roles = "Administrador,Investigador,UsuarioPublico")]
         public async Task<IActionResult> Index(string nombre, string institucion, int pagina = 1)

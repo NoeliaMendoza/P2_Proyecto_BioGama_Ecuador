@@ -24,6 +24,16 @@ namespace BioGamaEcuador.Controllers
             return await _context.Researchers.FirstOrDefaultAsync(r => r.Email == userEmail);
         }
 
+        private static DateTime ToUtcKind(DateTime value)
+        {
+            return value.Kind switch
+            {
+                DateTimeKind.Utc => value,
+                DateTimeKind.Local => value.ToUniversalTime(),
+                _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+            };
+        }
+
         [Authorize(Roles = "Administrador,Investigador,UsuarioPublico")]
         public async Task<IActionResult> Index(string busqueda, string speciesId, string locationId, string researcherId, int pagina = 1)
         {
@@ -131,6 +141,7 @@ namespace BioGamaEcuador.Controllers
             if (ModelState.IsValid)
             {
                 entry.IsActive = true;
+                entry.DiscoveryDate = ToUtcKind(entry.DiscoveryDate);
                 entry.CreatedAt = DateTime.UtcNow;
                 _context.Add(entry);
                 await _context.SaveChangesAsync();
@@ -196,16 +207,8 @@ namespace BioGamaEcuador.Controllers
 
             if (ModelState.IsValid)
             {
-                var created = entry.CreatedAt;
-                if (created.Kind == DateTimeKind.Local)
-                {
-                    created = created.ToUniversalTime();
-                }
-                else if (created.Kind == DateTimeKind.Unspecified)
-                {
-                    created = DateTime.SpecifyKind(created, DateTimeKind.Utc);
-                }
-                entry.CreatedAt = created;
+                entry.DiscoveryDate = ToUtcKind(entry.DiscoveryDate);
+                entry.CreatedAt = ToUtcKind(entry.CreatedAt);
 
                 _context.Update(entry);
                 await _context.SaveChangesAsync();
