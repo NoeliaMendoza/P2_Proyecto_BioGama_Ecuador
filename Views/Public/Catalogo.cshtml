@@ -138,7 +138,7 @@
                                 <a asp-controller="Public" asp-action="DetalleEspecie" asp-route-id="@sp.Id"
                                    class="btn btn-success btn-sm w-100">Ver ficha</a>
                                 <div>
-                                    <span class="badge bg-info text-dark me-1">@(sp.ConservationStatus ?? "N/D")</span>
+                                    <span class="badge bg-info text-dark me-1">@(sp.ConservationStatus?.Code ?? "N/D")</span>
                                 </div>
                             </div>
                         </div>

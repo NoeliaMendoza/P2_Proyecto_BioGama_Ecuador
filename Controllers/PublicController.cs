@@ -28,6 +28,7 @@ namespace BioGamaEcuador.Controllers
             var query = _context.Species
                 .AsNoTracking()
                 .Include(s => s.Family)
+                .Include(s => s.ConservationStatus)
                 .Where(s => s.IsActive);
 
             // Filtro por búsqueda (nombre común o científico)
@@ -42,7 +43,7 @@ namespace BioGamaEcuador.Controllers
 
             // Filtro por estado de conservación
             if (!string.IsNullOrWhiteSpace(estado))
-                query = query.Where(s => s.ConservationStatus == estado);
+                query = query.Where(s => s.ConservationStatus != null && s.ConservationStatus.Code == estado);
 
             // Filtro por endémica
             if (endemica.HasValue)
@@ -64,12 +65,11 @@ namespace BioGamaEcuador.Controllers
                 .Select(f => f.Name)
                 .ToListAsync();
 
-            ViewBag.Estados = await _context.Species
+            ViewBag.Estados = await _context.ConservationStatuses
                 .AsNoTracking()
-                .Where(s => s.IsActive && s.ConservationStatus != null && s.ConservationStatus != "")
-                .Select(s => s.ConservationStatus)
-                .Distinct()
-                .OrderBy(e => e)
+                .Where(cs => cs.IsActive)
+                .OrderBy(cs => cs.Code)
+                .Select(cs => cs.Code)
                 .ToListAsync();
 
             ViewBag.PaginaActual = pagina;
@@ -91,6 +91,7 @@ namespace BioGamaEcuador.Controllers
             var especie = await _context.Species
                 .AsNoTracking()
                 .Include(s => s.Family)
+                .Include(s => s.ConservationStatus)
                 .FirstOrDefaultAsync(s => s.Id == id && s.IsActive);
 
             if (especie == null) return NotFound();

@@ -70,7 +70,7 @@
                 <tr>
                     <td>@item.CommonName</td>
                     <td><em>@item.ScientificName</em></td>
-                    <td>@item.ConservationStatus</td>
+                    <td>@(item.ConservationStatus?.Code ?? "N/D")</td>
                     <td>@item.IsEndemic</td>
                     <td>@item.Family?.Name</td>
                     <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td>

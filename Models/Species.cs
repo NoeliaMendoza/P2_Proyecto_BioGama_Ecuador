@@ -14,9 +14,8 @@ namespace BioGamaEcuador.Models
         [StringLength(150)]
         public string ScientificName { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(50)]
-        public string ConservationStatus { get; set; } = string.Empty;
+        public int? ConservationStatusId { get; set; }
+        public ConservationStatus? ConservationStatus { get; set; }
 
         [StringLength(500)]
         public string Description { get; set; } = string.Empty;
@@ -29,8 +28,12 @@ namespace BioGamaEcuador.Models
         public int FamilyId { get; set; }
         public Family? Family { get; set; }
 
+        public ICollection<Publication> Publications { get; set; } = new List<Publication>();
+
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime? UpdatedAt { get; set; }
     }
 }

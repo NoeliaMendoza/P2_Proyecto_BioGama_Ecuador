@@ -21,9 +21,11 @@
                 <span asp-validation-for="ScientificName" class="text-danger"></span>
             </div>
             <div class="form-group mb-3">
-                <label asp-for="ConservationStatus" class="control-label">Estado de conservación</label>
-                <input asp-for="ConservationStatus" class="form-control" />
-                <span asp-validation-for="ConservationStatus" class="text-danger"></span>
+                <label asp-for="ConservationStatusId" class="control-label">Estado de conservación</label>
+                <select asp-for="ConservationStatusId" class="form-control" asp-items="ViewBag.ConservationStatusId">
+                    <option value="">-- Seleccione un estado --</option>
+                </select>
+                <span asp-validation-for="ConservationStatusId" class="text-danger"></span>
             </div>
             <div class="form-group mb-3">
                 <label asp-for="Description" class="control-label">Descripción</label>

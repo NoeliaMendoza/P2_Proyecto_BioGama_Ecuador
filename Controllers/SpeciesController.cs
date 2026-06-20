@@ -22,7 +22,7 @@ namespace BioGamaEcuador.Controllers
         public async Task<IActionResult> Index(string busqueda, string familia, string estado, string endemica, int pagina = 1)
         {
             const int tamano = 50;
-            var query = _context.Species.AsNoTracking().Include(s => s.Family).Where(s => s.IsActive);
+            var query = _context.Species.AsNoTracking().Include(s => s.Family).Include(s => s.ConservationStatus).Where(s => s.IsActive);
             if (!string.IsNullOrWhiteSpace(busqueda))
             {
                 query = query.Where(s => EF.Functions.ILike(s.CommonName, $"%{busqueda}%") || EF.Functions.Like(s.ScientificName, $"%{busqueda}%"));
@@ -33,7 +33,7 @@ namespace BioGamaEcuador.Controllers
             }
             if (!string.IsNullOrWhiteSpace(estado))
             {
-                query = query.Where(s => s.ConservationStatus == estado);
+                query = query.Where(s => s.ConservationStatus != null && s.ConservationStatus.Code == estado);
             }
             if (!string.IsNullOrWhiteSpace(endemica))
             {
@@ -58,7 +58,7 @@ namespace BioGamaEcuador.Controllers
             // populate filter lists for the view
             ViewBag.Busqueda = busqueda;
             ViewBag.Familias = await _context.Families.Where(f => f.IsActive).Select(f => f.Name).Distinct().OrderBy(n => n).ToListAsync();
-            ViewBag.Estados = await _context.Species.Select(s => s.ConservationStatus).Where(s => !string.IsNullOrEmpty(s)).Distinct().OrderBy(s => s).ToListAsync();
+            ViewBag.Estados = await _context.ConservationStatuses.Where(cs => cs.IsActive).OrderBy(cs => cs.Code).Select(cs => cs.Code).ToListAsync();
             ViewBag.FamiliaFiltro = familia;
             ViewBag.EstadoFiltro = estado;
             ViewBag.EndémicaFiltro = string.IsNullOrWhiteSpace(endemica) ? (bool?)null : (endemica == "true");
@@ -73,6 +73,7 @@ namespace BioGamaEcuador.Controllers
 
             var species = await _context.Species
                 .Include(s => s.Family)
+                .Include(s => s.ConservationStatus)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (species == null) return NotFound();
@@ -85,6 +86,7 @@ namespace BioGamaEcuador.Controllers
         public IActionResult Create()
         {
             ViewData["FamilyId"] = new SelectList(_context.Families, "Id", "Name");
+            ViewData["ConservationStatusId"] = new SelectList(_context.ConservationStatuses.Where(c => c.IsActive), "Id", "Name");
             return View();
         }
 
@@ -92,7 +94,7 @@ namespace BioGamaEcuador.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador,Investigador")]
-        public async Task<IActionResult> Create([Bind("Id,CommonName,ScientificName,ConservationStatus,Description,ImageUrl,IsEndemic,FamilyId,IsActive,CreatedAt")] Species species)
+        public async Task<IActionResult> Create([Bind("Id,CommonName,ScientificName,ConservationStatusId,Description,ImageUrl,IsEndemic,FamilyId,IsActive,CreatedAt")] Species species)
         {
             if (species.FamilyId <= 0)
             {
@@ -115,6 +117,7 @@ namespace BioGamaEcuador.Controllers
                 }
             }
             ViewData["FamilyId"] = new SelectList(_context.Families, "Id", "Name", species.FamilyId);
+            ViewData["ConservationStatusId"] = new SelectList(_context.ConservationStatuses.Where(c => c.IsActive), "Id", "Name", species.ConservationStatusId);
             return View(species);
         }
 
@@ -128,6 +131,7 @@ namespace BioGamaEcuador.Controllers
             if (species == null) return NotFound();
 
             ViewData["FamilyId"] = new SelectList(_context.Families, "Id", "Kingdom", species.FamilyId);
+            ViewData["ConservationStatusId"] = new SelectList(_context.ConservationStatuses.Where(c => c.IsActive), "Id", "Name", species.ConservationStatusId);
             return View(species);
         }
 
@@ -135,7 +139,7 @@ namespace BioGamaEcuador.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador,Investigador")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CommonName,ScientificName,ConservationStatus,Description,ImageUrl,IsEndemic,FamilyId,IsActive,CreatedAt")] Species species)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,CommonName,ScientificName,ConservationStatusId,Description,ImageUrl,IsEndemic,FamilyId,IsActive,CreatedAt")] Species species)
         {
             if (id != species.Id) return NotFound();
 
@@ -166,6 +170,7 @@ namespace BioGamaEcuador.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["FamilyId"] = new SelectList(_context.Families, "Id", "Kingdom", species.FamilyId);
+            ViewData["ConservationStatusId"] = new SelectList(_context.ConservationStatuses.Where(c => c.IsActive), "Id", "Name", species.ConservationStatusId);
             return View(species);
         }
 

@@ -48,18 +48,21 @@
                 <p class="text-muted fst-italic mb-3">@Model.ScientificName</p>
 
                 @{
-                    var badgeColor = Model.ConservationStatus?.ToUpper() switch
+                    var badgeColor = Model.ConservationStatus?.Code switch
                     {
-                        "EN PELIGRO" => "danger",
-                        "VULNERABLE" => "warning text-dark",
-                        "CASI AMENAZADO" => "secondary",
-                        "PREOCUPACIÓN MENOR" => "secondary",
+                        "EX" => "dark",
+                        "CR" => "danger",
+                        "EN" => "danger",
+                        "VU" => "warning text-dark",
+                        "NT" => "secondary",
+                        "LC" => "success",
+                        "DD" => "secondary",
                         _ => "secondary"
                     };
                 }
-                @if (!string.IsNullOrWhiteSpace(Model.ConservationStatus))
+                @if (Model.ConservationStatus != null)
                 {
-                    <span class="badge bg-@badgeColor mb-3">@Model.ConservationStatus</span>
+                    <span class="badge bg-@badgeColor mb-3">@Model.ConservationStatus.Name (@Model.ConservationStatus.Code)</span>
                 }
                 @if (Model.IsEndemic)
                 {

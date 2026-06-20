@@ -14,7 +14,7 @@
             <p class="small text-muted mt-2">Registrado: @Model.CreatedAt.ToString("dd/MM/yyyy")</p>
         </div>
         <div class="text-end">
-            <span class="badge bg-info text-dark me-1">@(Model.ConservationStatus ?? "N/D")</span>
+            <span class="badge bg-info text-dark me-1">@(Model.ConservationStatus?.Name ?? "N/D")</span>
             @if (Model.IsEndemic)
             {
                 <span class="badge bg-warning text-dark">Endémica</span>
@@ -74,7 +74,7 @@
                                 </tr>
                                 <tr>
                                     <th>Estado</th>
-                                    <td>@(Model.ConservationStatus ?? "—")</td>
+                                    <td>@(Model.ConservationStatus?.Name ?? "—")</td>
                                 </tr>
                                 <tr>
                                     <th>Endémica</th>
