@@ -151,6 +151,7 @@ namespace BioGamaEcuador.Controllers
                     }
                     researcher.CreatedAt = created;
 
+                    researcher.UpdatedAt = DateTime.UtcNow;
                     _context.Update(researcher);
                     await _context.SaveChangesAsync();
                 }
@@ -199,6 +200,7 @@ namespace BioGamaEcuador.Controllers
             if (researcher != null)
             {
                 researcher.IsActive = false;
+                researcher.DeletedAt = DateTime.UtcNow;
             }
 
             await _context.SaveChangesAsync();

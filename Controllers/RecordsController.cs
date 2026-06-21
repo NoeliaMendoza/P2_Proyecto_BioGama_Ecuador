@@ -209,6 +209,7 @@ namespace BioGamaEcuador.Controllers
             {
                 entry.DiscoveryDate = ToUtcKind(entry.DiscoveryDate);
                 entry.CreatedAt = ToUtcKind(entry.CreatedAt);
+                entry.UpdatedAt = DateTime.UtcNow;
 
                 _context.Update(entry);
                 await _context.SaveChangesAsync();
@@ -244,6 +245,7 @@ namespace BioGamaEcuador.Controllers
             if (entry != null)
             {
                 entry.IsActive = false;
+                entry.DeletedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));

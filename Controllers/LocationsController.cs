@@ -150,6 +150,7 @@ namespace BioGamaEcuador.Controllers
                     }
                     location.CreatedAt = created;
 
+                    location.UpdatedAt = DateTime.UtcNow;
                     _context.Update(location);
                     await _context.SaveChangesAsync();
                 }
@@ -200,6 +201,7 @@ namespace BioGamaEcuador.Controllers
             if (location != null)
             {
                 location.IsActive = false;
+                location.DeletedAt = DateTime.UtcNow;
             }
 
             await _context.SaveChangesAsync();

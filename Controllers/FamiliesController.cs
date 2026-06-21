@@ -116,6 +116,7 @@ namespace BioGamaEcuador.Controllers
                     }
                     family.CreatedAt = created;
 
+                    family.UpdatedAt = DateTime.UtcNow;
                     _context.Update(family);
                     await _context.SaveChangesAsync();
                 }
@@ -152,6 +153,7 @@ namespace BioGamaEcuador.Controllers
             if (family != null)
             {
                 family.IsActive = false;
+                family.DeletedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));

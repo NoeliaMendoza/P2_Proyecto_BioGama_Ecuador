@@ -159,6 +159,7 @@ namespace BioGamaEcuador.Controllers
                     }
                     species.CreatedAt = created;
 
+                    species.UpdatedAt = DateTime.UtcNow;
                     _context.Update(species);
                     await _context.SaveChangesAsync();
                 }
@@ -199,6 +200,7 @@ namespace BioGamaEcuador.Controllers
             if (species != null)
             {
                 species.IsActive = false;
+                species.DeletedAt = DateTime.UtcNow;
             }
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

@@ -142,6 +142,7 @@ namespace BioGamaEcuador.Controllers
                     }
                     naturalReserve.CreatedAt = created;
 
+                    naturalReserve.UpdatedAt = DateTime.UtcNow;
                     _context.Update(naturalReserve);
                     await _context.SaveChangesAsync();
                 }
@@ -190,6 +191,7 @@ namespace BioGamaEcuador.Controllers
             if (naturalReserve != null)
             {
                 naturalReserve.IsActive = false;
+                naturalReserve.DeletedAt = DateTime.UtcNow;
             }
 
             await _context.SaveChangesAsync();
