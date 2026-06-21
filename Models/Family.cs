@@ -6,12 +6,12 @@ namespace BioGamaEcuador.Models
     {
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(100)]
+        [Required(ErrorMessage = "El nombre de la familia es obligatorio.")]
+        [StringLength(100, ErrorMessage = "El nombre debe tener máximo {1} caracteres.")]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(50)]
+        [Required(ErrorMessage = "El reino es obligatorio.")]
+        [StringLength(50, ErrorMessage = "El reino debe tener máximo {1} caracteres.")]
         public string Kingdom { get; set; } = string.Empty;
 
         public bool IsActive { get; set; } = true;

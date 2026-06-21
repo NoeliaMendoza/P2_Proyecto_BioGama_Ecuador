@@ -6,21 +6,21 @@ namespace BioGamaEcuador.Models
     {
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(100)]
+        [Required(ErrorMessage = "El nombre común es obligatorio.")]
+        [StringLength(100, ErrorMessage = "El nombre común debe tener máximo {1} caracteres.")]
         public string CommonName { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(150)]
+        [Required(ErrorMessage = "El nombre científico es obligatorio.")]
+        [StringLength(150, ErrorMessage = "El nombre científico debe tener máximo {1} caracteres.")]
         public string ScientificName { get; set; } = string.Empty;
 
         public int? ConservationStatusId { get; set; }
         public ConservationStatus? ConservationStatus { get; set; }
 
-        [StringLength(500)]
+        [StringLength(500, ErrorMessage = "La descripción debe tener máximo {1} caracteres.")]
         public string Description { get; set; } = string.Empty;
 
-        [StringLength(300)]
+        [StringLength(300, ErrorMessage = "La URL de la imagen debe tener máximo {1} caracteres.")]
         public string ImageUrl { get; set; } = string.Empty;
 
         public bool IsEndemic { get; set; } = false;

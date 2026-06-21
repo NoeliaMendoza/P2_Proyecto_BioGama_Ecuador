@@ -6,21 +6,21 @@ namespace BioGamaEcuador.Models
     {
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(100)]
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
+        [StringLength(100, ErrorMessage = "El nombre debe tener máximo {1} caracteres.")]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(100)]
+        [Required(ErrorMessage = "La institución es obligatoria.")]
+        [StringLength(100, ErrorMessage = "La institución debe tener máximo {1} caracteres.")]
         public string Institution { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(100)]
-        [EmailAddress]
+        [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
+        [StringLength(100, ErrorMessage = "El correo electrónico debe tener máximo {1} caracteres.")]
+        [EmailAddress(ErrorMessage = "El correo electrónico no es válido.")]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(100)]
+        [Required(ErrorMessage = "La especialidad es obligatoria.")]
+        [StringLength(100, ErrorMessage = "La especialidad debe tener máximo {1} caracteres.")]
         public string Specialty { get; set; } = string.Empty;
 
         public bool IsActive { get; set; } = true;

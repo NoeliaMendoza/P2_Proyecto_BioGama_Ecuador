@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BioGamaEcuador")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2265044439e1872fd6f9b14971e4f57eb3dc9c10")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a6be8d855df2b7e0c3126a8c0822caef28f3c30f")]
 [assembly: System.Reflection.AssemblyProductAttribute("BioGamaEcuador")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BioGamaEcuador")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
