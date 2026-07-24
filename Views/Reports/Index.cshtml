@@ -3,33 +3,54 @@
     var resumen = ViewBag.Resumen;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0 text-secondary"><i class="fa-regular fa-chart-bar me-2"></i>Reportes</h4>
+<div class="page-header">
+    <div>
+        <p class="page-header-subtitle">Análisis y estadísticas del sistema</p>
+    </div>
 </div>
 
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
-        <div class="border rounded p-3 bg-white">
-            <div class="small text-muted">Especies</div>
-            <div class="fs-4 fw-semibold">@resumen.TotalEspecies</div>
+        <div class="stat-card">
+            <div class="stat-card-icon primary"><i class="bi bi-bug"></i></div>
+            <div class="stat-card-label">Especies</div>
+            <div class="stat-card-value">@resumen.TotalEspecies</div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="border rounded p-3 bg-white">
-            <div class="small text-muted">Registros</div>
-            <div class="fs-4 fw-semibold">@resumen.TotalRegistros</div>
+        <div class="stat-card">
+            <div class="stat-card-icon info"><i class="bi bi-journal-text"></i></div>
+            <div class="stat-card-label">Registros</div>
+            <div class="stat-card-value">@resumen.TotalRegistros</div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="border rounded p-3 bg-white">
-            <div class="small text-muted">Investigadores</div>
-            <div class="fs-4 fw-semibold">@resumen.TotalInvestigadores</div>
+        <div class="stat-card">
+            <div class="stat-card-icon secondary"><i class="bi bi-person-badge"></i></div>
+            <div class="stat-card-label">Investigadores</div>
+            <div class="stat-card-value">@resumen.TotalInvestigadores</div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="border rounded p-3 bg-white">
-            <div class="small text-muted">Reservas</div>
-            <div class="fs-4 fw-semibold">@resumen.TotalReservas</div>
+        <div class="stat-card">
+            <div class="stat-card-icon warning"><i class="bi bi-tree"></i></div>
+            <div class="stat-card-label">Reservas</div>
+            <div class="stat-card-value">@resumen.TotalReservas</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="app-card h-100">
+            <div class="app-card-header"><h6>Registros por región</h6></div>
+            <div class="app-card-body"><div class="chart-container"><canvas id="chartRegRegion"></canvas></div></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="app-card h-100">
+            <div class="app-card-header"><h6>Registros por año</h6></div>
+            <div class="app-card-body"><div class="chart-container"><canvas id="chartRegAnio"></canvas></div></div>
         </div>
     </div>
 </div>
@@ -37,51 +58,17 @@
 <div class="row g-3">
 
     <div class="col-md-6">
-        <div class="border rounded bg-white">
-            <div class="px-3 py-2 border-bottom bg-light bg-opacity-50">
-                <span class="fw-medium small text-uppercase text-muted">Registros por región</span>
-            </div>
-            <div class="p-0">
-                <table class="table table-sm table-borderless mb-0">
-                    <thead>
-                        <tr class="small text-muted">
-                            <th class="ps-3">Región</th>
-                            <th class="text-end pe-3">Registros</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in ViewBag.RegistrosPorRegion)
-                        {
-                            <tr>
-                                <td class="ps-3 py-2">@item.Region</td>
-                                <td class="text-end pe-3 py-2 fw-medium">@item.Total.ToString("N0")</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-6">
-        <div class="border rounded bg-white">
-            <div class="px-3 py-2 border-bottom bg-light bg-opacity-50">
-                <span class="fw-medium small text-uppercase text-muted">Riqueza de especies por región</span>
-            </div>
-            <div class="p-0">
-                <table class="table table-sm table-borderless mb-0">
-                    <thead>
-                        <tr class="small text-muted">
-                            <th class="ps-3">Región</th>
-                            <th class="text-end pe-3">Especies distintas</th>
-                        </tr>
-                    </thead>
+        <div class="app-card table-card h-100">
+            <div class="app-card-header"><h6>Riqueza de especies por región</h6></div>
+            <div class="table-responsive">
+                <table class="table app-table">
+                    <thead><tr><th>Región</th><th class="text-end">Especies distintas</th></tr></thead>
                     <tbody>
                         @foreach (var item in ViewBag.EspeciesPorRegion)
                         {
                             <tr>
-                                <td class="ps-3 py-2">@item.Region</td>
-                                <td class="text-end pe-3 py-2 fw-medium">@item.EspeciesDistintas.ToString("N0")</td>
+                                <td>@item.Region</td>
+                                <td class="text-end fw-medium">@item.EspeciesDistintas.ToString("N0")</td>
                             </tr>
                         }
                     </tbody>
@@ -91,27 +78,19 @@
     </div>
 
     <div class="col-md-6">
-        <div class="border rounded bg-white">
-            <div class="px-3 py-2 border-bottom bg-light bg-opacity-50">
-                <span class="fw-medium small text-uppercase text-muted">Top 10 especies más registradas</span>
-            </div>
-            <div class="p-0">
-                <table class="table table-sm table-borderless mb-0">
-                    <thead>
-                        <tr class="small text-muted">
-                            <th class="ps-3">#</th>
-                            <th>Especie</th>
-                            <th class="text-end pe-3">Registros</th>
-                        </tr>
-                    </thead>
+        <div class="app-card table-card h-100">
+            <div class="app-card-header"><h6>Top 10 especies más registradas</h6></div>
+            <div class="table-responsive">
+                <table class="table app-table">
+                    <thead><tr><th>#</th><th>Especie</th><th class="text-end">Registros</th></tr></thead>
                     <tbody>
                         @{ int i = 1; }
                         @foreach (var item in ViewBag.TopEspecies)
                         {
                             <tr>
-                                <td class="ps-3 text-muted">@i</td>
+                                <td class="text-muted">@i</td>
                                 <td>@item.Especie</td>
-                                <td class="text-end pe-3 fw-medium">@item.TotalRegistros.ToString("N0")</td>
+                                <td class="text-end fw-medium">@item.TotalRegistros.ToString("N0")</td>
                             </tr>
                             i++;
                         }
@@ -122,26 +101,18 @@
     </div>
 
     <div class="col-md-6">
-        <div class="border rounded bg-white">
-            <div class="px-3 py-2 border-bottom bg-light bg-opacity-50">
-                <span class="fw-medium small text-uppercase text-muted">Especies por estado de conservación</span>
-            </div>
-            <div class="p-0">
-                <table class="table table-sm table-borderless mb-0">
-                    <thead>
-                        <tr class="small text-muted">
-                            <th class="ps-3">Código</th>
-                            <th>Estado</th>
-                            <th class="text-end pe-3">Especies</th>
-                        </tr>
-                    </thead>
+        <div class="app-card table-card h-100">
+            <div class="app-card-header"><h6>Especies por estado de conservación</h6></div>
+            <div class="table-responsive">
+                <table class="table app-table">
+                    <thead><tr><th>Código</th><th>Estado</th><th class="text-end">Especies</th></tr></thead>
                     <tbody>
                         @foreach (var item in ViewBag.EspeciesPorEstado)
                         {
                             <tr>
-                                <td class="ps-3"><span class="border px-1 small">@item.Code</span></td>
+                                <td><span class="badge badge-soft-secondary">@item.Code</span></td>
                                 <td>@item.Name</td>
-                                <td class="text-end pe-3 fw-medium">@item.Total.ToString("N0")</td>
+                                <td class="text-end fw-medium">@item.Total.ToString("N0")</td>
                             </tr>
                         }
                     </tbody>
@@ -151,29 +122,20 @@
     </div>
 
     <div class="col-md-6">
-        <div class="border rounded bg-white">
-            <div class="px-3 py-2 border-bottom bg-light bg-opacity-50">
-                <span class="fw-medium small text-uppercase text-muted">Top 10 investigadores</span>
-            </div>
-            <div class="p-0">
-                <table class="table table-sm table-borderless mb-0">
-                    <thead>
-                        <tr class="small text-muted">
-                            <th class="ps-3">#</th>
-                            <th>Nombre</th>
-                            <th>Institución</th>
-                            <th class="text-end pe-3">Registros</th>
-                        </tr>
-                    </thead>
+        <div class="app-card table-card h-100">
+            <div class="app-card-header"><h6>Top 10 investigadores</h6></div>
+            <div class="table-responsive">
+                <table class="table app-table">
+                    <thead><tr><th>#</th><th>Nombre</th><th>Institución</th><th class="text-end">Registros</th></tr></thead>
                     <tbody>
                         @{ int j = 1; }
                         @foreach (var item in ViewBag.TopInvestigadores)
                         {
                             <tr>
-                                <td class="ps-3 text-muted">@j</td>
+                                <td class="text-muted">@j</td>
                                 <td>@item.Name</td>
-                                <td class="small text-muted">@item.Institution</td>
-                                <td class="text-end pe-3 fw-medium">@item.TotalRegistros.ToString("N0")</td>
+                                <td class="text-muted small">@item.Institution</td>
+                                <td class="text-end fw-medium">@item.TotalRegistros.ToString("N0")</td>
                             </tr>
                             j++;
                         }
@@ -183,31 +145,44 @@
         </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="border rounded bg-white">
-            <div class="px-3 py-2 border-bottom bg-light bg-opacity-50">
-                <span class="fw-medium small text-uppercase text-muted">Registros por año</span>
-            </div>
-            <div class="p-0">
-                <table class="table table-sm table-borderless mb-0">
-                    <thead>
-                        <tr class="small text-muted">
-                            <th class="ps-3">Año</th>
-                            <th class="text-end pe-3">Registros</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in ViewBag.RegistrosPorAnio)
-                        {
-                            <tr>
-                                <td class="ps-3 py-2">@item.Anio</td>
-                                <td class="text-end pe-3 py-2 fw-medium">@item.Total.ToString("N0")</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+        Chart.defaults.color = '#6b7280';
+
+        const regRegion = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            ((IEnumerable<dynamic>)ViewBag.RegistrosPorRegion).Select(r => new { label = (string)r.Region, value = (int)r.Total })));
+        const regAnio = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            ((IEnumerable<dynamic>)ViewBag.RegistrosPorAnio).Select(r => new { label = r.Anio.ToString(), value = (int)r.Total })));
+
+        if (regRegion.length) {
+            new Chart(document.getElementById('chartRegRegion'), {
+                type: 'bar',
+                data: {
+                    labels: regRegion.map(d => d.label),
+                    datasets: [{ label: 'Registros', data: regRegion.map(d => d.value),
+                        backgroundColor: 'rgba(27, 67, 50, 0.75)', borderRadius: 6 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } } }
+            });
+        }
+
+        if (regAnio.length) {
+            new Chart(document.getElementById('chartRegAnio'), {
+                type: 'line',
+                data: {
+                    labels: regAnio.map(d => d.label),
+                    datasets: [{ label: 'Registros', data: regAnio.map(d => d.value),
+                        borderColor: '#40916c', backgroundColor: 'rgba(64, 145, 108, 0.1)',
+                        fill: true, tension: 0.3, pointRadius: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } } }
+            });
+        }
+    </script>
+}
