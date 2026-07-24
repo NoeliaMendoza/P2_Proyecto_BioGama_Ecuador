@@ -2,49 +2,53 @@
 @model RegisterModel
 @{
     ViewData["Title"] = "Registrarse";
+    Layout = "/Views/Shared/_LayoutAuth.cshtml";
 }
 
-<div class="d-flex align-items-center justify-content-center min-vh-75">
-    <div class="row justify-content-center w-100">
-        <div class="col-md-6">
-            <div class="card border-success shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <h2 class="card-title mb-0">@ViewData["Title"]</h2>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">Crea una cuenta para comenzar a registrar y gestionar observaciones de campo.
-                    </p>
-                    <hr />
-                    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-                        <div class="form-floating mb-3">
-                            <input asp-for="Input.Email" class="form-control" autocomplete="username"
-                                   aria-required="true" placeholder="name@example.com" />
-                            <label for="Input_Email">Correo electrónico</label>
-                            <span asp-validation-for="Input.Email" class="text-danger"></span>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input asp-for="Input.Password" class="form-control" autocomplete="new-password"
-                                   aria-required="true" placeholder="password" />
-                            <label for="Input_Password">Contraseña</label>
-                            <span asp-validation-for="Input.Password" class="text-danger"></span>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password"
-                                   aria-required="true" placeholder="password" />
-                            <label for="Input_ConfirmPassword">Confirmar contraseña</label>
-                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-                        </div>
-                        <div class="d-grid mb-3">
-                            <button id="registerSubmit" type="submit" class="btn btn-success btn-lg">Crear
-                                cuenta</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="w-100" style="max-width: 400px;">
+    <div class="mb-4 d-lg-none text-center">
+        <div class="stat-card-icon primary mx-auto mb-3"><i class="bi bi-flower1"></i></div>
+        <h2 class="fw-bold" style="color: var(--color-primary);">BioGama Ecuador</h2>
+    </div>
 
-        @section Scripts {
-            <partial name="_ValidationScriptsPartial" />
-        }
+    <div class="app-card">
+        <div class="app-card-body p-4">
+            <h2 class="fw-bold mb-1" style="font-size: var(--font-size-xl);">Crear cuenta</h2>
+            <p class="text-muted small mb-4">Regístrate para gestionar observaciones de campo.</p>
+
+            <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors" role="alert"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Email" class="form-label">Correo electrónico</label>
+                    <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="nombre@ejemplo.com" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Password" class="form-label">Contraseña</label>
+                    <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="••••••••" />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Input.ConfirmPassword" class="form-label">Confirmar contraseña</label>
+                    <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="••••••••" />
+                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <button id="registerSubmit" type="submit" class="btn btn-primary btn-lg">Crear cuenta</button>
+                </div>
+
+                <p class="text-center small text-muted mb-0">
+                    ¿Ya tienes cuenta? <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Inicia sesión</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
