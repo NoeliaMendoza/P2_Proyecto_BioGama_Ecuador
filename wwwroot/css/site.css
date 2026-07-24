@@ -1,31 +1,35 @@
-html {
-  font-size: 14px;
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+@import 'variables.css';
+@import 'layout.css';
+@import 'components.css';
+@import 'utilities.css';
+
+/* Bootstrap overrides */
+:root {
+  --bs-primary: #1b4332;
+  --bs-primary-rgb: 27, 67, 50;
+  --bs-success: #40916c;
+  --bs-success-rgb: 64, 145, 108;
+  --bs-body-font-family: var(--font-family);
+  --bs-body-bg: var(--color-bg);
+  --bs-body-color: var(--color-text);
+  --bs-border-color: var(--color-border);
+  --bs-border-radius: var(--radius-md);
+  --bs-link-color: var(--color-primary-light);
+  --bs-link-hover-color: var(--color-primary);
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+a {
+  color: var(--color-primary-light);
+  transition: color var(--transition-fast);
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+a:hover {
+  color: var(--color-primary);
 }
 
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
-}
-
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
-}
-
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/* Legacy footer removal — app shell has no footer */
+.footer-biogama {
+  display: none;
 }
