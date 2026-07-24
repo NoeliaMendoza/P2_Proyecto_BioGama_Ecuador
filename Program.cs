@@ -25,6 +25,20 @@ builder.Services
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>();
 
+// Configuración y Servicios de Pasarelas de Pago
+builder.Services.Configure<BioGamaEcuador.Settings.PayPhoneSettings>(
+    builder.Configuration.GetSection("PayPhone"));
+builder.Services.Configure<BioGamaEcuador.Settings.PayPalSettings>(
+    builder.Configuration.GetSection("PayPal"));
+
+builder.Services.AddHttpClient<BioGamaEcuador.Services.Payments.PayPhoneApiLinkService>();
+builder.Services.AddHttpClient<BioGamaEcuador.Services.Payments.PayPalService>();
+
+// Configuración y Servicio de IA Local Ollama
+builder.Services.Configure<BioGamaEcuador.Settings.OllamaSettings>(
+    builder.Configuration.GetSection("Ollama"));
+builder.Services.AddHttpClient<BioGamaEcuador.Services.Ollama.IOllamaService, BioGamaEcuador.Services.Ollama.OllamaService>();
+
 var app = builder.Build();
 
 var cultura = new CultureInfo("es-EC");

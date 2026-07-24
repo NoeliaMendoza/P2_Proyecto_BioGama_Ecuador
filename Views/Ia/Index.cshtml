@@ -1,0 +1,276 @@
+@model IEnumerable<BioGamaEcuador.Models.Species>
+
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Asistente IA de Biodiversidad - BioGama Ecuador";
+    var speciesJson = JsonSerializer.Serialize(Model.Select(s => new {
+        id = s.Id,
+        name = s.CommonName,
+        scientific = s.ScientificName,
+        code = s.ConservationStatus != null ? s.ConservationStatus.Code : ""
+    }));
+}
+
+<link rel="stylesheet" href="~/css/ia.css" asp-append-version="true" />
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="container py-4 ia-page">
+
+    <div class="ia-header">
+        <div>
+            <span class="ia-badge">
+                <i class="fa-solid fa-microchip me-1"></i> Asistente inteligente
+            </span>
+            <h2>
+                <i class="fa-solid fa-brain me-2" style="color: #16a34a;"></i>Asistente IA de Biodiversidad
+            </h2>
+            <p>
+                Consulte y genere análisis ecológicos estructurados mediante inteligencia artificial.
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="ia-card mb-4">
+                <div class="ia-card-header">
+                    <h6>
+                        <i class="fa-solid fa-sliders me-2" style="color: #16a34a;"></i>Configuración de Consulta
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+
+                    <ul class="nav nav-pills ia-nav mb-4 gap-2" id="aiTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active px-4" id="species-tab" data-bs-toggle="tab" data-bs-target="#species-pane" type="button" role="tab">
+                                <i class="fa-solid fa-leaf me-1"></i> Por Especie
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link px-4" id="custom-tab" data-bs-toggle="tab" data-bs-target="#custom-pane" type="button" role="tab">
+                                <i class="fa-solid fa-comment-dots me-1"></i> Libre
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="aiTabContent">
+
+                        <div class="tab-pane fade show active" id="species-pane" role="tabpanel">
+                            <div class="mb-4 position-relative">
+                                <label class="form-label small fw-bold text-secondary">Especie:</label>
+                                <input type="text" id="speciesInput" class="form-control ia-select" placeholder="Buscar especie..." autocomplete="off">
+                                <input type="hidden" id="speciesId" value="">
+                                <div id="speciesDropdown" class="ia-autocomplete d-none"></div>
+                                <small id="speciesError" class="text-danger d-none mt-1"><i class="fa-solid fa-circle-exclamation me-1"></i>Seleccione una especie de la lista.</small>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold text-secondary">Acción:</label>
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="ia-btn-action d-flex align-items-center justify-content-between" onclick="generarAnalisis('ficha')">
+                                        <span><i class="fa-solid fa-file-medical me-2" style="color: #16a34a;"></i> Ficha Ecológica</span>
+                                        <i class="fa-solid fa-chevron-right small text-muted"></i>
+                                    </button>
+                                    <button type="button" class="ia-btn-action d-flex align-items-center justify-content-between" onclick="generarAnalisis('conservacion')">
+                                        <span><i class="fa-solid fa-shield-halved me-2" style="color: #d97706;"></i> Plan de Conservación</span>
+                                        <i class="fa-solid fa-chevron-right small text-muted"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="custom-pane" role="tabpanel">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-secondary">Su consulta:</label>
+                                <textarea id="customPrompt" class="form-control ia-textarea" rows="4" placeholder="Ej: ¿Cuál es la importancia ecológica del Oso de Anteojos en Ecuador?"></textarea>
+                                <small id="promptError" class="text-danger d-none mt-1"><i class="fa-solid fa-circle-exclamation me-1"></i>Ingrese un texto de consulta.</small>
+                            </div>
+                            <div class="d-grid">
+                                <button type="button" class="ia-btn-primary" onclick="generarAnalisis('libre')">
+                                    <i class="fa-solid fa-paper-plane me-2"></i>Enviar Consulta
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-lg-7">
+            <div class="ia-card h-100">
+                <div class="ia-card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="ia-icon-circle me-2">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <h6>Respuesta Generada</h6>
+                    </div>
+                    <button id="btnCopy" class="btn btn-sm btn-outline-secondary d-none" onclick="copiarRespuesta()">
+                        <i class="fa-solid fa-copy me-1" id="iconCopy"></i> <span id="textCopy">Copiar</span>
+                    </button>
+                </div>
+
+                <div class="card-body p-4 d-flex flex-column" id="outputContainer" style="min-height: 440px;">
+
+                    <div id="stateInitial" class="my-auto text-center py-5 text-secondary">
+                        <i class="fa-solid fa-sparkles display-4 mb-3 opacity-25" style="color: #16a34a;"></i>
+                        <h6 class="fw-bold text-secondary">Esperando consulta</h6>
+                        <p class="small text-muted">
+                            Seleccione una especie o escriba una consulta para obtener información detallada.
+                        </p>
+                    </div>
+
+                    <div id="stateLoading" class="my-auto text-center py-5 d-none">
+                        <div class="spinner-border mb-3" style="width: 2.5rem; height: 2.5rem; color: #16a34a;" role="status">
+                            <span class="visually-hidden">Procesando...</span>
+                        </div>
+                        <h6 class="fw-bold text-dark">Generando respuesta...</h6>
+                        <p class="text-muted small mb-0">La IA está procesando su solicitud.</p>
+                    </div>
+
+                    <div id="stateSuccess" class="d-none flex-grow-1">
+                        <div class="ia-success-banner d-flex align-items-center mb-3">
+                            <i class="fa-solid fa-circle-check me-2"></i> Respuesta generada exitosamente
+                        </div>
+                        <div id="aiMarkdownContent" class="ia-markdown p-3 bg-white rounded-3 border"></div>
+                    </div>
+
+                    <div id="stateError" class="my-auto d-none">
+                        <div class="ia-error-box">
+                            <i class="fa-solid fa-circle-exclamation display-5 mb-2"></i>
+                            <h6 class="fw-bold">No se pudo obtener la respuesta</h6>
+                            <p id="errorMessage" class="mb-0 small"></p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const speciesList = @Html.Raw(speciesJson);
+
+        marked.setOptions({ breaks: true, gfm: true });
+
+        const speciesInput = document.getElementById('speciesInput');
+        const speciesHidden = document.getElementById('speciesId');
+        const speciesDropdown = document.getElementById('speciesDropdown');
+
+        speciesInput.addEventListener('input', function () {
+            const query = this.value.toLowerCase().trim();
+            speciesHidden.value = '';
+            speciesInput.classList.remove('ia-input-error');
+            document.getElementById('speciesError').classList.add('d-none');
+            if (!query) {
+                speciesDropdown.classList.add('d-none');
+                return;
+            }
+
+            const filtered = speciesList.filter(s =>
+                s.name.toLowerCase().includes(query) ||
+                s.scientific.toLowerCase().includes(query)
+            ).slice(0, 20);
+
+            if (filtered.length === 0) {
+                speciesDropdown.innerHTML = '<div class="ia-autocomplete-empty">Sin resultados</div>';
+                speciesDropdown.classList.remove('d-none');
+                return;
+            }
+
+            speciesDropdown.innerHTML = filtered.map((s, i) =>
+                `<div class="ia-autocomplete-item" data-id="${s.id}" data-name="${s.name}" onclick="selectSpecies(${s.id}, '${s.name.replace(/'/g, "\\'")}')">` +
+                `<strong>${highlightMatch(s.name, query)}</strong> <span class="accent">${highlightMatch(s.scientific, query)}</span>` +
+                (s.code ? ` <span class="badge bg-light text-secondary ms-1">${s.code}</span>` : '') +
+                `</div>`
+            ).join('');
+            speciesDropdown.classList.remove('d-none');
+        });
+
+        speciesInput.addEventListener('blur', function () {
+            setTimeout(() => speciesDropdown.classList.add('d-none'), 200);
+        });
+
+        speciesInput.addEventListener('focus', function () {
+            if (this.value.trim() && speciesDropdown.children.length > 0) {
+                speciesDropdown.classList.remove('d-none');
+            }
+        });
+
+        customPrompt.addEventListener('input', function () {
+            this.classList.remove('ia-input-error');
+            document.getElementById('promptError').classList.add('d-none');
+        });
+
+        function highlightMatch(text, query) {
+            const idx = text.toLowerCase().indexOf(query);
+            if (idx === -1) return text;
+            return text.slice(0, idx) + '<strong style="color:#16a34a">' +
+                   text.slice(idx, idx + query.length) + '</strong>' +
+                   text.slice(idx + query.length);
+        }
+
+        function selectSpecies(id, name) {
+            speciesHidden.value = id;
+            speciesInput.value = name;
+            speciesDropdown.classList.add('d-none');
+        }
+
+        async function generarAnalisis(tipo) {
+            let bodyData = { tipoConsulta: tipo };
+
+            if (tipo === 'libre') {
+                bodyData.prompt = customPrompt.value.trim();
+            } else {
+                bodyData.speciesId = parseInt(speciesHidden.value);
+            }
+
+            stateLoading.classList.remove('d-none');
+
+            try {
+                const response = await fetch('/api/ia/generar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyData)
+                });
+
+                const data = await response.json();
+                stateLoading.classList.add('d-none');
+
+                if (response.ok && data.success) {
+                    aiMarkdownContent.innerHTML = marked.parse(data.respuesta || '');
+                    stateSuccess.classList.remove('d-none');
+                } else {
+                    errorMessage.textContent = data.error || 'Ocurrió un error inesperado al consultar el modelo.';
+                    stateError.classList.remove('d-none');
+                }
+            } catch (err) {
+                stateLoading.classList.add('d-none');
+                errorMessage.textContent = 'Error de conexión. ' + err.message;
+                stateError.classList.remove('d-none');
+            }
+        }
+
+        function copiarRespuesta() {
+            const rawText = document.getElementById('aiMarkdownContent').innerText;
+            navigator.clipboard.writeText(rawText).then(() => {
+                const iconCopy = document.getElementById('iconCopy');
+                const textCopy = document.getElementById('textCopy');
+                iconCopy.className = 'fa-solid fa-check text-success';
+                textCopy.textContent = '¡Copiado!';
+                setTimeout(() => {
+                    iconCopy.className = 'fa-solid fa-copy';
+                    textCopy.textContent = 'Copiar';
+                }, 2000);
+            });
+        }
+    </script>
+}
