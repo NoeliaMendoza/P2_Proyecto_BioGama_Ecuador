@@ -4,39 +4,31 @@
     ViewData["Title"] = "Eliminar especie";
 }
 
-<div class="row justify-content-center py-4">
-    <div class="col-md-8">
-        <div class="card border-secondary shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title mb-3">Confirmar eliminación</h2>
-                <p class="text-muted">Estás a punto de eliminar la especie. Esta acción no se puede deshacer.</p>
+<div class="app-card delete-card">
+    <div class="app-card-body p-4 text-center">
+        <div class="delete-icon mx-auto"><i class="bi bi-exclamation-triangle"></i></div>
+        <h4 class="fw-bold mb-2">Confirmar eliminación</h4>
+        <p class="text-muted mb-4">Estás a punto de eliminar esta especie. Esta acción no se puede deshacer.</p>
 
-                <div class="mt-4">
-                    <dl class="row">
-                        <dt class="col-sm-4 text-muted">Nombre común</dt>
-                        <dd class="col-sm-8">@Html.DisplayFor(model => model.CommonName)</dd>
+        <dl class="row text-start mb-4">
+            <dt class="col-sm-5 text-muted">Nombre común</dt>
+            <dd class="col-sm-7 fw-medium">@Html.DisplayFor(model => model.CommonName)</dd>
+            <dt class="col-sm-5 text-muted">Nombre científico</dt>
+            <dd class="col-sm-7"><em>@Html.DisplayFor(model => model.ScientificName)</em></dd>
+            <dt class="col-sm-5 text-muted">Estado</dt>
+            <dd class="col-sm-7">@Html.DisplayFor(model => model.ConservationStatus)</dd>
+            <dt class="col-sm-5 text-muted">Familia</dt>
+            <dd class="col-sm-7">@Model.Family?.Name ?? "—"</dd>
+        </dl>
 
-                        <dt class="col-sm-4 text-muted">Nombre científico</dt>
-                        <dd class="col-sm-8">@Html.DisplayFor(model => model.ScientificName)</dd>
-
-                        <dt class="col-sm-4 text-muted">Estado</dt>
-                        <dd class="col-sm-8">@Html.DisplayFor(model => model.ConservationStatus)</dd>
-
-                        <dt class="col-sm-4 text-muted">Familia</dt>
-                        <dd class="col-sm-8">@Model.Family?.Name ?? "—"</dd>
-                    </dl>
-                </div>
-
-                <hr />
-
-                <form asp-action="Delete">
-                    <input type="hidden" asp-for="Id" />
-                    <div class="d-flex flex-wrap gap-2">
-                        <button type="submit" class="btn btn-danger">Eliminar definitivamente</button>
-                        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
-                    </div>
-                </form>
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="Id" />
+            <div class="d-flex justify-content-center gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i>Eliminar definitivamente
+                </button>
             </div>
-        </div>
+        </form>
     </div>
 </div>

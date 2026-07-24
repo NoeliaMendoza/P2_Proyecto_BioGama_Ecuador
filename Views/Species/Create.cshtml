@@ -4,60 +4,80 @@
     ViewData["Title"] = "Nueva Especie";
 }
 
-<h2>Nueva Especie</h2>
-<hr />
-<div class="row">
-    <div class="col-md-6">
+<div class="app-card form-card">
+    <div class="app-card-header">
+        <h6><i class="bi bi-plus-circle me-2"></i>Registrar nueva especie</h6>
+    </div>
+    <div class="app-card-body">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group mb-3">
-                <label asp-for="CommonName" class="control-label">Nombre común</label>
-                <input asp-for="CommonName" class="form-control" />
-                <span asp-validation-for="CommonName" class="text-danger"></span>
+            <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+            <div class="form-section">
+                <div class="form-section-title">Identificación</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="CommonName" class="form-label">Nombre común</label>
+                        <input asp-for="CommonName" class="form-control" />
+                        <span asp-validation-for="CommonName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ScientificName" class="form-label">Nombre científico</label>
+                        <input asp-for="ScientificName" class="form-control" />
+                        <span asp-validation-for="ScientificName" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
-            <div class="form-group mb-3">
-                <label asp-for="ScientificName" class="control-label">Nombre científico</label>
-                <input asp-for="ScientificName" class="form-control" />
-                <span asp-validation-for="ScientificName" class="text-danger"></span>
+
+            <div class="form-section">
+                <div class="form-section-title">Clasificación</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="FamilyId" class="form-label">Familia <span class="text-danger">*</span></label>
+                        <select asp-for="FamilyId" class="form-select" asp-items="ViewBag.FamilyId">
+                            <option value="0">— Seleccione una familia —</option>
+                        </select>
+                        <span asp-validation-for="FamilyId" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ConservationStatusId" class="form-label">Estado de conservación</label>
+                        <select asp-for="ConservationStatusId" class="form-select" asp-items="ViewBag.ConservationStatusId">
+                            <option value="">— Seleccione un estado —</option>
+                        </select>
+                        <span asp-validation-for="ConservationStatusId" class="text-danger"></span>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" asp-for="IsEndemic" />
+                            <label class="form-check-label" asp-for="IsEndemic">Especie endémica del Ecuador</label>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group mb-3">
-                <label asp-for="ConservationStatusId" class="control-label">Estado de conservación</label>
-                <select asp-for="ConservationStatusId" class="form-control" asp-items="ViewBag.ConservationStatusId">
-                    <option value="">-- Seleccione un estado --</option>
-                </select>
-                <span asp-validation-for="ConservationStatusId" class="text-danger"></span>
+
+            <div class="form-section">
+                <div class="form-section-title">Información adicional</div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label">Descripción</label>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="ImageUrl" class="form-label">URL de imagen</label>
+                        <input asp-for="ImageUrl" class="form-control" placeholder="https://..." />
+                        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
-            <div class="form-group mb-3">
-                <label asp-for="Description" class="control-label">Descripción</label>
-                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="ImageUrl" class="control-label">URL de imagen</label>
-                <input asp-for="ImageUrl" class="form-control" />
-                <span asp-validation-for="ImageUrl" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="FamilyId" class="control-label">Familia <span class="text-danger">*</span></label>
-                <select asp-for="FamilyId" class="form-control" asp-items="ViewBag.FamilyId">
-                    <option value="0">-- Seleccione una familia --</option>
-                </select>
-                <span asp-validation-for="FamilyId" class="text-danger"></span>
-            </div>
-            <div class="form-check mb-3">
-                <input class="form-check-input" asp-for="IsEndemic" />
-                <label class="form-check-label" asp-for="IsEndemic">Endémica</label>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Guardar" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Guardar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
             </div>
         </form>
     </div>
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }

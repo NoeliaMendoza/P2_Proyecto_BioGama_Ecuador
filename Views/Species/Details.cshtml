@@ -4,12 +4,14 @@
 }
 
 <div class="mb-3">
-    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Volver al listado</a>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Volver al listado
+    </a>
 </div>
 
-<div class="card shadow-sm">
+<div class="app-card detail-card overflow-hidden">
     <div class="row g-0">
-        <div class="col-md-4 bg-light d-flex align-items-center justify-content-center p-3">
+        <div class="col-md-4 detail-image">
             @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
             {
                 var imageUrl = Model.ImageUrl.Trim();
@@ -27,64 +29,55 @@
                     }
                     imageSrc = Url.Content(imageUrl);
                 }
-
-                <img src="@imageSrc" alt="@Model.CommonName" class="img-fluid rounded"
-                     style="max-height:350px; object-fit:cover;" />
+                <img src="@imageSrc" alt="@Model.CommonName" class="img-fluid" />
             }
             else
             {
-                <div class="text-muted text-center">
-                    <div class="border rounded-circle d-inline-flex align-items-center justify-content-center"
-                         style="width:88px;height:88px;">
-                        <span class="fs-3">?</span>
-                    </div>
-                    <p class="mt-3 mb-0 small">Sin imagen disponible</p>
+                <div class="text-center text-muted">
+                    <div class="stat-card-icon primary mx-auto mb-2"><i class="bi bi-image"></i></div>
+                    <p class="small mb-0">Sin imagen disponible</p>
                 </div>
             }
         </div>
         <div class="col-md-8">
-            <div class="card-body">
-                <h3 class="card-title mb-1">@Model.CommonName</h3>
+            <div class="app-card-body">
+                <h3 class="fw-bold mb-1">@Model.CommonName</h3>
                 <p class="text-muted fst-italic mb-3">@Model.ScientificName</p>
 
-                @{
-                    var badgeColor = Model.ConservationStatus?.Code switch
-                    {
-                        "EX" => "dark",
-                        "CR" => "danger",
-                        "EN" => "danger",
-                        "VU" => "warning text-dark",
-                        "NT" => "secondary",
-                        "LC" => "success",
-                        "DD" => "secondary",
-                        _ => "secondary"
-                    };
-                }
                 @if (Model.ConservationStatus != null)
                 {
-                    <span class="badge bg-@badgeColor mb-3">@Model.ConservationStatus.Name (@Model.ConservationStatus.Code)</span>
+                    var badgeClass = Model.ConservationStatus.Code switch
+                    {
+                        "CR" or "EN" => "badge-soft-danger",
+                        "VU" => "badge-soft-warning",
+                        "LC" => "badge-soft-success",
+                        _ => "badge-soft-secondary"
+                    };
+                    <span class="badge @badgeClass me-1">@Model.ConservationStatus.Name (@Model.ConservationStatus.Code)</span>
                 }
                 @if (Model.IsEndemic)
                 {
-                    <span class="badge bg-secondary mb-3 ms-1">Endémica</span>
+                    <span class="badge badge-soft-primary">Endémica</span>
                 }
 
-                <hr />
+                <hr class="my-4" />
 
                 <dl class="row mb-0">
-                    <dt class="col-sm-4 text-muted">Familia</dt>
+                    <dt class="col-sm-4">Familia</dt>
                     <dd class="col-sm-8">@(Model.Family?.Name ?? "—")</dd>
-
-                    <dt class="col-sm-4 text-muted">Descripción</dt>
+                    <dt class="col-sm-4">Descripción</dt>
                     <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.Description) ? "—" : Model.Description)</dd>
-
-                    <dt class="col-sm-4 text-muted">Registrado</dt>
+                    <dt class="col-sm-4">Registrado</dt>
                     <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy")</dd>
                 </dl>
 
-                <div class="mt-4 d-flex flex-wrap gap-2">
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">Editar</a>
-                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-sm">Eliminar</a>
+                <div class="form-actions mt-4">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                        <i class="bi bi-pencil me-1"></i>Editar
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-trash me-1"></i>Eliminar
+                    </a>
                 </div>
             </div>
         </div>
