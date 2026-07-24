@@ -17,6 +17,8 @@ public class AppDbContext : IdentityDbContext
     public DbSet<Record> Records { get; set; }
     public DbSet<ConservationStatus> ConservationStatuses { get; set; }
     public DbSet<Publication> Publications { get; set; }
+    public DbSet<SpeciesSponsorship> SpeciesSponsorships { get; set; }
+    public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
