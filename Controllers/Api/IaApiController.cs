@@ -63,22 +63,20 @@ namespace BioGamaEcuador.Controllers.Api
                 if (species != null)
                 {
                     string estadoCons = species.ConservationStatus?.Name ?? "No evaluado";
+                    string familia = species.Family?.Name ?? "No asignada";
                     string endemica = species.IsEndemic ? "Sí, es endémica de Ecuador" : "No endémica";
 
                     if (request.TipoConsulta == "ficha")
                     {
-                        finalPrompt = $"Genera una Ficha Ecológica completa en español para " +
-                                      $"{species.CommonName}, nombre científico {species.ScientificName}, " +
-                                      $"estado UICN {estadoCons}, endemismo {endemica}.";
+                        finalPrompt = $"Resume en 5 líneas la ficha ecológica de {species.CommonName} ({species.ScientificName}), familia {familia}, estado UICN {estadoCons}. Incluye hábitat, alimentación y amenazas.";
                     }
                     else if (request.TipoConsulta == "conservacion")
                     {
-                        finalPrompt = $"Elabora un Plan de Conservación Estratégico para la especie " +
-                                      $"amenazada {species.CommonName}, estado UICN {estadoCons}.";
+                        finalPrompt = $"Enumera 4 acciones de conservación para {species.CommonName} ({species.ScientificName}), estado UICN {estadoCons}. Responde en 5 líneas.";
                     }
                     else
                     {
-                        finalPrompt = $"Basándote en la especie {species.CommonName}, responde. {request.Prompt}";
+                        finalPrompt = $"Sobre {species.CommonName} ({species.ScientificName}): {request.Prompt}";
                     }
                 }
             }
@@ -96,10 +94,20 @@ namespace BioGamaEcuador.Controllers.Api
 
             if (!result.success)
             {
-                return StatusCode(500, new IaQueryResponse { Success = false, Error = result.error });
+                return StatusCode(500, new IaQueryResponse
+                {
+                    Success = false,
+                    Error = result.error
+                });
             }
 
-            return Ok(new IaQueryResponse { Success = true, Modelo = result.model, Respuesta = result.response });
+            return Ok(new IaQueryResponse
+            {
+                Success = true,
+                Modelo = result.model,
+                Respuesta = result.response,
+                Error = null
+            });
         }
     }
 }

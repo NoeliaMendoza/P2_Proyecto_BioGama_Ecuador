@@ -225,14 +225,46 @@
         }
 
         async function generarAnalisis(tipo) {
+            const customPrompt = document.getElementById('customPrompt');
+            const speciesError = document.getElementById('speciesError');
+            const promptError = document.getElementById('promptError');
+            const stateInitial = document.getElementById('stateInitial');
+            const stateLoading = document.getElementById('stateLoading');
+            const stateSuccess = document.getElementById('stateSuccess');
+            const stateError = document.getElementById('stateError');
+            const aiMarkdownContent = document.getElementById('aiMarkdownContent');
+            const errorMessage = document.getElementById('errorMessage');
+            const btnCopy = document.getElementById('btnCopy');
+
+            speciesError.classList.add('d-none');
+            promptError.classList.add('d-none');
+            speciesInput.classList.remove('ia-input-error');
+            customPrompt.classList.remove('ia-input-error');
+
             let bodyData = { tipoConsulta: tipo };
 
             if (tipo === 'libre') {
-                bodyData.prompt = customPrompt.value.trim();
+                const promptText = customPrompt.value.trim();
+                if (!promptText) {
+                    promptError.classList.remove('d-none');
+                    customPrompt.classList.add('ia-input-error');
+                    return;
+                }
+                bodyData.prompt = promptText;
             } else {
-                bodyData.speciesId = parseInt(speciesHidden.value);
+                const sid = speciesHidden.value;
+                if (!sid) {
+                    speciesError.classList.remove('d-none');
+                    speciesInput.classList.add('ia-input-error');
+                    return;
+                }
+                bodyData.speciesId = parseInt(sid);
             }
 
+            stateInitial.classList.add('d-none');
+            stateSuccess.classList.add('d-none');
+            stateError.classList.add('d-none');
+            btnCopy.classList.add('d-none');
             stateLoading.classList.remove('d-none');
 
             try {
@@ -246,15 +278,17 @@
                 stateLoading.classList.add('d-none');
 
                 if (response.ok && data.success) {
-                    aiMarkdownContent.innerHTML = marked.parse(data.respuesta || '');
+                    const htmlFormatted = marked.parse(data.respuesta || '');
+                    aiMarkdownContent.innerHTML = htmlFormatted;
                     stateSuccess.classList.remove('d-none');
+                    btnCopy.classList.remove('d-none');
                 } else {
                     errorMessage.textContent = data.error || 'Ocurrió un error inesperado al consultar el modelo.';
                     stateError.classList.remove('d-none');
                 }
             } catch (err) {
                 stateLoading.classList.add('d-none');
-                errorMessage.textContent = 'Error de conexión. ' + err.message;
+                errorMessage.textContent = 'Error de conexión: ' + err.message + '. Intente nuevamente más tarde.';
                 stateError.classList.remove('d-none');
             }
         }

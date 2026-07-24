@@ -28,9 +28,7 @@ namespace BioGamaEcuador.Services.Ollama
             {
                 model = _settings.Model,
                 prompt = prompt,
-                system = systemPrompt ?? "Eres BioIA, un asistente experto en biología, " +
-                         "conservación y biodiversidad del Ecuador. Responde en español " +
-                         "de forma estructurada, científica, clara y precisa.",
+                system = systemPrompt ?? "Eres un biólogo experto en biodiversidad ecuatoriana. Responde en español, conciso.",
                 stream = false
             };
 
@@ -44,14 +42,23 @@ namespace BioGamaEcuador.Services.Ollama
                     return new OllamaResponseDto
                     {
                         success = false,
-                        error = $"Ollama respondió con código {(int)response.StatusCode}"
+                        error = $"Ollama respondió con código {(int)response.StatusCode}: {responseContent}"
                     };
                 }
 
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 var result = JsonSerializer.Deserialize<OllamaResponseDto>(responseContent, options);
 
-                result!.success = true;
+                if (result == null)
+                {
+                    return new OllamaResponseDto
+                    {
+                        success = false,
+                        error = "No se pudo deserializar la respuesta obtenida de Ollama."
+                    };
+                }
+
+                result.success = true;
                 return result;
             }
             catch (Exception ex)
@@ -59,7 +66,7 @@ namespace BioGamaEcuador.Services.Ollama
                 return new OllamaResponseDto
                 {
                     success = false,
-                    error = $"Error al comunicarse con Ollama. {ex.Message}. Asegúrese de que Ollama esté ejecutándose."
+                    error = $"Error al comunicarse con Ollama ({_settings.BaseUrl}): {ex.Message}. Asegúrese de que Ollama esté ejecutándose."
                 };
             }
         }
