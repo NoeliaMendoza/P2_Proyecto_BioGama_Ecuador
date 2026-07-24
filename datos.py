@@ -486,10 +486,12 @@ def generar_researchers(cur):
 def generar_species(cur, family_map):
     """family_map: {id: (nombre, reino, regiones)}"""
     print("Insertando Species...")
-    sql = """INSERT INTO public."Species" ("CommonName","ScientificName","ConservationStatus","Description","ImageUrl","IsEndemic","FamilyId","IsActive","CreatedAt")
+    STATUS_TO_ID = {"EX":1,"CR":2,"EN":3,"VU":4,"NT":5,"LC":6,"DD":7}
+
+    sql = """INSERT INTO public."Species" ("CommonName","ScientificName","ConservationStatusId","Description","ImageUrl","IsEndemic","FamilyId","IsActive","CreatedAt")
              VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
 
-    # Construir lista de especies: (common, scientific, status, region, family_id, is_endemic)
+    # Construir lista de especies: (common, scientific, status_id, region, family_id, is_endemic)
     especies = []
     family_ids_list = list(family_map.keys())
 
@@ -503,7 +505,7 @@ def generar_species(cur, family_map):
                     fid = fid2
                     break
             is_endemic = region == "Galápagos" or random.random() < 0.3
-            especies.append((common, scientific, status, region, fid, is_endemic))
+            especies.append((common, scientific, STATUS_TO_ID.get(status, 7), region, fid, is_endemic))
 
     # Completar con variaciones hasta N_SPECIES
     prefixes_por_region = {
@@ -527,7 +529,7 @@ def generar_species(cur, family_map):
                 fid = fid2
                 break
         is_endemic = region == "Galápagos" or random.random() < 0.25
-        status = random.choice(["LC","LC","LC","NT","VU","EN","CR","DD"])
+        status = random.choice([6,6,6,5,4,3,2,7])
         base_common = random.choice(ESPECIES_POR_REGION[region])[0]
         common = f"{base_common} {random.choice(['de montaña','amazónico','andino','costero','silvestre','de páramo','marino'])}"
         scientific = f"{prefix} {sufijo} {idx % 50 + 1}"
