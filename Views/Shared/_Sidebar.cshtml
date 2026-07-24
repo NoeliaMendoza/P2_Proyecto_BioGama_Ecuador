@@ -1,0 +1,92 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var area = ViewContext.RouteData.Values["area"]?.ToString() ?? "";
+
+    bool IsActive(string ctrl, string? act = null) =>
+        string.Equals(controller, ctrl, StringComparison.OrdinalIgnoreCase) &&
+        (act == null || string.Equals(action, act, StringComparison.OrdinalIgnoreCase));
+
+    bool IsHomeActive = IsActive("Home", "Index");
+    bool isAuthenticated = SignInManager.IsSignedIn(User);
+}
+
+<aside class="app-sidebar" id="appSidebar">
+    <a class="sidebar-brand" asp-controller="Home" asp-action="Index">
+        <div class="sidebar-brand-icon">
+            <i class="bi bi-flower1"></i>
+        </div>
+        <div class="sidebar-brand-text">
+            BioGama
+            <span class="sidebar-brand-sub">Ecuador</span>
+        </div>
+    </a>
+
+    <nav class="sidebar-nav">
+        <div class="sidebar-section-title">Principal</div>
+        <a class="sidebar-link @(IsHomeActive ? "active" : "")" asp-controller="Home" asp-action="Index">
+            <i class="bi bi-grid-1x2"></i>
+            <span class="sidebar-label">Dashboard</span>
+        </a>
+
+        <div class="sidebar-section-title">Explorar</div>
+        <a class="sidebar-link @(IsActive("Public") ? "active" : "")" asp-controller="Public" asp-action="Catalogo">
+            <i class="bi bi-book"></i>
+            <span class="sidebar-label">Catálogo público</span>
+        </a>
+        <a class="sidebar-link @(IsActive("Donations") ? "active" : "")" asp-controller="Donations" asp-action="Index">
+            <i class="bi bi-heart"></i>
+            <span class="sidebar-label">Adopta especie</span>
+        </a>
+        <a class="sidebar-link @(IsActive("Ia") ? "active" : "")" asp-controller="Ia" asp-action="Index">
+            <i class="bi bi-cpu"></i>
+            <span class="sidebar-label">Asistente IA</span>
+        </a>
+
+        @if (isAuthenticated)
+        {
+            <div class="sidebar-section-title">Gestión</div>
+            <a class="sidebar-link @(IsActive("Species") ? "active" : "")" asp-controller="Species" asp-action="Index">
+                <i class="bi bi-bug"></i>
+                <span class="sidebar-label">Especies</span>
+            </a>
+            <a class="sidebar-link @(IsActive("Families") ? "active" : "")" asp-controller="Families" asp-action="Index">
+                <i class="bi bi-diagram-3"></i>
+                <span class="sidebar-label">Familias</span>
+            </a>
+            <a class="sidebar-link @(IsActive("Researchers") ? "active" : "")" asp-controller="Researchers" asp-action="Index">
+                <i class="bi bi-person-badge"></i>
+                <span class="sidebar-label">Investigadores</span>
+            </a>
+            <a class="sidebar-link @(IsActive("NaturalReserves") ? "active" : "")" asp-controller="NaturalReserves" asp-action="Index">
+                <i class="bi bi-tree"></i>
+                <span class="sidebar-label">Reservas</span>
+            </a>
+            <a class="sidebar-link @(IsActive("Locations") ? "active" : "")" asp-controller="Locations" asp-action="Index">
+                <i class="bi bi-geo-alt"></i>
+                <span class="sidebar-label">Ubicaciones</span>
+            </a>
+            <a class="sidebar-link @(IsActive("Records") ? "active" : "")" asp-controller="Records" asp-action="Index">
+                <i class="bi bi-journal-text"></i>
+                <span class="sidebar-label">Registros</span>
+            </a>
+
+            <div class="sidebar-section-title">Analítica</div>
+            <a class="sidebar-link @(IsActive("Reports") ? "active" : "")" asp-controller="Reports" asp-action="Index">
+                <i class="bi bi-bar-chart-line"></i>
+                <span class="sidebar-label">Reportes</span>
+            </a>
+        }
+    </nav>
+
+    <div class="sidebar-footer d-none d-lg-block">
+        <button type="button" class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Colapsar menú">
+            <i class="bi bi-layout-sidebar-inset"></i>
+        </button>
+    </div>
+</aside>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>

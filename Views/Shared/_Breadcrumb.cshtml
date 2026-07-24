@@ -1,0 +1,89 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "Home";
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "Index";
+    var title = ViewData["Title"]?.ToString() ?? controller;
+
+    var crumbs = new List<(string Label, string? Controller, string? Action)>();
+
+    if (!string.Equals(controller, "Home", StringComparison.OrdinalIgnoreCase) ||
+        !string.Equals(action, "Index", StringComparison.OrdinalIgnoreCase))
+    {
+        crumbs.Add(("Dashboard", "Home", "Index"));
+    }
+
+    var entityLabels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Species"] = "Especies",
+        ["Families"] = "Familias",
+        ["Researchers"] = "Investigadores",
+        ["NaturalReserves"] = "Reservas",
+        ["Locations"] = "Ubicaciones",
+        ["Records"] = "Registros",
+        ["Reports"] = "Reportes",
+        ["Donations"] = "Adopta",
+        ["Ia"] = "Asistente IA",
+        ["Public"] = "Catálogo",
+        ["Payment"] = "Pago",
+        ["Home"] = "Inicio"
+    };
+
+    var actionLabels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Index"] = "",
+        ["Create"] = "Nuevo",
+        ["Edit"] = "Editar",
+        ["Details"] = "Detalle",
+        ["Delete"] = "Eliminar",
+        ["Adopt"] = "Apadrinar",
+        ["Catalogo"] = "Catálogo",
+        ["DetalleEspecie"] = "Detalle"
+    };
+
+    if (entityLabels.TryGetValue(controller, out var entityLabel))
+    {
+        if (!string.Equals(action, "Index", StringComparison.OrdinalIgnoreCase))
+        {
+            crumbs.Add((entityLabel, controller, "Index"));
+            if (actionLabels.TryGetValue(action, out var actionLabel) && !string.IsNullOrEmpty(actionLabel))
+            {
+                crumbs.Add((actionLabel, null, null));
+            }
+        }
+        else if (!string.Equals(controller, "Home", StringComparison.OrdinalIgnoreCase))
+        {
+            crumbs.Add((entityLabel, null, null));
+        }
+    }
+    else if (!string.Equals(controller, "Home", StringComparison.OrdinalIgnoreCase))
+    {
+        crumbs.Add((title, null, null));
+    }
+}
+
+@if (crumbs.Count > 0)
+{
+    <nav class="app-breadcrumb" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            @for (int i = 0; i < crumbs.Count; i++)
+            {
+                var (label, ctrl, act) = crumbs[i];
+                var isLast = i == crumbs.Count - 1;
+
+                if (isLast)
+                {
+                    <li class="breadcrumb-item active" aria-current="page">@label</li>
+                }
+                else if (ctrl != null && act != null)
+                {
+                    <li class="breadcrumb-item">
+                        <a asp-controller="@ctrl" asp-action="@act">@label</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="breadcrumb-item">@label</li>
+                }
+            }
+        </ol>
+    </nav>
+}
