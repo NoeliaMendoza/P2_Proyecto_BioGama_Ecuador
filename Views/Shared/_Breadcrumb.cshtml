@@ -8,7 +8,7 @@
     if (!string.Equals(controller, "Home", StringComparison.OrdinalIgnoreCase) ||
         !string.Equals(action, "Index", StringComparison.OrdinalIgnoreCase))
     {
-        crumbs.Add(("Dashboard", "Home", "Index"));
+        crumbs.Add(("Inicio", "Home", "Index"));
     }
 
     var entityLabels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -23,7 +23,14 @@
         ["Ia"] = "Asistente IA",
         ["Public"] = "Catálogo",
         ["Payment"] = "Pago",
-        ["Home"] = "Inicio"
+        ["Home"] = "Inicio",
+        ["Courses"] = "Cursos",
+        ["Products"] = "Productos",
+        ["Orders"] = "Tienda",
+        ["Admin"] = "Administración",
+        ["AdminCourses"] = "Cursos",
+        ["AdminProducts"] = "Productos",
+        ["Inventory"] = "Inventario"
     };
 
     var actionLabels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -35,7 +42,11 @@
         ["Delete"] = "Eliminar",
         ["Adopt"] = "Apadrinar",
         ["Catalogo"] = "Catálogo",
-        ["DetalleEspecie"] = "Detalle"
+        ["DetalleEspecie"] = "Detalle",
+        ["Cart"] = "Carrito",
+        ["Checkout"] = "Pago",
+        ["MyOrders"] = "Mis Pedidos",
+        ["Confirmation"] = "Confirmación"
     };
 
     if (entityLabels.TryGetValue(controller, out var entityLabel))
