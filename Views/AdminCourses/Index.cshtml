@@ -1,5 +1,19 @@
 @model IReadOnlyList<BioGamaEcuador.Models.Sales.Course>
 @{ViewData["Title"]="Cursos";Layout="_LayoutAdmin";}
-<div class="page-header"><div><h1 class="page-header-title">Cursos</h1></div><a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> Nuevo curso</a></div>
+<div class="page-header"><div><h1 class="page-header-title">Cursos</h1><p class="page-header-desc">@ViewBag.TotalPages página(s)</p></div><a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> Nuevo curso</a></div>
 <div class="app-card filter-card mb-3"><div class="app-card-body"><form class="row g-2" method="get"><div class="col-md-4"><input class="form-control" name="search" value="@ViewBag.Search" placeholder="Buscar título"/></div><div class="col-md-2"><select class="form-select" name="modality"><option value="">Modalidad</option>@foreach(var x in new[]{"Presencial","Virtual","Hibrido"}){<option selected="@(ViewBag.Modality==x)">@x</option>}</select></div><div class="col-md-2"><select class="form-select" name="status"><option value="">Estado</option><option value="active">Activo</option><option value="inactive">Inactivo</option><option value="finished">Finalizado</option></select></div><div class="col-md-2"><input type="date" class="form-control" name="date" value="@ViewBag.Date"/></div><div class="col-md-2"><button class="btn btn-primary">Filtrar</button> <a class="btn btn-outline-secondary" asp-action="Index">Limpiar</a></div></form></div></div>
 <div class="app-card table-card"><div class="table-responsive"><table class="table app-table"><thead><tr><th>Título</th><th>Modalidad</th><th>Cupos</th><th>Precio</th><th>Fechas</th><th>Estado</th><th></th></tr></thead><tbody>@if(!Model.Any()){<tr><td colspan="7" class="text-center py-4">No se encontraron cursos.</td></tr>}@foreach(var c in Model){<tr><td class="fw-semibold">@c.Title</td><td>@c.Modality</td><td>@(c.TotalSeats-c.ReservedSeats-c.ConfirmedSeats)/@c.TotalSeats</td><td>@c.Price.ToString("C")</td><td>@c.StartDate.ToString("dd/MM/yy") - @c.EndDate.ToString("dd/MM/yy")</td><td><span class="badge @(c.IsActive?"text-bg-success":"text-bg-secondary")">@(c.IsActive?"Activo":"Inactivo")</span></td><td><a class="btn-action view" asp-action="Enrollments" asp-route-courseId="@c.Id" title="Ver inscritos"><i class="bi bi-people"></i></a> <a class="btn-action edit" asp-action="Edit" asp-route-id="@c.Id"><i class="bi bi-pencil"></i></a> <a class="btn-action delete" asp-action="DeleteConfirmation" asp-route-id="@c.Id" title="Eliminar"><i class="bi bi-trash"></i></a></td></tr>}</tbody></table></div></div>
+@{int pg = (int)ViewBag.Page; int tp = (int)ViewBag.TotalPages;}
+@if (tp > 1)
+{
+    <nav class="app-pagination" aria-label="Paginación"><ul class="pagination justify-content-center flex-wrap">
+        <li class="page-item @(pg == 1 ? "disabled" : "")"><a class="page-link" href="/Admin/Courses?page=1&search=@ViewBag.Search&modality=@ViewBag.Modality&status=@ViewBag.Status&date=@ViewBag.Date">&laquo;</a></li>
+        <li class="page-item @(pg == 1 ? "disabled" : "")"><a class="page-link" href="/Admin/Courses?page=@(pg-1)&search=@ViewBag.Search&modality=@ViewBag.Modality&status=@ViewBag.Status&date=@ViewBag.Date">&lsaquo;</a></li>
+        @for (int i = Math.Max(1, pg - 4); i <= Math.Min(tp, pg + 4); i++)
+        {
+            <li class="page-item @(i == pg ? "active" : "")"><a class="page-link" href="/Admin/Courses?page=@i&search=@ViewBag.Search&modality=@ViewBag.Modality&status=@ViewBag.Status&date=@ViewBag.Date">@i</a></li>
+        }
+        <li class="page-item @(pg == tp ? "disabled" : "")"><a class="page-link" href="/Admin/Courses?page=@(pg+1)&search=@ViewBag.Search&modality=@ViewBag.Modality&status=@ViewBag.Status&date=@ViewBag.Date">&rsaquo;</a></li>
+        <li class="page-item @(pg == tp ? "disabled" : "")"><a class="page-link" href="/Admin/Courses?page=@tp&search=@ViewBag.Search&modality=@ViewBag.Modality&status=@ViewBag.Status&date=@ViewBag.Date">&raquo;</a></li>
+    </ul><p class="app-pagination-info text-center text-muted small mt-1">Página @pg de @tp</p></nav>
+}
