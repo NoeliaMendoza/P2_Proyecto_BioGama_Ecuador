@@ -5,8 +5,6 @@
 
 <div class="public-hero product-hero">
     <div class="public-hero-inner">
-        <span class="public-hero-eyebrow"><i class="bi bi-box-seam"></i> Tienda BioGama</span>
-        <h1 class="public-hero-title">Productos para explorar y conservar</h1>
         <p class="public-hero-desc">Materiales didácticos, kits de campo y recuerdos pensados para acercarte a la biodiversidad del Ecuador.</p>
         <div class="public-hero-meta">
             <span class="badge badge-soft-primary"><i class="bi bi-box me-1"></i>@ViewBag.TotalProducts productos</span>
@@ -100,24 +98,3 @@
         }
     }
 </div>
-
-@section Styles {
-    <style>
-        .product-hero { background: linear-gradient(135deg, #eef7f1 0%, #f8fbf4 58%, #fff8ec 100%); }
-        .product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1.25rem; }
-        .product-card { display:flex; flex-direction:column; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-surface); box-shadow:var(--shadow-sm); transition:transform var(--transition-base),box-shadow var(--transition-base),border-color var(--transition-base); }
-        .product-card:hover { transform:translateY(-3px); border-color:var(--color-secondary); box-shadow:var(--shadow-md); }
-        .product-card--sold-out { opacity:.78; }
-        .product-card-image { position:relative; height:194px; background:var(--color-accent-soft); overflow:hidden; }
-        .product-card-image img { height:100%; width:100%; object-fit:cover; transition:transform .35s ease; }
-        .product-card:hover .product-card-image img { transform:scale(1.04); }
-        .product-card-placeholder { height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--color-primary); gap:.5rem; background:linear-gradient(135deg,var(--color-accent-soft),#eef7f1); }
-        .product-card-placeholder i { font-size:3rem; }.product-card-placeholder span { font-size:.78rem; font-weight:600; }
-        .product-card-status { position:absolute; top:.75rem; right:.75rem; }.product-card-body { display:flex; flex:1; flex-direction:column; padding:1rem; }
-        .product-card-sku { color:var(--color-text-muted); font-size:.72rem; letter-spacing:.03em; margin-bottom:.35rem; }.product-card-title { font-size:1rem; line-height:1.35; margin:0 0 .45rem; color:var(--color-text); }
-        .product-card-desc { display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; min-height:2.7rem; color:var(--color-text-muted); font-size:.86rem; margin-bottom:1rem; }
-        .product-card-footer { display:flex; align-items:end; justify-content:space-between; margin-top:auto; padding-top:.75rem; border-top:1px solid var(--color-border-light); }.product-card-price { display:block; color:var(--color-primary); font-weight:700; font-size:1.2rem; line-height:1; }.product-card-footer small { color:var(--color-text-muted); font-size:.72rem; }.product-card-stock { color:var(--color-text-muted); font-size:.75rem; white-space:nowrap; }
-        .product-card-buy { display:grid; grid-template-columns:64px 1fr; gap:.5rem; margin-top:.85rem; }.product-card-buy input { text-align:center; }
-        @@media (max-width:575.98px) { .product-grid { grid-template-columns:1fr; }.product-card-image { height:210px; } }
-    </style>
-}
