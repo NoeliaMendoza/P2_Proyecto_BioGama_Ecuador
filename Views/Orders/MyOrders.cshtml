@@ -1,0 +1,228 @@
+@model IEnumerable<BioGamaEcuador.Models.Sales.Order>
+
+@{
+    ViewData["Title"] = "Mis Pedidos y Cursos";
+    Layout = "_Layout";
+}
+
+<partial name="_Breadcrumb" />
+
+<div class="app-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-header-title">Mis Pedidos</h1>
+            <p class="page-header-subtitle">Historial de compras, cursos inscritos y estado de pagos</p>
+        </div>
+        <div class="page-header-actions">
+            <a asp-controller="Courses" asp-action="Index" class="btn btn-primary">
+                <i class="bi bi-mortarboard me-1"></i>Explorar cursos
+            </a>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="app-card">
+            <div class="empty-state">
+                <i class="bi bi-receipt"></i>
+                <h5>No tienes pedidos aún</h5>
+                <p class="mb-3">Cuando realices tu primera compra o te inscribas en un curso, aparecerá aquí.</p>
+                <a asp-controller="Courses" asp-action="Index" class="btn btn-primary">
+                    <i class="bi bi-mortarboard me-1"></i>Ver cursos disponibles
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="app-card">
+            <div class="table-card">
+                <table class="app-table">
+                    <thead>
+                        <tr>
+                            <th>Pedido</th>
+                            <th>Fecha</th>
+                            <th>Artículos</th>
+                            <th>Total</th>
+                            <th>Estado pedido</th>
+                            <th>Estado pago</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var o in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong class="text-monospace">#@o.Id.ToString()[..8].ToUpper()</strong>
+                                    @if (User.IsInRole("Administrador"))
+                                    {
+                                        <br><small class="text-muted">@o.UserId</small>
+                                    }
+                                </td>
+                                <td>@o.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @if (o.Details != null && o.Details.Any())
+                                    {
+                                        <span class="badge badge-soft-primary">@o.Details.Count art.</span>
+                                        <ul class="list-unstyled mb-0 small mt-1">
+                                            @foreach (var d in o.Details.Take(3))
+                                            {
+                                                <li>@(d.Course?.Title ?? d.PhysicalProduct?.Name ?? "Item") x @d.Quantity</li>
+                                            }
+                                            @if (o.Details.Count > 3)
+                                            {
+                                                <li class="text-muted">... y @(o.Details.Count - 3) más</li>
+                                            }
+                                        </ul>
+                                    }
+                                </td>
+                                <td class="fw-semibold">$@o.Total.ToString("N2", new System.Globalization.CultureInfo("es-EC"))</td>
+                                <td>
+                                    <span class="badge @(
+                                        o.Status switch
+                                        {
+                                            "Confirmed" or "Delivered" => "badge-soft-success",
+                                            "Pending" => "badge-soft-warning",
+                                            "Processing" => "badge-soft-info",
+                                            "Shipped" => "badge-soft-primary",
+                                            "Cancelled" => "badge-soft-secondary",
+                                            "Refunded" => "badge-soft-danger",
+                                            _ => "badge-soft-info"
+                                        })">@o.Status</span>
+                                </td>
+                                <td>
+                                    @if (o.Payment != null)
+                                    {
+                                        <span class="badge @(
+                                            o.Payment.Status switch
+                                            {
+                                                "Approved" => "badge-soft-success",
+                                                "Pending" => "badge-soft-warning",
+                                                "Cancelled" => "badge-soft-secondary",
+                                                "Failed" => "badge-soft-danger",
+                                                "Expired" => "badge-soft-danger",
+                                                "Refunded" => "badge-soft-danger",
+                                                _ => "badge-soft-info"
+                                            })">@o.Payment.Status</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-soft-secondary">Sin pago</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-action-group">
+                                        <a asp-controller="Orders" asp-action="Confirmation" asp-route-id="@o.Id"
+                                           class="btn-action view" title="Ver detalle" data-bs-toggle="tooltip">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        @if (o.Payment?.Status == "Approved" && o.Details.Any(d => d.Course != null))
+                                        {
+                                            <button type="button" class="btn-action view"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#certModal"
+                                                    data-order-id="@o.Id"
+                                                    title="Ver certificados">
+                                                <i class="bi bi-award"></i>
+                                            </button>
+                                        }
+                                        @if (o.Status == "Pending" && User.IsInRole("Administrador"))
+                                        {
+                                            <a asp-controller="Orders" asp-action="Cancel" asp-route-id="@o.Id"
+                                               class="btn-action delete" title="Cancelar pedido"
+                                               onclick="return confirm('¿Cancelar este pedido?');">
+                                                <i class="bi bi-x-circle"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (ViewBag.Pagination != null)
+            {
+                <nav class="app-pagination" aria-label="Paginación de pedidos">
+                    <ul class="pagination justify-content-center flex-wrap">
+                        @if (ViewBag.Pagination.CurrentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-controller="Orders" asp-action="MyOrders"
+                                   asp-route-page="@(ViewBag.Pagination.CurrentPage - 1)">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        }
+                        @for (int i = 1; i <= ViewBag.Pagination.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == ViewBag.Pagination.CurrentPage ? "active" : "")">
+                                <a class="page-link" asp-controller="Orders" asp-action="MyOrders" asp-route-page="@i">@i</a>
+                            </li>
+                        }
+                        @if (ViewBag.Pagination.CurrentPage < ViewBag.Pagination.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-controller="Orders" asp-action="MyOrders"
+                                   asp-route-page="@(ViewBag.Pagination.CurrentPage + 1)">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                    <p class="app-pagination-info">Mostrando @ViewBag.Pagination.StartItem – @ViewBag.Pagination.EndItem de @ViewBag.Pagination.TotalItems pedidos</p>
+                </nav>
+            }
+        </div>
+    }
+
+    <!-- Modal Certificados -->
+    <div class="modal fade" id="certModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-award me-2"></i>Certificados del pedido</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="certModalBody">
+                    <div class="text-center text-muted py-4">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2">Cargando certificados...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const certModal = document.getElementById('certModal');
+            if (certModal) {
+                certModal.addEventListener('show.bs.modal', async function (event) {
+                    const button = event.relatedTarget;
+                    const orderId = button.getAttribute('data-order-id');
+                    const modalBody = document.getElementById('certModalBody');
+
+                    modalBody.innerHTML = '<div class="text-center text-muted py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Cargando certificados...</p></div>';
+
+                    try {
+                        const response = await fetch(`/Orders/GetCertificates/${orderId}`, {
+                            headers: {
+                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                            }
+                        });
+                        const html = await response.text();
+                        modalBody.innerHTML = html;
+                    } catch (err) {
+                        console.error(err);
+                        modalBody.innerHTML = '<div class="alert alert-danger">Error al cargar certificados</div>';
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -1,3 +1,4 @@
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
@@ -22,6 +23,10 @@
     <div class="topbar-right">
         @if (SignInManager.IsSignedIn(User))
         {
+            <a class="topbar-btn" asp-controller="Orders" asp-action="Cart" aria-label="Carrito" title="Carrito">
+                <i class="bi bi-cart3"></i>
+            </a>
+
             <button type="button" class="topbar-btn" aria-label="Notificaciones" title="Notificaciones">
                 <i class="bi bi-bell"></i>
                 <span class="topbar-notif-dot"></span>
@@ -38,6 +43,15 @@
                             <i class="bi bi-person-gear me-2"></i>Mi cuenta
                         </a>
                     </li>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Administrador"))
+                    {
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" asp-controller="Admin" asp-action="Index">
+                                <i class="bi bi-shield-check me-2"></i>Administración
+                            </a>
+                        </li>
+                    }
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <form asp-area="Identity" asp-page="/Account/Logout"

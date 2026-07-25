@@ -1,0 +1,263 @@
+@model BioGamaEcuador.Models.Sales.Order
+
+@{
+    ViewData["Title"] = "Confirmación de pedido - " + Model.Id.ToString()[..8];
+    Layout = "_Layout";
+}
+
+<partial name="_Breadcrumb" />
+
+<div class="app-content">
+    <div class="payment-receipt">
+        <div class="payment-receipt-header @($"status-{Model.Payment?.Status?.ToLower()}")">
+            <div class="payment-receipt-icon">
+                @switch (Model.Payment?.Status?.ToLower())
+                {
+                    case "approved":
+                        <i class="bi bi-check-circle"></i>
+                        break;
+                    case "pending":
+                        <i class="bi bi-hourglass"></i>
+                        break;
+                    case "cancelled":
+                        <i class="bi bi-x-circle"></i>
+                        break;
+                    case "failed":
+                        <i class="bi bi-exclamation-triangle"></i>
+                        break;
+                    default:
+                        <i class="bi bi-info-circle"></i>
+                        break;
+                }
+            </div>
+            <h2>@(
+                Model.Payment?.Status switch
+                {
+                    "Approved" => "¡Pago confirmado!",
+                    "Pending" => "Pago pendiente",
+                    "Cancelled" => "Pago cancelado",
+                    "Failed" => "Pago fallido",
+                    _ => "Estado del pago"
+                }
+            )</h2>
+            <p>Tu pedido <strong>#@Model.Id.ToString()[..8].ToUpper()</strong> ha sido procesado.</p>
+        </div>
+
+        <div class="payment-stat-grid">
+            <div class="payment-stat-item">
+                <div class="payment-stat-label">ID del pedido</div>
+                <div class="payment-stat-value">#@Model.Id.ToString()[..8].ToUpper()</div>
+            </div>
+            <div class="payment-stat-item">
+                <div class="payment-stat-label">Método de pago</div>
+                <div class="payment-stat-value">@Model.Payment?.Provider</div>
+            </div>
+            <div class="payment-stat-item">
+                <div class="payment-stat-label">Estado</div>
+                <div class="payment-stat-value">
+                    <span class="badge @(
+                        Model.Payment?.Status switch
+                        {
+                            "Approved" => "badge-soft-success",
+                            "Pending" => "badge-soft-warning",
+                            "Cancelled" => "badge-soft-secondary",
+                            "Failed" => "badge-soft-danger",
+                            _ => "badge-soft-info"
+                        })">@Model.Payment?.Status</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="app-card mt-4">
+            <div class="app-card-header">
+                <h5 class="mb-0">Detalle del pedido</h5>
+            </div>
+            <div class="app-card-body">
+                <div class="table-card">
+                    <table class="app-table">
+                        <thead>
+                            <tr>
+                                <th>Producto / Curso</th>
+                                <th>Cantidad</th>
+                                <th>Precio unit.</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var d in Model.Details)
+                            {
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <strong>@(d.Course?.Title ?? d.PhysicalProduct?.Name ?? "Item")</strong>
+                                            @if (d.Course != null)
+                                            {
+                                                <br><small class="text-muted"><i class="bi bi-mortarboard me-1"></i>@d.Course.Modality · @d.Course.StartDate.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("es-EC"))</small>
+                                            }
+                                            else if (d.PhysicalProduct != null)
+                                            {
+                                                <br><small class="text-muted">SKU: @d.PhysicalProduct.SKU</small>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>@d.Quantity</td>
+                                    <td>$@d.UnitPrice.ToString("N2", new System.Globalization.CultureInfo("es-EC"))</td>
+                                    <td class="fw-semibold">$@(d.Subtotal).ToString("N2", new System.Globalization.CultureInfo("es-EC"))</td>
+                                </tr>
+                            }
+                            @if (Model.Tax > 0)
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-end fw-semibold">Impuestos (IVA 12%)</td>
+                                    <td>$@Model.Tax.ToString("N2", new System.Globalization.CultureInfo("es-EC"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-active fw-bold">
+                                <td colspan="3" class="text-end">Total</td>
+                                <td>$@Model.Total.ToString("N2", new System.Globalization.CultureInfo("es-EC"))</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.Payment?.Status == "Approved")
+        {
+            <div class="payment-certificate mt-4">
+                <h4 class="mb-3"><i class="bi bi-award me-2"></i>Comprobante de pago</h4>
+                <p class="mb-2">Guarda este comprobante para tus registros.</p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <strong>Transacción:</strong><br>
+                        <code>@Model.Payment?.ExternalId</code>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Fecha:</strong><br>
+                        @Model.Payment?.ConfirmedAt?.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Proveedor:</strong><br>
+                        @Model.Payment?.Provider
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Monto:</strong><br>
+                        $@Model.Total.ToString("N2", new System.Globalization.CultureInfo("es-EC")) USD
+                    </div>
+                </div>
+                <hr class="my-3">
+                <p class="mb-0 small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Se ha enviado una copia de este comprobante a tu correo electrónico.
+                    Para cursos, recibirás el código de confirmación y acceso por separado.
+                </p>
+            </div>
+        }
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <a asp-controller="Orders" asp-action="MyOrders" class="btn btn-primary">
+                <i class="bi bi-list-ul me-1"></i>Ver mis pedidos
+            </a>
+            <a asp-controller="Courses" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-mortarboard me-1"></i>Seguir comprando
+            </a>
+            @if (Model.Payment?.Status == "Approved")
+            {
+                <button class="btn btn-outline-primary ms-auto" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i>Imprimir comprobante
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .payment-receipt {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .payment-receipt-header {
+        text-align: center;
+        padding: 2.5rem 1.5rem;
+        border-radius: var(--radius-lg);
+        color: #fff;
+    }
+
+    .payment-receipt-header.status-approved {
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    }
+
+    .payment-receipt-header.status-pending {
+        background: linear-gradient(135deg, #b45309 0%, #d97706 100%);
+    }
+
+    .payment-receipt-header.status-cancelled,
+    .payment-receipt-header.status-failed {
+        background: linear-gradient(135deg, #991b1b 0%, var(--color-danger) 100%);
+    }
+
+    .payment-receipt-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2rem;
+    }
+
+    .payment-receipt-header h2 {
+        font-size: var(--font-size-xl);
+        font-weight: var(--font-weight-bold);
+        margin: 0 0 0.5rem;
+    }
+
+    .payment-receipt-header p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: var(--font-size-base);
+    }
+
+    .payment-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 1.5rem 0;
+        text-align: center;
+    }
+
+    .payment-stat-label {
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-semibold);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-muted);
+        margin-bottom: 0.25rem;
+    }
+
+    .payment-stat-value {
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text);
+    }
+
+    .payment-certificate {
+        border: 2px solid var(--color-secondary);
+        border-radius: var(--radius-lg);
+        padding: 1.75rem;
+        text-align: center;
+        background: var(--color-accent-soft);
+    }
+
+    .payment-certificate h4 {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-primary);
+        margin-bottom: 1rem;
+    }
+</style>

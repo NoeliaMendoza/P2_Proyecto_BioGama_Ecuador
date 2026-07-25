@@ -1,0 +1,183 @@
+@model BioGamaEcuador.Models.Sales.Order
+
+@{
+ViewData["Title"] = "Mi Carrito";
+Layout = "_Layout";
+}
+
+<partial name="_Breadcrumb" />
+
+<div class="app-content">
+    <div class="page-header mb-4">
+        <div>
+            <h1 class="page-header-title">Mi Carrito</h1>
+            <p class="page-header-subtitle">Revisa tus selecciones antes de proceder al pago</p>
+        </div>
+        <div class="page-header-actions">
+            <a asp-controller="Products" asp-action="Index" class="btn btn-outline-secondary me-2"><i class="bi bi-box me-1"></i>Productos</a>
+            <a asp-controller="Courses" asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-plus-lg me-1"></i>Seguir comprando</a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] is string s)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert"><i class="bi bi-check-circle me-2"></i>@s<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["Error"] is string e)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert"><i class="bi bi-exclamation-circle me-2"></i>@e<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    @if (Model == null || !Model.Details.Any())
+    {
+        <div class="app-card">
+            <div class="empty-state">
+                <i class="bi bi-cart-x"></i>
+                <h5>Tu carrito está vacío</h5>
+                <p class="mb-3">Agrega cursos o productos para continuar.</p>
+                <a asp-controller="Products" asp-action="Index" class="btn btn-primary"><i class="bi bi-box me-1"></i>Ver productos</a>
+                <a asp-controller="Courses" asp-action="Index" class="btn btn-outline-secondary ms-2"><i class="bi bi-mortarboard me-1"></i>Ver cursos</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="app-card mb-4">
+            <div class="app-card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">@Model.Details.Count @(Model.Details.Count == 1 ? "artículo" : "artículos")</h5>
+            </div>
+            <div class="app-card-body p-0">
+                <div class="table-card">
+                    <div class="table-responsive">
+                        <table class="app-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45%;">Producto / Curso</th>
+                                    <th style="width: 15%;">Precio unit.</th>
+                                    <th style="width: 15%;">Cant.</th>
+                                    <th style="width: 15%;">Subtotal</th>
+                                    <th style="width: 10%;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var d in Model.Details)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="cart-item-image" style="width: 56px; height: 56px; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-bg); flex-shrink: 0;">
+                                                    @if (d.Course?.ImageUrl != null) { <img src="@d.Course.ImageUrl" alt="@d.Course.Title" class="w-100 h-100 object-fit-cover" /> }
+                                                    else if (d.PhysicalProduct?.ImageUrl != null) { <img src="@d.PhysicalProduct.ImageUrl" alt="@d.PhysicalProduct.Name" class="w-100 h-100 object-fit-cover" /> }
+                                                    else
+                                                    {
+                                                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+                                                            <i class="bi @(d.Course != null ? "bi-mortarboard" : "bi-box")" style="font-size: 1.25rem;"></i>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1" style="font-size:0.9rem;">@(d.Course?.Title ?? d.PhysicalProduct?.Name ?? "Item")</h6>
+                                                    @if (d.Course != null)
+                                                    {
+                                                        <small class="text-muted">@d.Course.Modality · @d.Course.StartDate.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("es-EC"))</small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small class="text-muted">SKU: @d.PhysicalProduct?.SKU</small>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>$@d.UnitPrice.ToString("N2")</td>
+                                        <td>
+                                            <form asp-action="UpdateQuantity" method="post" class="d-flex gap-1 align-items-center">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="detailId" value="@d.Id" />
+                                                <input type="number" name="quantity" value="@d.Quantity" min="1"
+                                                       max="@(d.Course?.AvailableSeats ?? d.PhysicalProduct?.AvailableStock ?? 99)"
+                                                       class="form-control form-control-sm text-center qty-input" style="width: 55px;" />
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-repeat"></i></button>
+                                            </form>
+                                        </td>
+                                        <td class="fw-semibold">$@d.Subtotal.ToString("N2")</td>
+                                        <td>
+                                            <form asp-action="DeleteDetail" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este artículo?')">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="detailId" value="@d.Id" />
+                                                <button type="submit" class="btn-action delete" title="Eliminar"><i class="bi bi-trash"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-7">
+                <a asp-action="Checkout" class="btn btn-primary btn-lg w-100"><i class="bi bi-credit-card me-2"></i>Proceder al pago</a>
+            </div>
+            <div class="col-lg-5">
+                <div class="app-card sidebar-card position-sticky" style="top: 90px;">
+                    <div class="sidebar-header">
+                        <p class="sidebar-price">$@Model.Total.ToString("N2") <span class="sidebar-price-currency">USD</span></p>
+                    </div>
+                    <div class="sidebar-body">
+                        <div class="reserve-summary" style="background: transparent; border: none; padding: 0;">
+                            <div class="reserve-summary-row">
+                                <span>Subtotal (@Model.Details.Count @(Model.Details.Count == 1 ? "artículo" : "artículos"))</span>
+                                <span>$@Model.Subtotal.ToString("N2")</span>
+                            </div>
+                            <div class="reserve-summary-row">
+                                <span>Impuestos (12% IVA)</span>
+                                <span>$@Model.Tax.ToString("N2")</span>
+                            </div>
+                            @if (Model.Details.Any(d => d.PhysicalProduct != null))
+                            {
+                                <div class="reserve-summary-row">
+                                    <span>Envío (estimado)</span>
+                                    <span>$0.00</span>
+                                </div>
+                            }
+                            <div class="reserve-summary-row">
+                                <span>Total</span>
+                                <span>$@Model.Total.ToString("N2")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .cart-item-image { background: var(--color-bg); flex-shrink: 0; }
+        .cart-item-image img { width: 100%; height: 100%; object-fit: cover; }
+        .qty-input { -moz-appearance: textfield; }
+        .qty-input::-webkit-outer-spin-button,
+        .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .app-table td { vertical-align: middle; }
+        .app-table thead th { font-size: var(--font-size-xs); }
+        .app-table tbody td { font-size: var(--font-size-sm); }
+        .sidebar-card { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+        .sidebar-header { background: var(--color-accent-soft); border-bottom: 1px solid var(--color-border-light); padding: 1.25rem; text-align: center; }
+        .sidebar-price { font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--color-primary); margin: 0; }
+        .sidebar-price-currency { font-size: var(--font-size-lg); font-weight: var(--font-weight-normal); }
+        .sidebar-body { padding: 1.25rem; }
+        .reserve-summary-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--color-border-light); }
+        .reserve-summary-row:last-child { border-bottom: none; font-weight: var(--font-weight-bold); font-size: var(--font-size-base); }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.qty-input').forEach(function (input) {
+            input.addEventListener('change', function () { this.closest('form').requestSubmit(); });
+        });
+    </script>
+}

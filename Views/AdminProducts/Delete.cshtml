@@ -1,0 +1,3 @@
+@model BioGamaEcuador.Models.Sales.PhysicalProduct
+@{ViewData["Title"]="Eliminar producto";Layout="_LayoutAdmin";}
+<div class="app-card"><div class="app-card-body"><h4>¿Eliminar “@Model.Name”?</h4><p class="text-muted">El producto se ocultará mediante eliminación lógica; sus movimientos permanecerán en el historial.</p><form method="post" asp-action="Delete" asp-route-id="@Model.Id"><button class="btn btn-danger">Eliminar producto</button><a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a></form></div></div>

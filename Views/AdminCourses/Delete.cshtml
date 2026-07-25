@@ -1,0 +1,3 @@
+@model BioGamaEcuador.Models.Sales.Course
+@{ViewData["Title"]="Eliminar curso";Layout="_LayoutAdmin";}
+<div class="app-card"><div class="app-card-body"><h4>¿Eliminar “@Model.Title”?</h4><p class="text-muted">El curso se ocultará mediante eliminación lógica; sus registros se conservarán.</p><form method="post" asp-action="Delete" asp-route-id="@Model.Id"><button class="btn btn-danger">Eliminar curso</button><a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a></form></div></div>

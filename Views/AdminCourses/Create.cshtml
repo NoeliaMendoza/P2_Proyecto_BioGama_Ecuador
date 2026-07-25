@@ -1,0 +1,4 @@
+@model BioGamaEcuador.Models.Admin.CourseFormViewModel
+@{ViewData["Title"]="Nuevo curso";Layout="_LayoutAdmin";}
+<div class="app-card form-card"><div class="app-card-header"><h5>Crear curso</h5></div><div class="app-card-body"><partial name="_Form" model="Model"/></div></div>
+@section Scripts { <partial name="_ValidationScriptsPartial"/> }

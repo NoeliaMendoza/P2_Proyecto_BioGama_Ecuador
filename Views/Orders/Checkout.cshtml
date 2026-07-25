@@ -1,0 +1,186 @@
+@model BioGamaEcuador.Models.Sales.Order
+
+@{ ViewData["Title"] = "Checkout"; Layout = "_Layout"; }
+
+<partial name="_Breadcrumb" />
+
+<div class="app-content">
+    <div class="page-header mb-4">
+        <div>
+            <h1 class="page-header-title">Checkout</h1>
+            <p class="page-header-subtitle">Completa tus datos y selecciona el método de pago</p>
+        </div>
+    </div>
+
+    @if (TempData["Error"] is string e)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert"><i class="bi bi-exclamation-circle me-2"></i>@e<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="app-card mb-4">
+                <div class="app-card-header"><h6 class="mb-0">Resumen del pedido</h6></div>
+                <div class="app-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="app-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Cant.</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var d in Model.Details)
+                                {
+                                    <tr>
+                                        <td>@(d.Course?.Title ?? d.PhysicalProduct?.Name ?? "Item")</td>
+                                        <td>@d.Quantity</td>
+                                        <td>$@d.Subtotal.ToString("N2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-card mb-4">
+                <div class="app-card-header"><h6 class="mb-0">Datos de facturación</h6></div>
+                <div class="app-card-body">
+                    <form asp-action="Checkout" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderId" value="@Model.Id" />
+
+                        <div class="form-section">
+                            <h6 class="form-section-title">Información de contacto</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Correo electrónico *</label>
+                                    <input type="email" name="Email" class="form-control" required value="@User.Identity?.Name" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Teléfono *</label>
+                                    <input type="tel" name="Phone" class="form-control" placeholder="+593 9X XXX XXXX" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Model.Details.Any(d => d.PhysicalProduct != null))
+                        {
+                            <div class="form-section">
+                                <h6 class="form-section-title">Dirección de envío</h6>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label">Dirección completa *</label>
+                                        <input type="text" name="ShippingAddress" class="form-control" placeholder="Calle, número, barrio, ciudad" required />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Ciudad *</label>
+                                        <input type="text" name="City" class="form-control" required />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Provincia *</label>
+                                        <select name="Province" class="form-select" required>
+                                            <option value="">Seleccionar</option>
+                                            <option>Pichincha</option>
+                                            <option>Guayas</option>
+                                            <option>Azuay</option>
+                                            <option>Manabí</option>
+                                            <option>Otra</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Código postal</label>
+                                        <input type="text" name="PostalCode" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="form-section">
+                            <h6 class="form-section-title">Método de pago</h6>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="PaymentProvider" id="paypal" value="PayPal" checked required>
+                                <label class="form-check-label payment-option" for="paypal">
+                                    <i class="bi bi-paypal me-2 text-primary" style="font-size: 1.25rem;"></i>
+                                    <div>
+                                        <p class="payment-option-label mb-0">PayPal (Sandbox)</p>
+                                        <small class="payment-option-desc">Pago seguro con tarjeta, saldo PayPal o transferencia</small>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="radio" name="PaymentProvider" id="payphone" value="PayPhone" required>
+                                <label class="form-check-label payment-option" for="payphone">
+                                    <i class="bi bi-phone me-2 text-success" style="font-size: 1.25rem;"></i>
+                                    <div>
+                                        <p class="payment-option-label mb-0">PayPhone Ecuador</p>
+                                        <small class="payment-option-desc">Tarjeta de crédito/débito, código QR o link de pago</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-actions d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg flex-grow-1"><i class="bi bi-credit-card me-2"></i>Pagar $@Model.Total.ToString("N2")</button>
+                            <a asp-action="Cart" class="btn btn-outline-secondary btn-lg"><i class="bi bi-arrow-left me-1"></i>Volver al carrito</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="app-card sidebar-card position-sticky" style="top: 90px;">
+                <div class="sidebar-header">
+                    <p class="sidebar-price">$@Model.Total.ToString("N2") <span class="sidebar-price-currency">USD</span></p>
+                </div>
+                <div class="sidebar-body">
+                    <div class="reserve-summary" style="background: transparent; border: none; padding: 0;">
+                        <div class="reserve-summary-row">
+                            <span>Subtotal (@Model.Details.Count @(Model.Details.Count == 1 ? "artículo" : "artículos"))</span>
+                            <span>$@Model.Subtotal.ToString("N2")</span>
+                        </div>
+                        <div class="reserve-summary-row">
+                            <span>Impuestos (12% IVA)</span>
+                            <span>$@Model.Tax.ToString("N2")</span>
+                        </div>
+                        @if (Model.Details.Any(d => d.PhysicalProduct != null))
+                        {
+                            <div class="reserve-summary-row"><span>Envío (estimado)</span><span>$0.00</span></div>
+                        }
+                        <div class="reserve-summary-row"><span>Total</span><span>$@Model.Total.ToString("N2")</span></div>
+                    </div>
+                    <ul class="sidebar-info-list mt-3">
+                        <li><span class="sidebar-info-label">Pago seguro</span><span class="sidebar-info-value"><i class="bi bi-shield-lock text-success me-1"></i>SSL</span></li>
+                        <li><span class="sidebar-info-label">Confirmación</span><span class="sidebar-info-value">Inmediata vía correo</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .payment-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); margin-bottom: 0.5rem; }
+        .payment-option:has(input:checked) { border-color: var(--color-secondary); background: var(--color-accent-soft); }
+        .payment-option input[type="radio"] { margin-top: 0.25rem; accent-color: var(--color-primary); }
+        .payment-option-label { font-weight: var(--font-weight-semibold); color: var(--color-text); margin: 0; }
+        .payment-option-desc { font-size: var(--font-size-xs); color: var(--color-muted); margin: 0.125rem 0 0; }
+        .app-table td { vertical-align: middle; padding: 0.75rem; }
+        .app-table th { padding: 0.75rem; }
+        .sidebar-card { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+        .sidebar-header { background: var(--color-accent-soft); border-bottom: 1px solid var(--color-border-light); padding: 1.25rem; text-align: center; }
+        .sidebar-price { font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--color-primary); margin: 0; }
+        .sidebar-price-currency { font-size: var(--font-size-lg); font-weight: var(--font-weight-normal); }
+        .reserve-summary-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--color-border-light); }
+        .reserve-summary-row:last-child { border-bottom: none; font-weight: var(--font-weight-bold); font-size: var(--font-size-base); }
+        .sidebar-info-list { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--color-border-light); padding-top: 1rem; }
+        .sidebar-info-list li { display: flex; justify-content: space-between; padding: 0.5rem 0; font-size: var(--font-size-sm); }
+        .sidebar-info-label { color: var(--color-muted); }
+        .sidebar-info-value { font-weight: var(--font-weight-medium); color: var(--color-text); text-align: right; }
+    </style>
+}

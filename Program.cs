@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using BioGamaEcuador.Data;
+using BioGamaEcuador.Data.Seeders;
+
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +28,14 @@ builder.Services
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>();
 
+builder.Services
+    .AddAuthentication()
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
+    });
+
 // Configuración y Servicios de Pasarelas de Pago
 builder.Services.Configure<BioGamaEcuador.Settings.PayPhoneSettings>(
     builder.Configuration.GetSection("PayPhone"));
@@ -33,6 +44,8 @@ builder.Services.Configure<BioGamaEcuador.Settings.PayPalSettings>(
 
 builder.Services.AddHttpClient<BioGamaEcuador.Services.Payments.PayPhoneApiLinkService>();
 builder.Services.AddHttpClient<BioGamaEcuador.Services.Payments.PayPalService>();
+builder.Services.AddScoped<BioGamaEcuador.Services.IInventoryMovementService, BioGamaEcuador.Services.InventoryMovementService>();
+builder.Services.AddScoped<BioGamaEcuador.Services.IEmailService, BioGamaEcuador.Services.EmailService>();
 
 // Configuración y Servicio de IA Local Ollama
 builder.Services.Configure<BioGamaEcuador.Settings.OllamaSettings>(
@@ -69,6 +82,7 @@ app.MapRazorPages();
 using (var scope = app.Services.CreateScope())
 {
     await IdentitySeeder.SeedAsync(scope.ServiceProvider);
+    await SalesModuleSeeder.SeedAsync(scope.ServiceProvider);
 }
 
 app.Run();

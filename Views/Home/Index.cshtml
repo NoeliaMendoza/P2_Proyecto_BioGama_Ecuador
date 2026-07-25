@@ -18,9 +18,9 @@
         totalInvestigadores = await Db.Researchers.CountAsync(r => r.IsActive);
         totalReservas = await Db.NaturalReserves.CountAsync(r => r.IsActive);
 
-        totalFlora = await Db.Species.CountAsync(s => s.IsActive && s.Family != null && s.Family.Kingdom == "Vegetal");
-        totalFauna = await Db.Species.CountAsync(s => s.IsActive && s.Family != null && s.Family.Kingdom == "Animal");
-        totalHongos = await Db.Species.CountAsync(s => s.IsActive && s.Family != null && s.Family.Kingdom == "Fungi");
+        totalFlora = await Db.Species.CountAsync(s => s.IsActive && s.Family != null && (EF.Functions.ILike(s.Family.Kingdom, "%vegetal%") || EF.Functions.ILike(s.Family.Kingdom, "%plantae%")));
+        totalFauna = await Db.Species.CountAsync(s => s.IsActive && s.Family != null && (EF.Functions.ILike(s.Family.Kingdom, "%animal%") || EF.Functions.ILike(s.Family.Kingdom, "%animalia%")));
+        totalHongos = await Db.Species.CountAsync(s => s.IsActive && s.Family != null && (EF.Functions.ILike(s.Family.Kingdom, "%fungi%") || EF.Functions.ILike(s.Family.Kingdom, "%hongo%")));
 
         registrosRecientes = await Db.Records
             .AsNoTracking()

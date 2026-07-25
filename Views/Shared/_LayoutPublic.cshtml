@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/BioGamaEcuador.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/public-catalogo.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 
 <body class="public-body">
@@ -44,6 +45,18 @@
                             <a class="public-nav-link @(IsActive("Public") ? "active" : "")"
                                asp-controller="Public" asp-action="Catalogo">
                                 <i class="bi bi-book"></i> Catálogo
+                            </a>
+                        </li>
+                        <li>
+                            <a class="public-nav-link @(IsActive("Courses") ? "active" : "")"
+                               asp-controller="Courses" asp-action="Index">
+                                <i class="bi bi-mortarboard"></i> Cursos
+                            </a>
+                        </li>
+                        <li>
+                            <a class="public-nav-link @(IsActive("Products") ? "active" : "")"
+                               asp-controller="Products" asp-action="Index">
+                                <i class="bi bi-box-seam"></i> Productos
                             </a>
                         </li>
                         <li>

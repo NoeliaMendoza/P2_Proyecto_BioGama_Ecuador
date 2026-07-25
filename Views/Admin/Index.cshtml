@@ -1,0 +1,4 @@
+@model BioGamaEcuador.Models.Admin.AdminDashboardViewModel
+@{ ViewData["Title"]="Administración"; Layout="_LayoutAdmin"; }
+<div class="page-header"><div><h1 class="page-header-title">Dashboard administrativo</h1><p class="page-header-subtitle">Estado de cursos e inscripciones.</p></div></div>
+<div class="row g-3 mb-4"><div class="col-md-6"><div class="app-card"><div class="app-card-body"><small class="text-muted">Cursos activos</small><h2>@Model.ActiveCourses</h2></div></div></div><div class="col-md-6"><div class="app-card"><div class="app-card-body"><small class="text-muted">Inscripciones del mes</small><h2>@Model.MonthlyEnrollments</h2></div></div></div></div>
