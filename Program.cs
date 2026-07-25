@@ -55,11 +55,14 @@ builder.Services.AddHttpClient<BioGamaEcuador.Services.Ollama.IOllamaService, Bi
 var app = builder.Build();
 
 var cultura = new CultureInfo("es-EC");
+CultureInfo.DefaultThreadCurrentCulture = cultura;
+CultureInfo.DefaultThreadCurrentUICulture = cultura;
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
     DefaultRequestCulture = new RequestCulture(cultura),
     SupportedCultures = new[] { cultura },
-    SupportedUICultures = new[] { cultura }
+    SupportedUICultures = new[] { cultura },
+    RequestCultureProviders = new List<IRequestCultureProvider> { new CustomRequestCultureProvider(_ => Task.FromResult(new ProviderCultureResult("es-EC"))) }
 });
 
 if (!app.Environment.IsDevelopment())
