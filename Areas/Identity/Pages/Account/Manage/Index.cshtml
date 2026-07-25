@@ -5,8 +5,6 @@
     ViewData["ActivePage"] = ManageNavPages.Index;
 }
 
-<h3>@ViewData["Title"]</h3>
-<partial name="_StatusMessage" for="StatusMessage" />
 <div class="row">
     <div class="col-md-6">
         <form id="profile-form" method="post">
@@ -20,7 +18,9 @@
                 <label asp-for="Input.PhoneNumber" class="form-label"></label>
                 <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
             </div>
-            <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Guardar</button>
+            <button id="update-profile-button" type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg me-1"></i>Guardar cambios
+            </button>
         </form>
     </div>
 </div>

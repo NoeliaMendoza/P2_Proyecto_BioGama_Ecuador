@@ -1,5 +1,5 @@
 ﻿@{
-    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout !=  null)
+    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout != null)
     {
         Layout = parentLayout.ToString();
     }
@@ -9,17 +9,33 @@
     }
 }
 
-<h1>Administrar su cuenta</h1>
+<div class="page-header mb-4">
+    <h4 class="fw-bold mb-1">Mi cuenta</h4>
+    <p class="text-muted mb-0">Administra tu perfil, seguridad y preferencias</p>
+</div>
 
-<div>
-    <h2>Cambiar la configuración de su cuenta</h2>
-    <hr />
-    <div class="row">
-        <div class="col-md-3">
-            <partial name="_ManageNav" />
+<div class="row g-4">
+    <div class="col-lg-3">
+        <div class="app-card">
+            <div class="app-card-body p-3">
+                <partial name="_ManageNav" />
+            </div>
         </div>
-        <div class="col-md-9">
-            @RenderBody()
+    </div>
+    <div class="col-lg-9">
+        <div class="app-card">
+            <div class="app-card-body p-4">
+                <h5 class="fw-bold mb-1">@ViewData["Title"]</h5>
+                <hr class="my-3" />
+                @{
+                    var _statusMsg = ViewContext.ViewData.Model?.GetType().GetProperty("StatusMessage")?.GetValue(ViewContext.ViewData.Model)?.ToString();
+                }
+                @if (!string.IsNullOrEmpty(_statusMsg))
+                {
+                    <partial name="_StatusMessage" model="@_statusMsg" />
+                }
+                @RenderBody()
+            </div>
         </div>
     </div>
 </div>

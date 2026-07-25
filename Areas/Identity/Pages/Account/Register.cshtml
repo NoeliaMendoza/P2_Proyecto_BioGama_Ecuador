@@ -11,12 +11,14 @@
         <h2 class="fw-bold" style="color: var(--color-primary);">BioGama Ecuador</h2>
     </div>
 
-    <div class="app-card">
+    <div class="app-card auth-form-card">
         <div class="app-card-body p-4">
-            <h2 class="fw-bold mb-1" style="font-size: var(--font-size-xl);">Crear cuenta</h2>
-            <p class="text-muted small mb-4">Regístrate para gestionar observaciones de campo.</p>
+            <div class="auth-page-heading">
+                <h2 class="auth-page-title">Crear cuenta</h2>
+                <p class="auth-page-subtitle">Regístrate para gestionar observaciones de campo.</p>
+            </div>
 
-            <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="auth-form">
                 <div asp-validation-summary="ModelOnly" class="validation-summary-errors" role="alert"></div>
 
                 <div class="mb-3">

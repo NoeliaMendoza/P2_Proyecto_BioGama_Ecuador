@@ -1,14 +1,13 @@
 ﻿@page
 @model ExternalLoginsModel
 @{
-    ViewData["Title"] = "Manage your external logins";
+    ViewData["Title"] = "Administrar inicios de sesión externos";
     ViewData["ActivePage"] = ManageNavPages.ExternalLogins;
 }
 
-<partial name="_StatusMessage" for="StatusMessage" />
 @if (Model.CurrentLogins?.Count > 0)
 {
-    <h3>Registered Logins</h3>
+    <h6 class="fw-semibold mb-3 text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.04em;">Inicios de sesión registrados</h6>
     <table class="table">
         <tbody>
             @foreach (var login in Model.CurrentLogins)
@@ -22,7 +21,9 @@
                                 <div>
                                     <input asp-for="@login.LoginProvider" name="LoginProvider" type="hidden" />
                                     <input asp-for="@login.ProviderKey" name="ProviderKey" type="hidden" />
-                                    <button type="submit" class="btn btn-primary" title="Remove this @login.ProviderDisplayName login from your account">Remove</button>
+                                    <button type="submit" class="btn btn-outline-danger" title="Eliminar este inicio de sesión de @login.ProviderDisplayName de tu cuenta">
+                                        <i class="bi bi-box-arrow-right me-1"></i>Eliminar
+                                    </button>
                                 </div>
                             </form>
                         }
@@ -38,14 +39,16 @@
 }
 @if (Model.OtherLogins?.Count > 0)
 {
-    <h4>Add another service to log in.</h4>
+    <h6 class="fw-semibold mb-3 text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.04em;">Agregar otro proveedor externo</h6>
     <hr />
     <form id="link-login-form" asp-page-handler="LinkLogin" method="post" class="form-horizontal">
         <div id="socialLoginList">
             <p>
                 @foreach (var provider in Model.OtherLogins)
                 {
-                    <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                    <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary me-2" name="provider" value="@provider.Name" title="Iniciar sesión con tu cuenta de @provider.DisplayName">
+                        <i class="bi bi-plus-circle me-1"></i>@provider.DisplayName
+                    </button>
                 }
             </p>
         </div>

@@ -1,8 +1,33 @@
 ﻿@page
 @model ConfirmEmailModel
 @{
-    ViewData["Title"] = "Confirm email";
+    ViewData["Title"] = "Correo confirmado";
+    Layout = "/Views/Shared/_LayoutAuth.cshtml";
 }
 
-<h1>@ViewData["Title"]</h1>
-<partial name="_StatusMessage" model="Model.StatusMessage" />
+@if (Model.Confirmed)
+{
+    <div class="w-100" style="max-width: 500px; text-align: center;">
+        <div class="app-card auth-status-card">
+            <div class="app-card-body p-5">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                <h2 class="fw-bold mt-3 mb-2">Correo confirmado</h2>
+                <p class="text-muted">Su correo ha sido confirmado exitosamente. Ya puede iniciar sesión.</p>
+                <a href="/Identity/Account/Login" class="btn btn-primary mt-3">Iniciar sesión</a>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="w-100" style="max-width: 500px; text-align: center;">
+        <div class="app-card auth-status-card">
+            <div class="app-card-body p-5">
+                <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
+                <h2 class="fw-bold mt-3 mb-2">Error de confirmación</h2>
+                <p class="text-muted">No se pudo confirmar el correo. El enlace puede ser inválido o haber expirado.</p>
+                <a asp-page="./ResendEmailConfirmation" class="btn btn-primary mt-3">Reenviar correo de confirmación</a>
+            </div>
+        </div>
+    </div>
+}

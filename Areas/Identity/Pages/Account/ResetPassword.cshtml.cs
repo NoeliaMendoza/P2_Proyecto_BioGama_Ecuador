@@ -11,16 +11,19 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using BioGamaEcuador.Services;
 
 namespace BioGamaEcuador.Areas.Identity.Pages.Account
 {
     public class ResetPasswordModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IEmailService _bioGamaEmail;
 
-        public ResetPasswordModel(UserManager<IdentityUser> userManager)
+        public ResetPasswordModel(UserManager<IdentityUser> userManager, IEmailService bioGamaEmail)
         {
             _userManager = userManager;
+            _bioGamaEmail = bioGamaEmail;
         }
 
         /// <summary>
@@ -104,6 +107,7 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account
             var result = await _userManager.ResetPasswordAsync(user, Input.Code, Input.Password);
             if (result.Succeeded)
             {
+                await _bioGamaEmail.SendPasswordChangedAsync(Input.Email);
                 return RedirectToPage("./ResetPasswordConfirmation");
             }
 

@@ -5,11 +5,9 @@
     ViewData["ActivePage"] = ManageNavPages.PersonalData;
 }
 
-<h3>@ViewData["Title"]</h3>
-
 <div class="alert alert-warning" role="alert">
     <p>
-        <strong>Eliminar estos datos eliminará permanentemente su cuenta y esto no se puede recuperar.</strong>
+        <strong><i class="bi bi-exclamation-triangle me-1"></i>Eliminar estos datos eliminará permanentemente su cuenta y esto no se puede recuperar.</strong>
     </p>
 </div>
 
@@ -24,7 +22,9 @@
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
         }
-        <button class="w-100 btn btn-lg btn-danger" type="submit">Eliminar datos y cerrar mi cuenta</button>
+        <button class="btn btn-danger" type="submit">
+            <i class="bi bi-trash me-1"></i>Eliminar datos y cerrar mi cuenta
+        </button>
     </form>
 </div>
 

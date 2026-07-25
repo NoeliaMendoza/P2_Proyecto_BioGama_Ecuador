@@ -2,9 +2,16 @@
 @model LockoutModel
 @{
     ViewData["Title"] = "Cuenta bloqueada";
+    Layout = "/Views/Shared/_LayoutAuth.cshtml";
 }
 
-<header>
-    <h1 class="text-danger">@ViewData["Title"]</h1>
-    <p class="text-danger">Esta cuenta ha sido bloqueada, intente nuevamente más tarde.</p>
-</header>
+<div class="w-100" style="max-width: 500px; text-align: center;">
+    <div class="app-card">
+        <div class="app-card-body p-5">
+            <i class="bi bi-lock-fill text-danger" style="font-size: 4rem;"></i>
+            <h2 class="fw-bold mt-3 mb-2">Cuenta bloqueada</h2>
+            <p class="text-muted">Esta cuenta ha sido bloqueada, intente nuevamente más tarde.</p>
+            <a asp-page="./Login" class="btn btn-primary mt-3">Volver a inicio de sesión</a>
+        </div>
+    </div>
+</div>

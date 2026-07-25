@@ -1,26 +1,34 @@
 ﻿@page
 @model LoginWithRecoveryCodeModel
 @{
-    ViewData["Title"] = "Recovery code verification";
+    ViewData["Title"] = "Código de recuperación";
+    Layout = "/Views/Shared/_LayoutAuth.cshtml";
 }
 
-<h1>@ViewData["Title"]</h1>
-<hr />
-<p>
-    You have requested to log in with a recovery code. This login will not be remembered until you provide
-    an authenticator app code at log in or disable 2FA and log in again.
-</p>
-<div class="row">
-    <div class="col-md-4">
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="RecoveryCode" />
-                <label asp-for="Input.RecoveryCode" class="form-label"></label>
-                <span asp-validation-for="Input.RecoveryCode" class="text-danger"></span>
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-        </form>
+<div class="w-100" style="max-width: 400px;">
+    <div class="mb-4 d-lg-none text-center">
+        <div class="stat-card-icon primary mx-auto mb-3"><i class="bi bi-flower1"></i></div>
+        <h2 class="fw-bold" style="color: var(--color-primary);">BioGama Ecuador</h2>
+    </div>
+    <div class="app-card">
+        <div class="app-card-body p-4">
+            <h2 class="fw-bold mb-1" style="font-size: var(--font-size-xl);">Código de recuperación</h2>
+            <p class="text-muted small mb-4">Ha solicitado iniciar sesión con un código de recuperación. Esta sesión no será recordada hasta que proporcione un código de autenticación al iniciar sesión o deshabilite la verificación en dos pasos.</p>
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors" role="alert"></div>
+                <div class="mb-3">
+                    <label asp-for="Input.RecoveryCode" class="form-label">Código de recuperación</label>
+                    <input asp-for="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="000000-000000" />
+                    <span asp-validation-for="Input.RecoveryCode" class="text-danger"></span>
+                </div>
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary btn-lg">Iniciar sesión</button>
+                </div>
+                <div class="text-center small">
+                    <a asp-page="./Login" class="text-muted">Volver a inicio de sesión</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

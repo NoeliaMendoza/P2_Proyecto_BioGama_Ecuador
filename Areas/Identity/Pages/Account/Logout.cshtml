@@ -1,21 +1,31 @@
 ﻿@page
 @model LogoutModel
 @{
-    ViewData["Title"] = "Log out";
+    ViewData["Title"] = "Cerrar sesión";
+    Layout = "/Views/Shared/_LayoutAuth.cshtml";
 }
 
-<header>
-    <h1>@ViewData["Title"]</h1>
-    @{
-        if (User.Identity?.IsAuthenticated ?? false)
-        {
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
-                <button type="submit" class="nav-link btn btn-link text-dark">Click here to Logout</button>
-            </form>
-        }
-        else
-        {
-            <p>You have successfully logged out of the application.</p>
-        }
-    }
-</header>
+<div class="w-100" style="max-width: 500px; text-align: center;">
+    <div class="app-card">
+        <div class="app-card-body p-5">
+            @{
+                if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <i class="bi bi-box-arrow-right text-primary" style="font-size: 4rem;"></i>
+                    <h2 class="fw-bold mt-3 mb-2">Cerrar sesión</h2>
+                    <p class="text-muted mb-4">¿Está seguro que desea cerrar sesión?</p>
+                    <form class="d-grid" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                        <button type="submit" class="btn btn-primary btn-lg">Cerrar sesión</button>
+                    </form>
+                }
+                else
+                {
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                    <h2 class="fw-bold mt-3 mb-2">Sesión cerrada</h2>
+                    <p class="text-muted">Ha cerrado sesión exitosamente.</p>
+                    <a asp-page="./Login" class="btn btn-primary mt-3">Volver a inicio de sesión</a>
+                }
+            }
+        </div>
+    </div>
+</div>

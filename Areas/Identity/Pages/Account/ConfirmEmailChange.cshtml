@@ -1,8 +1,17 @@
 ﻿@page
 @model ConfirmEmailChangeModel
 @{
-    ViewData["Title"] = "Confirm email change";
+    ViewData["Title"] = "Cambio de correo confirmado";
+    Layout = "/Views/Shared/_LayoutAuth.cshtml";
 }
 
-<h1>@ViewData["Title"]</h1>
-<partial name="_StatusMessage" model="Model.StatusMessage" />
+<div class="w-100" style="max-width: 500px; text-align: center;">
+    <div class="app-card">
+        <div class="app-card-body p-5">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+            <h2 class="fw-bold mt-3 mb-2">Cambio de correo confirmado</h2>
+            <p class="text-muted"><partial name="_StatusMessage" model="Model.StatusMessage" /></p>
+            <a asp-page="./Login" class="btn btn-primary mt-3">Volver a inicio de sesión</a>
+        </div>
+    </div>
+</div>
