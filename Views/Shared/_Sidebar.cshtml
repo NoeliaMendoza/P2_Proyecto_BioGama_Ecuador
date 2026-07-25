@@ -37,9 +37,17 @@
             <i class="bi bi-book"></i>
             <span class="sidebar-label">Catálogo público</span>
         </a>
-        <a class="sidebar-link @(IsActive("Donations") ? "active" : "")" asp-controller="Donations" asp-action="Index">
-            <i class="bi bi-heart"></i>
-            <span class="sidebar-label">Adopta especie</span>
+        <a class="sidebar-link @(IsActive("Courses") ? "active" : "")" asp-controller="Courses" asp-action="Index">
+            <i class="bi bi-mortarboard"></i>
+            <span class="sidebar-label">Cursos</span>
+        </a>
+        <a class="sidebar-link @(IsActive("Products") ? "active" : "")" asp-controller="Products" asp-action="Index">
+            <i class="bi bi-box-seam"></i>
+            <span class="sidebar-label">Productos</span>
+        </a>
+        <a class="sidebar-link @(IsActive("Orders", "MyOrders") ? "active" : "")" asp-controller="Orders" asp-action="MyOrders">
+            <i class="bi bi-receipt"></i>
+            <span class="sidebar-label">Mis Pedidos</span>
         </a>
         <a class="sidebar-link @(IsActive("Ia") ? "active" : "")" asp-controller="Ia" asp-action="Index">
             <i class="bi bi-cpu"></i>
@@ -48,6 +56,12 @@
 
         @if (isAuthenticated)
         {
+            <div class="sidebar-section-title">Tienda</div>
+            <a class="sidebar-link @(IsActive("Orders", "Cart") ? "active" : "")" asp-controller="Orders" asp-action="Cart">
+                <i class="bi bi-cart"></i>
+                <span class="sidebar-label">Mi Carrito</span>
+            </a>
+
             <div class="sidebar-section-title">Gestión</div>
             <a class="sidebar-link @(IsActive("Species") ? "active" : "")" asp-controller="Species" asp-action="Index">
                 <i class="bi bi-bug"></i>
@@ -79,6 +93,14 @@
                 <i class="bi bi-bar-chart-line"></i>
                 <span class="sidebar-label">Reportes</span>
             </a>
+            @if (User.IsInRole("Admin") || User.IsInRole("Administrador"))
+            {
+                <div class="sidebar-section-title">Administración</div>
+                <a class="sidebar-link @(IsActive("Admin") ? "active" : "")" asp-controller="Admin" asp-action="Index">
+                    <i class="bi bi-shield-check"></i>
+                    <span class="sidebar-label">Panel admin</span>
+                </a>
+            }
         }
     </nav>
 

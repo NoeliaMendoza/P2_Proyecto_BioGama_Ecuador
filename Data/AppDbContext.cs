@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using BioGamaEcuador.Models;
+using BioGamaEcuador.Models.Sales;
 
 namespace BioGamaEcuador.Data;
 
@@ -9,6 +10,7 @@ public class AppDbContext : IdentityDbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+    // Existing entities
     public DbSet<Family> Families { get; set; }
     public DbSet<Species> Species { get; set; }
     public DbSet<Researcher> Researchers { get; set; }
@@ -17,12 +19,23 @@ public class AppDbContext : IdentityDbContext
     public DbSet<Record> Records { get; set; }
     public DbSet<ConservationStatus> ConservationStatuses { get; set; }
     public DbSet<Publication> Publications { get; set; }
-    public DbSet<SpeciesSponsorship> SpeciesSponsorships { get; set; }
-    public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+
+    // Sales module entities
+    public DbSet<Course> Courses { get; set; }
+    public DbSet<Enrollment> Enrollments { get; set; }
+    public DbSet<PhysicalProduct> PhysicalProducts { get; set; }
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderDetail> OrderDetails { get; set; }
+    public DbSet<Payment> Payments { get; set; }
+    public DbSet<InventoryMovement> InventoryMovements { get; set; }
+    public DbSet<Sucursal> Sucursales { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Apply all configurations from assembly
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
         // Relación muchos a muchos entre Publication y Species,
         // materializada en la tabla intermedia PublicationSpecies.

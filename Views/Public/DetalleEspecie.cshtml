@@ -2,8 +2,7 @@
 
 @{
     ViewData["Title"] = Model.CommonName;
-    Layout = "_LayoutPublic";
-
+    
     var statusCode = Model.ConservationStatus?.Code ?? "";
     var statusBadge = statusCode switch
     {
@@ -133,8 +132,5 @@
                 </a>
             }
         }
-        <a asp-controller="Donations" asp-action="Adopt" asp-route-id="@Model.Id" class="btn btn-primary btn-sm ms-auto">
-            <i class="bi bi-heart me-1"></i>Apadrinar especie
-        </a>
     </div>
 </div>
