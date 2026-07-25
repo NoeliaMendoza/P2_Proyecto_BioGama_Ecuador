@@ -1385,4 +1385,9 @@ label.control-label {
   .species-grid {
     grid-template-columns: 1fr;
   }
+
+  .course-grid,
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
 }

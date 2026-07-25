@@ -5,6 +5,8 @@
 @import 'components.css';
 @import 'utilities.css';
 
+/* Card grid styles (course, product) now in components.css */
+
 /* Bootstrap overrides */
 :root {
   --bs-primary: #1b4332;
