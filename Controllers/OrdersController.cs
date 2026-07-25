@@ -14,14 +14,16 @@ public class OrdersController : Controller
     private readonly AppDbContext _context;
     private readonly IEmailService _email;
     private readonly PayPalService _payPal;
-    private readonly PayPhoneApiLinkService _payPhone;
+    private readonly IInventoryService _inventory;
+    private readonly IAuditService _audit;
 
-    public OrdersController(AppDbContext context, IEmailService email, PayPalService payPal, PayPhoneApiLinkService payPhone)
+    public OrdersController(AppDbContext context, IEmailService email, PayPalService payPal, IInventoryService inventory, IAuditService audit)
     {
         _context = context;
         _email = email;
         _payPal = payPal;
-        _payPhone = payPhone;
+        _inventory = inventory;
+        _audit = audit;
     }
 
     public IActionResult Index() => RedirectToAction(nameof(Cart));
@@ -104,11 +106,17 @@ public class OrdersController : Controller
 
         var available = await GetAvailableSeatsAsync(courseId);
         if (available < quantity)
-            return Json(new { success = false, error = "No hay suficientes cupos disponibles." });
+        {
+            TempData["Error"] = "No hay suficientes cupos disponibles.";
+            return RedirectToAction("Details", "Courses", new { id = courseId });
+        }
 
         var exists = await _context.Enrollments.AnyAsync(e => e.CourseId == courseId && e.UserId == userId && e.Status != "Cancelled");
         if (exists)
-            return Json(new { success = false, error = "Ya estás inscrito en este curso." });
+        {
+            TempData["Error"] = "Ya estas inscrito en este curso.";
+            return RedirectToAction("Details", "Courses", new { id = courseId });
+        }
 
         await using var tx = await _context.Database.BeginTransactionAsync();
         try
@@ -136,7 +144,8 @@ public class OrdersController : Controller
             if (affected == 0)
             {
                 await tx.RollbackAsync();
-                return Json(new { success = false, error = "No hay suficientes cupos disponibles." });
+                TempData["Error"] = "No hay suficientes cupos disponibles.";
+                return RedirectToAction("Details", "Courses", new { id = courseId });
             }
 
             var enrollment = new Enrollment
@@ -155,12 +164,15 @@ public class OrdersController : Controller
             await _context.SaveChangesAsync();
             await tx.CommitAsync();
 
-            return Json(new { success = true, orderId = cartId, confirmationCode = enrollment.ConfirmationCode });
+            await _audit.LogAsync("OrderCreated", "Order", cartId.ToString(), null, $"CourseId={courseId},Qty={quantity},Provider={paymentProvider}", userId, HttpContext.Connection.RemoteIpAddress?.ToString());
+            TempData["Success"] = "Cupo reservado. Ahora completa el pago.";
+            return RedirectToAction("Checkout", new { orderId = cartId });
         }
         catch (Exception ex)
         {
             await tx.RollbackAsync();
-            return Json(new { success = false, error = ex.InnerException?.Message ?? ex.Message });
+            TempData["Error"] = ex.InnerException?.Message ?? ex.Message;
+            return RedirectToAction("Details", "Courses", new { id = courseId });
         }
     }
 
@@ -222,6 +234,7 @@ public class OrdersController : Controller
             await _context.SaveChangesAsync();
             await tx.CommitAsync();
 
+            await _audit.LogAsync("OrderDetailAdded", "OrderDetail", existingDetailId?.ToString() ?? "new", null, $"ProductId={productId},Qty={quantity}", userId, HttpContext.Connection.RemoteIpAddress?.ToString());
             TempData["Success"] = "Producto agregado al carrito.";
             return RedirectToAction(nameof(Cart));
         }
@@ -406,31 +419,34 @@ public class OrdersController : Controller
 
         order.ShippingAddress = ShippingAddress ?? "";
 
-        var clientTxId = Guid.NewGuid().ToString("N");
-        var payment = new Payment
+        var payment = await _context.Payments.FirstOrDefaultAsync(p => p.OrderId == order.Id);
+        if (payment == null)
         {
-            OrderId = order.Id, Provider = paymentProvider, Amount = order.Total,
-            Currency = "USD", Status = "Pending", ExternalId = clientTxId, GatewayResponse = "{}"
-        };
-        _context.Payments.Add(payment);
-        await _context.SaveChangesAsync();
-
-        string redirectUrl;
-        if (paymentProvider == "PayPal")
-        {
-            var result = await _payPal.CreateOrderAsync(order.Total, $"Order:{order.Id}");
-            payment.ExternalId = result.OrderId;
-            payment.GatewayResponse = result.RawResponse;
-            redirectUrl = result.ApprovalUrl;
+            payment = new Payment
+            {
+                OrderId = order.Id, Provider = paymentProvider, Amount = order.Total,
+                Currency = "USD", Status = "Pending", GatewayResponse = "{}"
+            };
+            _context.Payments.Add(payment);
         }
         else
         {
-            var link = await _payPhone.CreatePaymentLinkAsync(order.Total, clientTxId, $"Order:{order.Id}");
-            payment.ExternalId = clientTxId;
-            redirectUrl = link;
+            payment.Provider = paymentProvider;
+            payment.Amount = order.Total;
         }
+
+        await _audit.LogAsync("PaymentInitiated", "Payment", payment.Id.ToString(), null, $"Provider={paymentProvider},Amount={order.Total}", userId, HttpContext.Connection.RemoteIpAddress?.ToString());
+
+        if (paymentProvider == "PayPal")
+        {
+            payment.ExternalId = "";
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(PayPalButton), new { orderId = order.Id });
+        }
+
+        payment.ExternalId = "";
         await _context.SaveChangesAsync();
-        return Redirect(redirectUrl);
+        return RedirectToAction("CreateLink", "Payment", new { orderId = order.Id });
     }
 
     public async Task<IActionResult> Cart()
@@ -455,21 +471,158 @@ public class OrdersController : Controller
         return View(orders);
     }
 
-    public async Task<IActionResult> Confirmation(Guid orderId)
+    public async Task<IActionResult> Confirmation(Guid id)
     {
         var userId = await GetUserIdAsync();
         var order = await _context.Orders
             .Include(o => o.Details).ThenInclude(d => d.Course)
             .Include(o => o.Payment)
-            .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+            .FirstOrDefaultAsync(o => o.Id == id && o.UserId == userId);
         if (order == null) return NotFound();
 
         if (order.Payment?.Status == "Approved")
         {
             var email = User.Identity!.Name ?? "";
-            await _email.SendConfirmationAsync(email, "Pedido confirmado - BioGama Ecuador",
-                $"Tu pedido #{order.Id} fue confirmado. Total: ${order.Total}");
+            var courseDetail = order.Details.FirstOrDefault(d => d.Course != null);
+            if (courseDetail?.Course != null)
+            {
+                var enrollment = await _context.Enrollments
+                    .FirstOrDefaultAsync(e => e.OrderId == order.Id && e.CourseId == courseDetail.CourseId);
+                var course = courseDetail.Course;
+                await _email.SendEnrollmentConfirmedAsync(email, new EnrollmentConfirmationInfo
+                {
+                    CourseName = course.Title,
+                    Modality = course.Modality,
+                    Venue = course.Venue,
+                    StartDate = course.StartDate,
+                    EndDate = course.EndDate,
+                    StartTime = course.StartTime.ToString(@"hh\:mm"),
+                    EndTime = course.EndTime.ToString(@"hh\:mm"),
+                    Instructor = course.Instructor,
+                    ConfirmationCode = enrollment?.ConfirmationCode ?? "",
+                    TotalPaid = order.Total,
+                    OrderId = order.Id
+                });
+            }
+            else
+            {
+                await _email.SendOrderConfirmedAsync(email, order.Id, order.Total);
+            }
         }
         return View(order);
     }
+
+    // ── PayPal JavaScript SDK ──────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> PayPalButton(Guid orderId)
+    {
+        var userId = await GetUserIdAsync();
+        var order = await _context.Orders
+            .Include(o => o.Details).ThenInclude(d => d.Course)
+            .Include(o => o.Details).ThenInclude(d => d.PhysicalProduct)
+            .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId && o.Status == "Pending");
+        if (order == null) return NotFound();
+        return View(order);
+    }
+
+    [HttpPost]
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> CreatePayPalOrder([FromBody] CreateOrderRequest req)
+    {
+        var userId = await GetUserIdAsync();
+        var order = await _context.Orders
+            .FirstOrDefaultAsync(o => o.Id == req.OrderId && o.UserId == userId && o.Status == "Pending");
+        if (order == null) return Json(new { success = false, message = "Orden no encontrada." });
+
+        var result = await _payPal.CreateOrderAsync(order.Total, $"Order:{order.Id}",
+            $"{Request.Scheme}://{Request.Host}/Orders/Confirmation/{order.Id}",
+            $"{Request.Scheme}://{Request.Host}/Orders/Cart");
+
+        var payment = await _context.Payments.FirstOrDefaultAsync(p => p.OrderId == order.Id);
+        if (payment == null)
+        {
+            payment = new Payment
+            {
+                OrderId = order.Id, Provider = "PayPal", Amount = order.Total,
+                Currency = "USD", Status = "Pending", ExternalId = result.OrderId,
+                GatewayResponse = result.RawResponse
+            };
+            _context.Payments.Add(payment);
+        }
+        else
+        {
+            payment.ExternalId = result.OrderId;
+            payment.GatewayResponse = result.RawResponse;
+        }
+        await _context.SaveChangesAsync();
+
+        return Json(new { success = true, orderId = result.OrderId });
+    }
+
+    [HttpPost]
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> CapturePayPalOrder([FromBody] CaptureOrderRequest req)
+    {
+        var userId = await GetUserIdAsync();
+        var payment = await _context.Payments
+            .Include(p => p.Order).ThenInclude(o => o.Details)
+            .FirstOrDefaultAsync(p => p.ExternalId == req.PayPalOrderId);
+        if (payment == null) return Json(new { success = false, message = "Pago no encontrado." });
+        if (payment.Order!.UserId != userId) return Json(new { success = false, message = "No autorizado." });
+        if (payment.Status == "Approved") return Json(new { success = true, redirect = Url.Action("Confirmation", new { id = payment.OrderId }) });
+
+        var capture = await _payPal.CaptureOrderAsync(req.PayPalOrderId);
+
+        if (capture.Status != "COMPLETED")
+            return Json(new { success = false, message = "PayPal no completo el pago." });
+
+        await using var tx = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            payment.Status = "Approved";
+            payment.ConfirmedAt = DateTime.UtcNow;
+            payment.GatewayResponse = capture.RawResponse;
+            payment.Order.Status = "Confirmed";
+
+            foreach (var detail in payment.Order.Details)
+            {
+                if (detail.CourseId.HasValue)
+                {
+                    var enrollment = await _context.Enrollments
+                        .FirstOrDefaultAsync(e => e.OrderId == payment.OrderId && e.CourseId == detail.CourseId);
+                    if (enrollment != null)
+                    {
+                        enrollment.Status = "Confirmed";
+                        var course = await _context.Courses.FindAsync(detail.CourseId);
+                        if (course != null)
+                        {
+                            course.ReservedSeats -= detail.Quantity;
+                            course.ConfirmedSeats += detail.Quantity;
+                        }
+                        await _inventory.LogConfirmationAsync(detail.CourseId.Value, detail.Quantity, $"Enrollment:{enrollment.Id}", "system");
+                    }
+                }
+                else if (detail.PhysicalProductId.HasValue)
+                {
+                    await _inventory.ConfirmAsync(detail.PhysicalProductId.Value, detail.Quantity, $"Order:{payment.OrderId}", "system");
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            await tx.CommitAsync();
+
+            await _audit.LogAsync("PaymentApproved", "Payment", payment.Id.ToString(), "Pending", "Approved", userId, HttpContext.Connection.RemoteIpAddress?.ToString());
+        }
+        catch
+        {
+            await tx.RollbackAsync();
+            return Json(new { success = false, message = "Error al confirmar el pago." });
+        }
+
+        return Json(new { success = true, redirect = Url.Action("Confirmation", new { id = payment.OrderId }) });
+    }
+
+    public record CreateOrderRequest(Guid OrderId);
+    public record CaptureOrderRequest(string PayPalOrderId);
 }

@@ -19,7 +19,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services
     .AddDefaultIdentity<IdentityUser>(options =>
     {
-        options.SignIn.RequireConfirmedAccount = false;
+        options.SignIn.RequireConfirmedAccount = true;
         options.Password.RequireDigit = true;
         options.Password.RequireUppercase = true;
         options.Password.RequiredLength = 6;
@@ -44,8 +44,17 @@ builder.Services.Configure<BioGamaEcuador.Settings.PayPalSettings>(
 
 builder.Services.AddHttpClient<BioGamaEcuador.Services.Payments.PayPhoneApiLinkService>();
 builder.Services.AddHttpClient<BioGamaEcuador.Services.Payments.PayPalService>();
-builder.Services.AddScoped<BioGamaEcuador.Services.IInventoryMovementService, BioGamaEcuador.Services.InventoryMovementService>();
+builder.Services.AddScoped<BioGamaEcuador.Services.IInventoryService, BioGamaEcuador.Services.InventoryMovementService>();
 builder.Services.AddScoped<BioGamaEcuador.Services.IEmailService, BioGamaEcuador.Services.EmailService>();
+builder.Services.AddScoped<BioGamaEcuador.Services.IAuditService, BioGamaEcuador.Services.AuditService>();
+builder.Services.AddScoped<BioGamaEcuador.Services.IPaymentGateway, BioGamaEcuador.Services.Payments.PayPalPaymentGateway>();
+builder.Services.AddScoped<BioGamaEcuador.Services.IPaymentGateway, BioGamaEcuador.Services.Payments.PayPhonePaymentGateway>();
+builder.Services.AddScoped<BioGamaEcuador.Services.IPaymentService, BioGamaEcuador.Services.PaymentService>();
+builder.Services.AddScoped<BioGamaEcuador.Services.IAccountService, BioGamaEcuador.Services.AccountService>();
+builder.Services.AddScoped<BioGamaEcuador.Services.IAIService, BioGamaEcuador.Services.AIService>();
+
+builder.Services.Configure<BioGamaEcuador.Settings.EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
 
 // Configuración y Servicio de IA Local Ollama
 builder.Services.Configure<BioGamaEcuador.Settings.OllamaSettings>(

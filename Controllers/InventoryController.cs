@@ -11,7 +11,7 @@ namespace BioGamaEcuador.Controllers;
 
 [Authorize(Roles = "Admin,Administrador")]
 [Route("Admin/Inventory")]
-public sealed class InventoryController(AppDbContext context, IInventoryMovementService inventory) : Controller
+public sealed class InventoryController(AppDbContext context, IInventoryService inventory, IEmailService email) : Controller
 {
     [HttpGet("")]
     public async Task<IActionResult> Index(string? type, Guid? productId, Guid? courseId, DateTime? from, DateTime? to)
@@ -35,12 +35,23 @@ public sealed class InventoryController(AppDbContext context, IInventoryMovement
     [HttpPost("Entry"), ValidateAntiForgeryToken]
     public Task<IActionResult> Entry(InventoryTransactionViewModel m) => Operate(m, (x, u) => inventory.EntryAsync(x.ProductId, x.Quantity, x.Reference, u, x.Notes), "Entrada registrada.");
     [HttpPost("Exit"), ValidateAntiForgeryToken]
-    public Task<IActionResult> Exit(InventoryTransactionViewModel m) => Operate(m, (x, u) => inventory.ExitAsync(x.ProductId, x.Quantity, x.Reference, u, x.Notes), "Salida registrada.");
+    public async Task<IActionResult> Exit(InventoryTransactionViewModel m)
+    {
+        if (!ModelState.IsValid) { TempData["Error"] = "Revisa los datos del movimiento."; return RedirectToAction(nameof(Index)); }
+        try
+        {
+            await inventory.ExitAsync(m.ProductId, m.Quantity, m.Reference, UserId(), m.Notes);
+            await CheckLowStockAsync(m.ProductId);
+            TempData["Success"] = "Salida registrada.";
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException) { TempData["Error"] = ex.Message; }
+        return RedirectToAction(nameof(Index));
+    }
     [HttpPost("Adjustment"), ValidateAntiForgeryToken]
     public async Task<IActionResult> Adjustment(InventoryAdjustmentViewModel m)
     {
         if (!ModelState.IsValid) { TempData["Error"] = "Revisa los datos del ajuste."; return RedirectToAction(nameof(Index)); }
-        try { await inventory.AdjustAsync(m.ProductId, m.NewStock, m.Reference, UserId(), m.Notes); TempData["Success"] = "Ajuste registrado."; }
+        try { await inventory.AdjustAsync(m.ProductId, m.NewStock, m.Reference, UserId(), m.Notes); await CheckLowStockAsync(m.ProductId); TempData["Success"] = "Ajuste registrado."; }
         catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException) { TempData["Error"] = ex.Message; }
         return RedirectToAction(nameof(Index));
     }
@@ -52,4 +63,20 @@ public sealed class InventoryController(AppDbContext context, IInventoryMovement
         return RedirectToAction(nameof(Index));
     }
     private string UserId() => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+
+    private async Task CheckLowStockAsync(Guid productId)
+    {
+        var product = await context.PhysicalProducts.FindAsync(productId);
+        if (product != null && product.Stock - product.ReservedStock <= product.MinStock)
+        {
+            var admins = await context.Users
+                .Where(u => context.UserRoles.Any(ur => ur.UserId == u.Id && context.Roles.Any(r => r.Id == ur.RoleId && r.Name == "Admin")))
+                .ToListAsync();
+            foreach (var admin in admins)
+            {
+                if (admin.Email != null)
+                    await email.SendLowStockAlertAsync(admin.Email, product.Name, product.Stock - product.ReservedStock);
+            }
+        }
+    }
 }
