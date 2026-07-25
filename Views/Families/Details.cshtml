@@ -1,33 +1,55 @@
 @model BioGamaEcuador.Models.Family
-@{ ViewData["Title"] = Model.Name; }
 
-<div class="mb-3">
-    <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-arrow-left me-1"></i>Volver al listado</a>
-</div>
-<div class="card shadow-sm">
-    <div class="card-header bg-warning text-dark">
-        <h5 class="mb-0"><i class="fa-solid fa-dna me-2"></i>@Model.Name</h5>
+@{
+    ViewData["Title"] = "Detalle de familia";
+}
+
+<div class="page-header d-flex flex-wrap align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">@Model.Name</h4>
+        <p class="text-muted mb-0">Detalles de la clasificacion biologica</p>
     </div>
-    <div class="card-body">
-        <div class="row g-3 mb-3">
+    <div class="page-header-actions">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+            <i class="bi bi-pencil me-1"></i>Editar
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver al listado
+        </a>
+    </div>
+</div>
+
+<div class="app-card">
+    <div class="app-card-body p-4">
+        <div class="row g-4">
             <div class="col-md-6">
-                <div class="card border-0 bg-light p-3 text-center h-100">
-                    <div style="font-size:2rem;"><i class="fa-solid fa-crown text-warning"></i></div>
-                    <div class="small text-muted mt-1">Reino</div>
-                    <div class="fw-bold fs-5">@Model.Kingdom</div>
+                <div class="detail-item">
+                    <span class="detail-label">Nombre</span>
+                    <span class="detail-value">@Model.Name</span>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card border-0 bg-light p-3 text-center h-100">
-                    <div style="font-size:2rem;"><i class="fa-solid fa-calendar-days text-secondary"></i></div>
-                    <div class="small text-muted mt-1">Registrado el</div>
-                    <div class="fw-bold">@Model.CreatedAt.ToString("dd/MM/yyyy")</div>
+                <div class="detail-item">
+                    <span class="detail-label">Reino</span>
+                    <span class="detail-value">@Model.Kingdom</span>
                 </div>
             </div>
-        </div>
-        <div class="mt-4 d-flex gap-2">
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen me-1"></i>Editar</a>
-            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash me-1"></i>Eliminar</a>
+            <div class="col-md-6">
+                <div class="detail-item">
+                    <span class="detail-label">Estado</span>
+                    <span class="detail-value">
+                        <span class="badge @(Model.IsActive ? "badge-soft-success" : "badge-soft-secondary")">
+                            @(Model.IsActive ? "Activo" : "Inactivo")
+                        </span>
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="detail-item">
+                    <span class="detail-label">Fecha de creacion</span>
+                    <span class="detail-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>

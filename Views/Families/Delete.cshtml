@@ -4,32 +4,29 @@
     ViewData["Title"] = "Eliminar familia";
 }
 
-<div class="container py-4">
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-action="Index">Familias</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Eliminar</li>
-        </ol>
-    </nav>
+<div class="page-header mb-4">
+    <h4 class="fw-bold mb-1">Eliminar familia</h4>
+    <p class="text-muted mb-0">Esta accion no se puede deshacer</p>
+</div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body text-center py-5">
-            <i class="fa-regular fa-circle-exclamation text-danger" style="font-size:3rem;"></i>
-            <h4 class="mt-3">¿Está seguro de que desea eliminar esta familia?</h4>
-            <p class="text-muted mb-4">Esta acción desactivará la familia. No se eliminará permanentemente.</p>
-
-            <dl class="row text-start mx-auto" style="max-width:500px;">
-                <dt class="col-sm-5 text-muted">Nombre</dt>
-                <dd class="col-sm-7">@Model.Name</dd>
-                <dt class="col-sm-5 text-muted">Reino</dt>
-                <dd class="col-sm-7">@Model.Kingdom</dd>
-            </dl>
-
-            <form asp-action="Delete" class="mt-4">
-                <input type="hidden" asp-for="Id" />
-                <button type="submit" class="btn btn-danger me-2"><i class="fa-regular fa-trash-can me-1"></i>Eliminar</button>
-                <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
-            </form>
+<div class="app-card border-danger">
+    <div class="app-card-body p-4 text-center">
+        <div class="mb-4">
+            <i class="bi bi-exclamation-triangle text-danger" style="font-size:3rem"></i>
         </div>
+        <h5 class="mb-3">Esta seguro de eliminar esta familia?</h5>
+        <p class="text-muted mb-4">Se eliminara permanentemente el registro <strong>@Model.Name</strong> del reino <strong>@Model.Kingdom</strong>.</p>
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div class="d-flex gap-2 justify-content-center">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Cancelar
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i>Eliminar definitivamente
+                </button>
+            </div>
+        </form>
     </div>
 </div>

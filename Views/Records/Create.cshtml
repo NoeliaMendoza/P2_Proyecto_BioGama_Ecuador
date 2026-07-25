@@ -6,59 +6,97 @@
     var currentResearcherName = ViewData["CurrentResearcherName"] as string ?? string.Empty;
 }
 
-<h2>Nuevo Registro</h2>
-<hr />
-<div class="row">
-    <div class="col-md-6">
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Nuevo Registro</h1>
+        <p class="page-header-subtitle">Ingrese los datos del avistamiento</p>
+    </div>
+    <div class="page-header-actions">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="app-card form-card">
+    <div class="app-card-body">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group mb-3">
-                <label asp-for="SpeciesId" class="control-label">Especie</label>
-                <select asp-for="SpeciesId" class="form-control" asp-items="ViewBag.SpeciesId">
-                    <option value="">-- Seleccione una especie --</option>
-                </select>
-                <span asp-validation-for="SpeciesId" class="text-danger"></span>
+
+            <div class="form-section">
+                <h6 class="form-section-title"><i class="bi bi-info-circle me-2"></i>Información del avistamiento</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select asp-for="SpeciesId" class="form-control" asp-items="ViewBag.SpeciesId">
+                                <option value=""></option>
+                            </select>
+                            <label asp-for="SpeciesId">Especie</label>
+                            <span asp-validation-for="SpeciesId" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select asp-for="LocationId" class="form-control" asp-items="ViewBag.LocationId">
+                                <option value=""></option>
+                            </select>
+                            <label asp-for="LocationId">Ubicación</label>
+                            <span asp-validation-for="LocationId" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        @if (isCurrentInvestigator)
+                        {
+                            <input type="hidden" asp-for="ResearcherId" />
+                            <div class="form-floating">
+                                <input class="form-control" value="@currentResearcherName" readonly />
+                                <label>Investigador</label>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-floating">
+                                <select asp-for="ResearcherId" class="form-control" asp-items="ViewBag.ResearcherId">
+                                    <option value=""></option>
+                                </select>
+                                <label asp-for="ResearcherId">Investigador</label>
+                            </div>
+                        }
+                        <span asp-validation-for="ResearcherId" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <input asp-for="DiscoveryDate" type="date" class="form-control" />
+                            <label asp-for="DiscoveryDate">Fecha del hallazgo</label>
+                            <span asp-validation-for="DiscoveryDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <input asp-for="ObservedQuantity" type="number" class="form-control" placeholder="Cantidad" />
+                            <label asp-for="ObservedQuantity">Cantidad observada</label>
+                            <span asp-validation-for="ObservedQuantity" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <textarea asp-for="Observations" class="form-control" placeholder="Observaciones" style="height:100px;"></textarea>
+                            <label asp-for="Observations">Observaciones</label>
+                            <span asp-validation-for="Observations" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" checked="@Model.IsActive" />
+                            <label class="form-check-label" asp-for="IsActive">Registro activo</label>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group mb-3">
-                <label asp-for="LocationId" class="control-label">Ubicación</label>
-                <select asp-for="LocationId" class="form-control" asp-items="ViewBag.LocationId">
-                    <option value="">-- Seleccione una ubicación --</option>
-                </select>
-                <span asp-validation-for="LocationId" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="ResearcherId" class="control-label">Investigador</label>
-                @if (isCurrentInvestigator)
-                {
-                    <input type="hidden" asp-for="ResearcherId" />
-                    <input class="form-control" value="@currentResearcherName" readonly />
-                }
-                else
-                {
-                    <select asp-for="ResearcherId" class="form-control" asp-items="ViewBag.ResearcherId">
-                        <option value="">-- Seleccione un investigador --</option>
-                    </select>
-                }
-                <span asp-validation-for="ResearcherId" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="DiscoveryDate" class="control-label">Fecha del hallazgo</label>
-                <input asp-for="DiscoveryDate" type="date" class="form-control" />
-                <span asp-validation-for="DiscoveryDate" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="ObservedQuantity" class="control-label">Cantidad observada</label>
-                <input asp-for="ObservedQuantity" class="form-control" />
-                <span asp-validation-for="ObservedQuantity" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="Observations" class="control-label">Observaciones</label>
-                <textarea asp-for="Observations" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Observations" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Guardar" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i> Cancelar</a>
             </div>
         </form>
     </div>

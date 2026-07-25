@@ -4,46 +4,58 @@
     ViewData["Title"] = "Nueva Reserva Natural";
 }
 
-<h2>Nueva Reserva Natural</h2>
-<hr />
-<div class="row">
-    <div class="col-md-6">
+<div class="app-card form-card">
+    <div class="app-card-header">
+        <h5><i class="bi bi-plus-circle me-2"></i>Nueva reserva natural</h5>
+    </div>
+    <div class="app-card-body">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group mb-3">
-                <label asp-for="Name" class="control-label">Nombre</label>
-                <input asp-for="Name" class="form-control" />
+
+            <div class="form-floating mb-3">
+                <input asp-for="Name" class="form-control" placeholder="Nombre de la reserva" />
+                <label asp-for="Name"><i class="bi bi-tree me-1"></i>Nombre de la reserva</label>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group mb-3">
-                <label asp-for="Region" class="control-label">Región natural</label>
-                <select asp-for="Region" class="form-control">
+
+            <div class="form-floating mb-3">
+                <select asp-for="Region" class="form-select">
                     <option value="">-- Seleccione una región --</option>
                     <option value="Costa">Costa</option>
                     <option value="Sierra">Sierra</option>
                     <option value="Amazonía">Amazonía</option>
                     <option value="Galápagos">Galápagos</option>
                 </select>
+                <label asp-for="Region"><i class="bi bi-geo-alt me-1"></i>Región natural</label>
                 <span asp-validation-for="Region" class="text-danger"></span>
             </div>
-            <div class="form-group mb-3">
-                <label asp-for="SurfaceHectares" class="control-label">Superficie (ha)</label>
-                <input asp-for="SurfaceHectares" class="form-control" type="number" step="0.01" />
+
+            <div class="form-floating mb-3">
+                <input asp-for="SurfaceHectares" class="form-control" placeholder="Superficie (ha)" type="number" step="0.01" />
+                <label asp-for="SurfaceHectares"><i class="bi bi-arrows-angle-expand me-1"></i>Superficie (ha)</label>
                 <span asp-validation-for="SurfaceHectares" class="text-danger"></span>
             </div>
-            <div class="form-group mb-3">
-                <label asp-for="YearCreated" class="control-label">Año de creación</label>
-                <input asp-for="YearCreated" class="form-control" type="number" min="1900" max="2100" />
+
+            <div class="form-floating mb-3">
+                <input asp-for="YearCreated" class="form-control" placeholder="Año de creación" type="number" min="1900" max="2100" />
+                <label asp-for="YearCreated"><i class="bi bi-calendar me-1"></i>Año de creación</label>
                 <span asp-validation-for="YearCreated" class="text-danger"></span>
             </div>
-            <div class="form-group mb-3">
-                <label asp-for="Description" class="control-label">Descripción</label>
-                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+
+            <div class="form-floating mb-3">
+                <textarea asp-for="Description" class="form-control" placeholder="Descripción" style="min-height:100px"></textarea>
+                <label asp-for="Description"><i class="bi bi-card-text me-1"></i>Descripción</label>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Guardar" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
+
+            <div class="form-check mb-4">
+                <input asp-for="IsActive" class="form-check-input" />
+                <label asp-for="IsActive" class="form-check-label">Activa</label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Guardar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i>Cancelar</a>
             </div>
         </form>
     </div>

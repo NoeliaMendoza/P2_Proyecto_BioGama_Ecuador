@@ -1,33 +1,53 @@
 @model BioGamaEcuador.Models.Family
 
 @{
-    ViewData["Title"] = "Nueva Familia";
+    ViewData["Title"] = "Nueva familia";
 }
 
-<h2>Nueva Familia</h2>
-<hr />
-<div class="row">
-    <div class="col-md-6">
+<div class="page-header mb-4">
+    <h4 class="fw-bold mb-1">Nueva familia</h4>
+    <p class="text-muted mb-0">Registre una nueva clasificacion biologica</p>
+</div>
+
+<div class="app-card">
+    <div class="app-card-body p-4">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group mb-3">
-                <label asp-for="Name" class="control-label">Nombre de la familia</label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <input asp-for="Name" class="form-control" placeholder="Nombre de la familia" />
+                        <label asp-for="Name"><i class="bi bi-tag me-1"></i>Nombre</label>
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <select asp-for="Kingdom" class="form-select" id="Kingdom">
+                            <option value="">-- Seleccione un reino --</option>
+                            <option value="Animal">Animal</option>
+                            <option value="Vegetal">Vegetal</option>
+                            <option value="Fungi">Fungi</option>
+                        </select>
+                        <label asp-for="Kingdom"><i class="bi bi-globe me-1"></i>Reino</label>
+                        <span asp-validation-for="Kingdom" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
-            <div class="form-group mb-3">
-                <label asp-for="Kingdom" class="control-label">Reino</label>
-                <select asp-for="Kingdom" class="form-control">
-                    <option value="">-- Seleccione un reino --</option>
-                    <option value="Animal">Animal</option>
-                    <option value="Vegetal">Vegetal</option>
-                    <option value="Fungi">Fungi</option>
-                </select>
-                <span asp-validation-for="Kingdom" class="text-danger"></span>
+
+            <div class="form-check mb-4">
+                <input asp-for="IsActive" class="form-check-input" checked="@Model.IsActive" />
+                <label asp-for="IsActive" class="form-check-label">Activo</label>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Guardar" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-1"></i>Guardar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Cancelar
+                </a>
             </div>
         </form>
     </div>

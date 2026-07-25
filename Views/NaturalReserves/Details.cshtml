@@ -2,45 +2,66 @@
 @{ ViewData["Title"] = Model.Name; }
 
 <div class="mb-3">
-    <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-arrow-left me-1"></i>Volver al listado</a>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Volver al listado</a>
 </div>
-<div class="card shadow-sm">
-    <div class="card-header bg-success text-white">
-        <h5 class="mb-0"><i class="fa-solid fa-tree me-2"></i>@Model.Name</h5>
-    </div>
-    <div class="card-body">
-        <div class="row g-3 mb-3">
+<div class="app-card detail-card">
+    <div class="app-card-body">
+        <div class="row g-4 mb-4">
             <div class="col-md-4">
-                <div class="card border-0 bg-light p-3 text-center h-100">
-                    <div style="font-size:2rem;"><i class="fa-solid fa-map text-warning"></i></div>
-                    <div class="small text-muted mt-1">Región</div>
-                    <div class="fw-bold">@Model.Region</div>
+                <div class="stat-card text-center">
+                    <div class="stat-card-icon primary mx-auto">
+                        <i class="bi bi-geo-alt"></i>
+                    </div>
+                    <div class="stat-card-label">Región</div>
+                    <div class="stat-card-value fs-5">@Model.Region</div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 bg-light p-3 text-center h-100">
-                    <div style="font-size:2rem;"><i class="fa-solid fa-ruler-combined text-info"></i></div>
-                    <div class="small text-muted mt-1">Superficie</div>
-                    <div class="fw-bold">@Model.SurfaceHectares.ToString("N0") ha</div>
+                <div class="stat-card text-center">
+                    <div class="stat-card-icon info mx-auto">
+                        <i class="bi bi-arrows-angle-expand"></i>
+                    </div>
+                    <div class="stat-card-label">Superficie</div>
+                    <div class="stat-card-value fs-5">@Model.SurfaceHectares.ToString("N2") ha</div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 bg-light p-3 text-center h-100">
-                    <div style="font-size:2rem;"><i class="fa-solid fa-calendar-check text-success"></i></div>
-                    <div class="small text-muted mt-1">Año de creación</div>
-                    <div class="fw-bold">@Model.YearCreated</div>
+                <div class="stat-card text-center">
+                    <div class="stat-card-icon secondary mx-auto">
+                        <i class="bi bi-calendar"></i>
+                    </div>
+                    <div class="stat-card-label">Año de creación</div>
+                    <div class="stat-card-value fs-5">@Model.YearCreated</div>
                 </div>
             </div>
         </div>
+
         <dl class="row mb-0">
-            <dt class="col-sm-4"><i class="fa-solid fa-align-left me-1 text-muted"></i>Descripción</dt>
-            <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.Description) ? "—" : Model.Description)</dd>
-            <dt class="col-sm-4"><i class="fa-solid fa-calendar-days me-1 text-muted"></i>Registrado el</dt>
-            <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy")</dd>
+            <dt class="col-sm-3"><i class="bi bi-card-text me-1 text-muted"></i>Descripción</dt>
+            <dd class="col-sm-9">@(string.IsNullOrEmpty(Model.Description) ? "—" : Model.Description)</dd>
+            <dt class="col-sm-3"><i class="bi bi-toggle-on me-1 text-muted"></i>Estado</dt>
+            <dd class="col-sm-9">
+                @if (Model.IsActive)
+                {
+                    <span class="badge badge-soft-success">Activa</span>
+                }
+                else
+                {
+                    <span class="badge badge-soft-danger">Inactiva</span>
+                }
+            </dd>
+            <dt class="col-sm-3"><i class="bi bi-clock me-1 text-muted"></i>Registrado el</dt>
+            <dd class="col-sm-9">@Model.CreatedAt.ToString("dd/MM/yyyy")</dd>
+            @if (Model.UpdatedAt.HasValue)
+            {
+                <dt class="col-sm-3"><i class="bi bi-arrow-clockwise me-1 text-muted"></i>Actualizado el</dt>
+                <dd class="col-sm-9">@Model.UpdatedAt.Value.ToString("dd/MM/yyyy")</dd>
+            }
         </dl>
-        <div class="mt-4 d-flex gap-2">
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen me-1"></i>Editar</a>
-            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash me-1"></i>Eliminar</a>
+
+        <div class="form-actions mt-4">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil me-1"></i>Editar</a>
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger"><i class="bi bi-trash me-1"></i>Eliminar</a>
         </div>
     </div>
 </div>

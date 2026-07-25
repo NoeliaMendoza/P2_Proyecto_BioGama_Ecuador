@@ -3,71 +3,110 @@
     ViewData["Title"] = "Registro #" + Model.Id;
 }
 
-<div class="mb-3">
-    <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-arrow-left me-1"></i>Volver al
-        listado</a>
+@using System.Security.Claims
+@{
+    var currentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? User.Identity?.Name;
+    bool puedeEditar = User.IsInRole("Administrador") || (User.IsInRole("Investigador") &&
+        string.Equals(Model.Researcher?.Email, currentEmail, StringComparison.OrdinalIgnoreCase));
+    bool puedeEliminar = User.IsInRole("Administrador");
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Registro #@Model.Id</h1>
+        <p class="page-header-subtitle">Detalle del avistamiento</p>
     </div>
-    <div class="card shadow-sm">
-        <div class="card-header bg-success text-white">
-            <h5 class="mb-0"><i class="fa-solid fa-clipboard-list me-2"></i>Registro de observación #@Model.Id</h5>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <div class="card border-0 bg-light p-3 text-center h-100">
-                        <div style="font-size:2rem;"><i class="fa-solid fa-paw text-success"></i></div>
-                        <div class="small text-muted mt-1">Especie</div>
-                        <div class="fw-bold">@(Model.Species?.CommonName ?? "—")</div>
-                        <div class="fst-italic text-muted small">@Model.Species?.ScientificName</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 bg-light p-3 text-center h-100">
-                        <div style="font-size:2rem;"><i class="fa-solid fa-location-dot text-danger"></i></div>
-                        <div class="small text-muted mt-1">Ubicación</div>
-                        <div class="fw-bold">@(Model.Location?.PlaceName ?? "—")</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 bg-light p-3 text-center h-100">
-                        <div style="font-size:2rem;"><i class="fa-solid fa-user-graduate text-primary"></i></div>
-                        <div class="small text-muted mt-1">Investigador</div>
-                        <div class="fw-bold">@(Model.Researcher?.Name ?? "—")</div>
-                    </div>
-                </div>
-            </div>
-            <hr />
-            <dl class="row mb-0">
-                <dt class="col-sm-4"><i class="fa-solid fa-calendar-day me-1 text-muted"></i>Fecha del hallazgo</dt>
-                <dd class="col-sm-8">@Model.DiscoveryDate.ToString("dd/MM/yyyy")</dd>
+    <div class="page-header-actions">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al listado
+        </a>
+    </div>
+</div>
 
-                <dt class="col-sm-4"><i class="fa-solid fa-hashtag me-1 text-muted"></i>Cantidad observada</dt>
-                <dd class="col-sm-8"><span class="badge bg-success fs-6">@Model.ObservedQuantity individuos</span></dd>
-
-                <dt class="col-sm-4"><i class="fa-solid fa-note-sticky me-1 text-muted"></i>Observaciones</dt>
-                <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.Observations) ? "—" : Model.Observations)</dd>
-
-                <dt class="col-sm-4"><i class="fa-solid fa-clock me-1 text-muted"></i>Registrado el</dt>
-                <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
-            </dl>
-            @using System.Security.Claims
-        @{
-                var currentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? User.Identity?.Name;
-                bool puedeEditar = User.IsInRole("Administrador") || (User.IsInRole("Investigador") &&
-            string.Equals(Model.Researcher?.Email, currentEmail, StringComparison.OrdinalIgnoreCase));
-                bool puedeEliminar = User.IsInRole("Administrador");
-            }
-            <div class="mt-4 d-flex gap-2">
-                @if (puedeEditar)
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="app-card">
+            <div class="app-card-header">
+                <h5><i class="bi bi-clipboard-data me-2"></i>Información del registro</h5>
+                @if (Model.IsActive)
                 {
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm"><i
-                        class="fa-solid fa-pen me-1"></i>Editar</a>
+                    <span class="badge badge-soft-success">Activo</span>
+                }
+                else
+                {
+                    <span class="badge badge-soft-secondary">Inactivo</span>
+                }
+            </div>
+            <div class="app-card-body">
+                <dl class="row mb-0 detail-card">
+                    <dt class="col-sm-4"><i class="bi bi-tree text-success me-1"></i> Especie</dt>
+                    <dd class="col-sm-8">@(Model.Species?.CommonName ?? "—") <span class="text-muted fst-italic">@Model.Species?.ScientificName</span></dd>
+
+                    <dt class="col-sm-4"><i class="bi bi-geo-alt text-danger me-1"></i> Ubicación</dt>
+                    <dd class="col-sm-8">@(Model.Location?.PlaceName ?? "—")</dd>
+
+                    <dt class="col-sm-4"><i class="bi bi-person-badge text-primary me-1"></i> Investigador</dt>
+                    <dd class="col-sm-8">@(Model.Researcher?.Name ?? "—")</dd>
+
+                    <dt class="col-sm-4"><i class="bi bi-calendar-event text-muted me-1"></i> Fecha del hallazgo</dt>
+                    <dd class="col-sm-8">@Model.DiscoveryDate.ToString("dd/MM/yyyy")</dd>
+
+                    <dt class="col-sm-4"><i class="bi bi-hash text-muted me-1"></i> Cantidad observada</dt>
+                    <dd class="col-sm-8"><span class="badge badge-soft-success fs-6">@(Model.ObservedQuantity > 0 ? Model.ObservedQuantity + " individuos" : "—")</span></dd>
+
+                    <dt class="col-sm-4"><i class="bi bi-chat-text text-muted me-1"></i> Observaciones</dt>
+                    <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.Observations) ? "—" : Model.Observations)</dd>
+
+                    <dt class="col-sm-4"><i class="bi bi-clock text-muted me-1"></i> Creado el</dt>
+                    <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                    @if (Model.UpdatedAt.HasValue)
+                    {
+                        <dt class="col-sm-4"><i class="bi bi-arrow-repeat text-muted me-1"></i> Actualizado el</dt>
+                        <dd class="col-sm-8">@Model.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                    }
+                </dl>
+            </div>
+            <div class="app-card-footer">
+                <div class="d-flex gap-2">
+                    @if (puedeEditar)
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
                     }
                     @if (puedeEliminar)
                     {
-                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-sm"><i
-                            class="fa-solid fa-trash me-1"></i>Eliminar</a>
-                        }
-                    </div>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </a>
+                    }
                 </div>
             </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="stat-card text-center">
+            <div class="stat-card-icon primary mx-auto">
+                <i class="bi bi-tree"></i>
+            </div>
+            <div class="stat-card-label">Especie</div>
+            <div class="stat-card-value" style="font-size:var(--font-size-base);">@(Model.Species?.CommonName ?? "—")</div>
+            <div class="stat-card-trend">@Model.Species?.ScientificName</div>
+        </div>
+        <div class="stat-card text-center mt-3">
+            <div class="stat-card-icon secondary mx-auto">
+                <i class="bi bi-geo-alt"></i>
+            </div>
+            <div class="stat-card-label">Ubicación</div>
+            <div class="stat-card-value" style="font-size:var(--font-size-base);">@(Model.Location?.PlaceName ?? "—")</div>
+        </div>
+        <div class="stat-card text-center mt-3">
+            <div class="stat-card-icon info mx-auto">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <div class="stat-card-label">Investigador</div>
+            <div class="stat-card-value" style="font-size:var(--font-size-base);">@(Model.Researcher?.Name ?? "—")</div>
+        </div>
+    </div>
+</div>

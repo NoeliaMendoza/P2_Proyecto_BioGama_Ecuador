@@ -4,36 +4,52 @@
     ViewData["Title"] = "Eliminar ubicación";
 }
 
-<div class="container py-4">
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-action="Index">Ubicaciones</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Eliminar</li>
-        </ol>
-    </nav>
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Volver al listado</a>
+</div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body text-center py-5">
-            <i class="fa-regular fa-circle-exclamation text-danger" style="font-size:3rem;"></i>
-            <h4 class="mt-3">¿Está seguro de que desea eliminar esta ubicación?</h4>
-            <p class="text-muted mb-4">Esta acción desactivará la ubicación. No se eliminará permanentemente.</p>
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-danger">
+            <div class="card-body text-center py-5">
+                <div class="text-danger mb-3">
+                    <i class="bi bi-exclamation-triangle" style="font-size:4rem;"></i>
+                </div>
+                <h4 class="fw-bold mb-2">¿Está seguro de que desea eliminar esta ubicación?</h4>
+                <p class="text-muted mb-4">Esta acción desactivará la ubicación. No se eliminará permanentemente.</p>
 
-            <dl class="row text-start mx-auto" style="max-width:500px;">
-                <dt class="col-sm-5 text-muted">Nombre del lugar</dt>
-                <dd class="col-sm-7">@Model.PlaceName</dd>
-                <dt class="col-sm-5 text-muted">Altitud</dt>
-                <dd class="col-sm-7">@Model.Altitude m</dd>
-                <dt class="col-sm-5 text-muted">Coordenadas</dt>
-                <dd class="col-sm-7">@Model.Latitude°, @Model.Longitude°</dd>
-                <dt class="col-sm-5 text-muted">Reserva natural</dt>
-                <dd class="col-sm-7">@Model.NaturalReserve?.Name</dd>
-            </dl>
+                <div class="card bg-light border-0 text-start mx-auto mb-4" style="max-width:450px;">
+                    <div class="card-body py-3">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-5 text-muted small">Nombre del lugar</dt>
+                            <dd class="col-sm-7">@Model.PlaceName</dd>
+                            <dt class="col-sm-5 text-muted small">Altitud</dt>
+                            <dd class="col-sm-7">@(Model.Altitude > 0 ? $"{Model.Altitude} m" : "—")</dd>
+                            <dt class="col-sm-5 text-muted small">Coordenadas</dt>
+                            <dd class="col-sm-7">@(Model.Latitude != 0 ? $"{Model.Latitude}°" : "—"), @(Model.Longitude != 0 ? $"{Model.Longitude}°" : "—")</dd>
+                            <dt class="col-sm-5 text-muted small">Reserva natural</dt>
+                            <dd class="col-sm-7">@(Model.NaturalReserve?.Name ?? "—")</dd>
+                            <dt class="col-sm-5 text-muted small">Estado</dt>
+                            <dd class="col-sm-7">
+                                @if (Model.IsActive)
+                                {
+                                    <span class="badge bg-success">Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inactivo</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
 
-            <form asp-action="Delete" class="mt-4">
-                <input type="hidden" asp-for="Id" />
-                <button type="submit" class="btn btn-danger me-2"><i class="fa-regular fa-trash-can me-1"></i>Eliminar</button>
-                <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
-            </form>
+                <form asp-action="Delete" class="d-inline">
+                    <input type="hidden" asp-for="Id" />
+                    <button type="submit" class="btn btn-danger me-2"><i class="bi bi-trash me-1"></i>Eliminar</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i>Cancelar</a>
+                </form>
+            </div>
         </div>
     </div>
 </div>
