@@ -33,7 +33,7 @@ namespace BioGamaEcuador.Services.Payments
             _settings = options.Value;
         }
 
-        public async Task<PayPalOrderResult> CreateOrderAsync(decimal total, string reference)
+        public async Task<PayPalOrderResult> CreateOrderAsync(decimal total, string reference, string? returnUrl = null, string? cancelUrl = null)
         {
             try
             {
@@ -60,8 +60,8 @@ namespace BioGamaEcuador.Services.Payments
                         brand_name = "BioGama Ecuador Conservation",
                         landing_page = "LOGIN",
                         user_action = "PAY_NOW",
-                        return_url = _settings.ReturnUrl,
-                        cancel_url = _settings.CancelUrl
+                        return_url = returnUrl ?? _settings.ReturnUrl,
+                        cancel_url = cancelUrl ?? _settings.CancelUrl
                     }
                 };
 
@@ -80,7 +80,7 @@ namespace BioGamaEcuador.Services.Payments
                 using var document = JsonDocument.Parse(content);
                 var root = document.RootElement;
                 var orderId = root.GetProperty("id").GetString() ?? string.Empty;
-                
+
                 string approvalUrl = string.Empty;
                 if (root.TryGetProperty("links", out var linksElement))
                 {
@@ -203,7 +203,7 @@ namespace BioGamaEcuador.Services.Payments
             }
 
             using var document = JsonDocument.Parse(content);
-            return document.RootElement.GetProperty("access_token").GetString() 
+            return document.RootElement.GetProperty("access_token").GetString()
                 ?? throw new InvalidOperationException("PayPal no devolvió access_token.");
         }
     }

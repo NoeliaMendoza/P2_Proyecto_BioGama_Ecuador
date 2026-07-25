@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BioGamaEcuador.Services;
 
-public interface IInventoryMovementService
+public interface IInventoryService
 {
     // Physical product operations
     Task ReserveAsync(Guid productId, int quantity, string reference, string userId, string? notes = null);
@@ -21,7 +21,7 @@ public interface IInventoryMovementService
     Task LogReleaseAsync(Guid courseId, int quantity, string reference, string userId, string? notes = null);
 }
 
-public sealed class InventoryMovementService(AppDbContext context) : IInventoryMovementService
+public sealed class InventoryMovementService(AppDbContext context) : IInventoryService
 {
     // ── Physical product operations ──────────────────────────────────
     public Task ReserveAsync(Guid id, int qty, string reference, string userId, string? notes = null) => ChangeAsync(id, qty, "Reserva", reference, userId, notes, p => { if (p.Stock - p.ReservedStock < qty) throw new InvalidOperationException("Stock disponible insuficiente."); p.ReservedStock += qty; });
