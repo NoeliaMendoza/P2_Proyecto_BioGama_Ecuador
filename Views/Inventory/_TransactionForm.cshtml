@@ -1,0 +1,20 @@
+@model BioGamaEcuador.Models.Admin.InventoryTransactionViewModel
+@Html.AntiForgeryToken()
+<div class="mb-2">
+    <label asp-for="ProductId" class="form-label">Producto</label>
+    <select asp-for="ProductId" asp-items="ViewBag.Products" class="form-select" required>
+        <option value="">Seleccione un producto</option>
+    </select>
+</div>
+<div class="mb-2">
+    <label asp-for="Quantity" class="form-label">Cantidad</label>
+    <input asp-for="Quantity" type="number" min="1" class="form-control" required/>
+</div>
+<div class="mb-2">
+    <label asp-for="Reference" class="form-label">Referencia</label>
+    <input asp-for="Reference" class="form-control" required/>
+</div>
+<div class="mb-2">
+    <label asp-for="Notes" class="form-label">Notas</label>
+    <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+</div>
