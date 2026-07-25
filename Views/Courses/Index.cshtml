@@ -1,0 +1,404 @@
+@model IEnumerable<BioGamaEcuador.Models.Sales.Course>
+
+@{
+    ViewData["Title"] = "Catálogo de Cursos y Talleres";
+    }
+
+<div class="public-hero">
+    <div class="public-hero-inner">
+        <span class="public-hero-eyebrow">
+            <i class="bi bi-mortarboard"></i> Educación y Capacitación
+        </span>
+        <h1 class="public-hero-title">Cursos y Talleres</h1>
+        <p class="public-hero-desc">
+            Aprende de expertos en biodiversidad. Cursos presenciales, virtuales e híbridos
+            con cupos limitados. Reserva tu lugar con anticipación.
+        </p>
+        <div class="public-hero-meta">
+            <span class="badge badge-soft-primary">
+                <i class="bi bi-calendar-event me-1"></i>@ViewBag.ProximosCursos cursos próximos
+            </span>
+            <span class="badge badge-soft-success">
+                <i class="bi bi-people me-1"></i>@ViewBag.TotalCupos cupos disponibles
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="public-content">
+    <div class="app-card filter-card mb-4">
+        <div class="app-card-body">
+            <form method="get" asp-controller="Courses" asp-action="Index">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Buscar</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" name="busqueda" class="form-control border-start-0 ps-0"
+                                   placeholder="Título, instructor, temática…" value="@ViewBag.Busqueda" />
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label">Modalidad</label>
+                        <select name="modalidad" class="form-select">
+                            <option value="">Todas</option>
+                            <option value="Presencial" selected="@(ViewBag.ModalidadFiltro == "Presencial")">Presencial</option>
+                            <option value="Virtual" selected="@(ViewBag.ModalidadFiltro == "Virtual")">Virtual</option>
+                            <option value="Hibrido" selected="@(ViewBag.ModalidadFiltro == "Hibrido")">Híbrido</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <label class="form-label">Estado</label>
+                        <select name="estado" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="abierto" selected="@(ViewBag.EstadoFiltro == "abierto")">Abierto (cupos)</option>
+                            <option value="agotado" selected="@(ViewBag.EstadoFiltro == "agotado")">Agotado</option>
+                            <option value="finalizado" selected="@(ViewBag.EstadoFiltro == "finalizado")">Finalizado</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                        <a asp-controller="Courses" asp-action="Index" class="btn btn-outline-secondary w-100">Limpiar</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="app-card">
+            <div class="empty-state">
+                <i class="bi bi-calendar-x"></i>
+                <h5>No hay cursos disponibles</h5>
+                <p class="mb-3">No se encontraron cursos con los filtros seleccionados.</p>
+                <a asp-controller="Courses" asp-action="Index" class="btn btn-primary btn-sm">
+                    Ver todos los cursos
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="course-grid">
+            @foreach (var c in Model)
+            {
+                var disponible = c.AvailableSeats > 0 && c.IsActive && c.StartDate > DateTime.UtcNow;
+                var agotado = c.AvailableSeats == 0 || c.StartDate <= DateTime.UtcNow;
+
+                <article class="course-card @(agotado ? "course-card--sold-out" : "")">
+                    <div class="course-card-image">
+                        @if (!string.IsNullOrWhiteSpace(c.ImageUrl))
+                        {
+                            <img src="@c.ImageUrl" alt="@c.Title" loading="lazy" />
+                        }
+                        else
+                        {
+                            <div class="course-card-image-placeholder">
+                                <i class="bi bi-mortarboard"></i>
+                                <span>@c.Modality</span>
+                            </div>
+                        }
+                        <div class="course-card-status">
+                            @if (agotado)
+                            {
+                                <span class="badge badge-soft-danger">Agotado</span>
+                            }
+                            else if (!disponible)
+                            {
+                                <span class="badge badge-soft-secondary">Finalizado</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-soft-success">@c.AvailableSeats cupos</span>
+                            }
+                        </div>
+                        @if (c.IsActive && c.StartDate > DateTime.UtcNow && disponible)
+                        {
+                            <span class="course-card-modality-badge">@c.Modality</span>
+                        }
+                    </div>
+
+                    <div class="course-card-body">
+                        <div class="course-card-badges mb-2">
+                            <span class="badge badge-soft-primary">@c.Modality</span>
+                            @if (c.Species != null)
+                            {
+                                <span class="badge badge-soft-secondary">@c.Species.CommonName</span>
+                            }
+                        </div>
+
+                        <h3 class="course-card-title">@c.Title</h3>
+                        <p class="course-card-instructor">
+                            <i class="bi bi-person-badge me-1"></i>@c.Instructor
+                        </p>
+
+                        <p class="course-card-desc">
+                            @c.Description
+                        </p>
+
+                        <div class="course-card-meta mb-3">
+                            <div class="course-meta-row">
+                                <i class="bi bi-calendar3"></i>
+                                <span>@c.StartDate.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("es-EC")) @if (c.EndDate != c.StartDate) { <span> – </span> @c.EndDate.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("es-EC")) }</span>
+                            </div>
+                            <div class="course-meta-row">
+                                <i class="bi bi-clock"></i>
+                                <span>@c.StartTime.ToString(@"hh\:mm") – @c.EndTime.ToString(@"hh\:mm")</span>
+                            </div>
+                            <div class="course-meta-row">
+                                <i class="bi bi-geo-alt"></i>
+                                <span>@c.Venue</span>
+                            </div>
+                            <div class="course-meta-row">
+                                <i class="bi bi-people"></i>
+                                <span>@c.AvailableSeats / @c.TotalSeats cupos</span>
+                            </div>
+                        </div>
+
+                        <div class="course-card-footer">
+                            <span class="course-card-price">$@c.Price.ToString("N2", new System.Globalization.CultureInfo("es-EC")) USD</span>
+                            <a asp-controller="Courses" asp-action="Details" asp-route-id="@c.Id"
+                               class="btn btn-primary btn-sm @(c.AvailableSeats > 0 && c.IsActive && c.StartDate > DateTime.UtcNow ? "" : "disabled")">
+                                <i class="bi bi-eye me-1"></i>Ver detalle
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+
+        int paginaActual = (int)ViewBag.PaginaActual;
+        int totalPaginas = (int)ViewBag.TotalPaginas;
+        int rango = 9;
+        int inicio = Math.Max(1, paginaActual - rango);
+        int fin = Math.Min(totalPaginas, paginaActual + rango);
+        if (totalPaginas > 1)
+        {
+            <nav class="app-pagination" aria-label="Paginación cursos">
+                <ul class="pagination justify-content-center flex-wrap">
+                    <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-controller="Courses" asp-action="Index" asp-route-pagina="1"
+                           asp-route-busqueda="@ViewBag.Busqueda" asp-route-modalidad="@ViewBag.ModalidadFiltro"
+                           asp-route-estado="@ViewBag.EstadoFiltro">&laquo;</a>
+                    </li>
+                    <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-controller="Courses" asp-action="Index"
+                           asp-route-pagina="@(paginaActual - 1)" asp-route-busqueda="@ViewBag.Busqueda"
+                           asp-route-modalidad="@ViewBag.ModalidadFiltro" asp-route-estado="@ViewBag.EstadoFiltro">&lsaquo;</a>
+                    </li>
+                    @if (inicio > 1)
+                    {
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                    }
+                    @for (int i = inicio; i <= fin; i++)
+                    {
+                        <li class="page-item @(i == paginaActual ? "active" : "")">
+                            <a class="page-link" asp-controller="Courses" asp-action="Index" asp-route-pagina="@i"
+                               asp-route-busqueda="@ViewBag.Busqueda" asp-route-modalidad="@ViewBag.ModalidadFiltro"
+                               asp-route-estado="@ViewBag.EstadoFiltro">@i</a>
+                        </li>
+                    }
+                    @if (fin < totalPaginas)
+                    {
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                    }
+                    <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                        <a class="page-link" asp-controller="Courses" asp-action="Index"
+                           asp-route-pagina="@(paginaActual + 1)" asp-route-busqueda="@ViewBag.Busqueda"
+                           asp-route-modalidad="@ViewBag.ModalidadFiltro" asp-route-estado="@ViewBag.EstadoFiltro">&rsaquo;</a>
+                    </li>
+                    <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                        <a class="page-link" asp-controller="Courses" asp-action="Index" asp-route-pagina="@totalPaginas"
+                           asp-route-busqueda="@ViewBag.Busqueda" asp-route-modalidad="@ViewBag.ModalidadFiltro"
+                           asp-route-estado="@ViewBag.EstadoFiltro">&raquo;</a>
+                    </li>
+                </ul>
+                <p class="app-pagination-info">Página @paginaActual de @totalPaginas</p>
+            </nav>
+        }
+    }
+</div>
+
+<style>
+    /* Course Grid */
+    .course-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .course-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        transition: all var(--transition-base);
+        height: 100%;
+    }
+
+    .course-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-3px);
+        border-color: var(--color-secondary);
+    }
+
+    .course-card--sold-out {
+        opacity: 0.7;
+        filter: grayscale(0.15);
+    }
+
+    .course-card--sold-out:hover {
+        transform: none;
+        box-shadow: var(--shadow-sm);
+        border-color: var(--color-border);
+    }
+
+    .course-card-image {
+        position: relative;
+        height: 200px;
+        background: var(--color-bg);
+        overflow: hidden;
+    }
+
+    .course-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform var(--transition-slow);
+    }
+
+    .course-card:hover .course-card-image img {
+        transform: scale(1.03);
+    }
+
+    .course-card-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-muted);
+        gap: 0.5rem;
+        font-size: var(--font-size-sm);
+    }
+
+    .course-card-image-placeholder i {
+        font-size: 2.5rem;
+        opacity: 0.35;
+    }
+
+    .course-card-status {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+    }
+
+    .course-card-modality-badge {
+        position: absolute;
+        bottom: 0.75rem;
+        left: 0.75rem;
+        background: var(--color-primary);
+        color: #fff;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-semibold);
+        text-transform: uppercase;
+    }
+
+    .course-card-body {
+        padding: 1.125rem;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .course-card-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.375rem;
+    }
+
+    .course-card-title {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text);
+        margin: 0 0 0.25rem;
+        line-height: 1.35;
+    }
+
+    .course-card-instructor {
+        font-size: var(--font-size-sm);
+        color: var(--color-muted);
+        margin: 0 0 0.5rem;
+        font-weight: var(--font-weight-medium);
+    }
+
+    .course-card-desc {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        line-height: 1.55;
+        margin: 0 0 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .course-card-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+        margin-bottom: 1rem;
+    }
+
+    .course-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+    }
+
+    .course-meta-row i {
+        color: var(--color-secondary);
+        width: 16px;
+    }
+
+    .course-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding-top: 0.875rem;
+        border-top: 1px solid var(--color-border-light);
+        margin-top: auto;
+    }
+
+    .course-card-price {
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-primary);
+    }
+
+    .course-card-footer .btn {
+        flex-shrink: 0;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        margin-bottom: 1.25rem;
+    }
+
+    .filter-card .app-card-body {
+        padding: 1rem 1.25rem;
+    }
+</style>

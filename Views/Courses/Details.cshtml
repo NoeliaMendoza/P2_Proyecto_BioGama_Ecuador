@@ -1,0 +1,786 @@
+@model BioGamaEcuador.Models.Sales.Course
+
+@{
+    ViewData["Title"] = Model.Title;
+    }
+
+@inject Microsoft.AspNetCore.Identity.UserManager<Microsoft.AspNetCore.Identity.IdentityUser> UserManager
+
+@section Styles {
+    <style>
+        .course-hero {
+            background: linear-gradient(135deg, var(--color-accent-soft) 0%, var(--color-surface) 100%);
+            border: 1px solid var(--color-border-light);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .course-hero-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .course-hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .course-hero-title {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            letter-spacing: -0.02em;
+            color: var(--color-text);
+            margin: 0 0 0.5rem;
+        }
+
+        .course-hero-instructor {
+            font-size: var(--font-size-base);
+            color: var(--color-text-secondary);
+            margin: 0;
+        }
+
+        .course-hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--color-border-light);
+        }
+
+        .course-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+        }
+
+        .course-meta-item i {
+            color: var(--color-secondary);
+            width: 20px;
+            text-align: center;
+        }
+
+        .course-hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .course-content-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 1.5rem;
+        }
+
+        @@media (max-width: 991.98px) {
+            .course-content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .course-main {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .course-sidebar {
+            position: sticky;
+            top: 90px;
+            height: fit-content;
+        }
+
+        .sidebar-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            background: var(--color-accent-soft);
+            border-bottom: 1px solid var(--color-border-light);
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .sidebar-price {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-primary);
+            margin: 0;
+        }
+
+        .sidebar-price-currency {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-normal);
+        }
+
+        .sidebar-body {
+            padding: 1.25rem;
+        }
+
+        .sidebar-availability {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+        }
+
+        .availability-available {
+            background: var(--color-success-bg);
+            color: var(--color-success);
+        }
+
+        .availability-limited {
+            background: var(--color-warning-bg);
+            color: var(--color-warning);
+        }
+
+        .availability-full {
+            background: var(--color-danger-bg);
+            color: var(--color-danger);
+        }
+
+        .sidebar-seats {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .sidebar-seats-total {
+            font-size: var(--font-size-xs);
+            color: var(--color-muted);
+        }
+
+        .sidebar-progress {
+            height: 6px;
+            background: var(--color-border);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-progress-bar {
+            height: 100%;
+            background: var(--color-primary);
+            border-radius: var(--radius-full);
+            transition: width var(--transition-base);
+        }
+
+        .sidebar-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .sidebar-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .sidebar-info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            border-top: 1px solid var(--color-border-light);
+            padding-top: 1rem;
+        }
+
+        .sidebar-info-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: var(--font-size-sm);
+            border-bottom: 1px solid var(--color-border-light);
+        }
+
+        .sidebar-info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar-info-label {
+            color: var(--color-muted);
+        }
+
+        .sidebar-info-value {
+            font-weight: var(--font-weight-medium);
+            color: var(--color-text);
+        }
+
+        .course-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .course-section-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--color-border-light);
+            background: var(--color-bg);
+        }
+
+        .course-section-header h4 {
+            margin: 0;
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text);
+        }
+
+        .course-section-body {
+            padding: 1.5rem;
+        }
+
+        .syllabus-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .syllabus-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-border-light);
+            position: relative;
+        }
+
+        .syllabus-item:last-child {
+            border-bottom: none;
+        }
+
+        .syllabus-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--color-accent);
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-sm);
+            flex-shrink: 0;
+        }
+
+        .syllabus-content {
+            flex: 1;
+        }
+
+        .syllabus-title {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text);
+            margin-bottom: 0.25rem;
+        }
+
+        .syllabus-desc {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+            line-height: 1.5;
+        }
+
+        .instructor-card {
+            display: flex;
+            gap: 1.25rem;
+            padding: 1.5rem;
+            background: var(--color-accent-soft);
+            border-radius: var(--radius-lg);
+            margin-top: 1rem;
+        }
+
+        .instructor-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .instructor-name {
+            font-weight: var(--font-weight-bold);
+            color: var(--color-text);
+            margin: 0 0 0.25rem;
+        }
+
+        .instructor-title {
+            font-size: var(--font-size-sm);
+            color: var(--color-muted);
+            margin: 0 0 0.5rem;
+        }
+
+        .instructor-bio {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+        }
+
+        .modal-reserve .modal-header {
+            background: var(--color-accent-soft);
+            border-bottom: 1px solid var(--color-border-light);
+        }
+
+        .modal-reserve .modal-title {
+            color: var(--color-primary);
+        }
+
+        .reserve-form .form-check {
+            margin-bottom: 0.75rem;
+        }
+
+        .payment-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-bottom: 0.5rem;
+        }
+
+        .payment-option:has(input:checked) {
+            border-color: var(--color-secondary);
+            background: var(--color-accent-soft);
+        }
+
+        .payment-option input[type="radio"] {
+            margin-top: 0.25rem;
+            accent-color: var(--color-primary);
+        }
+
+        .payment-option-label {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text);
+            margin: 0;
+        }
+
+        .payment-option-desc {
+            font-size: var(--font-size-xs);
+            color: var(--color-muted);
+            margin: 0.125rem 0 0;
+        }
+
+        .reserve-summary {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .reserve-summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--color-border-light);
+        }
+
+        .reserve-summary-row:last-child {
+            border-bottom: none;
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-base);
+        }
+
+        .confirmation-modal .modal-header {
+            background: var(--color-success-bg);
+            border-bottom: 1px solid var(--color-border-light);
+        }
+
+        .confirmation-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--color-success);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin: 0 auto 1rem;
+        }
+
+        .confirmation-code {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 1.25rem;
+            font-weight: var(--font-weight-bold);
+            letter-spacing: 0.1em;
+            color: var(--color-primary);
+        }
+    </style>
+}
+
+<div class="course-hero">
+    <div class="course-hero-header">
+        <div>
+            <div class="course-hero-badges mb-2">
+                <span class="badge badge-soft-primary">@Model.Modality</span>
+                @if (Model.Species != null)
+                {
+                    <span class="badge badge-soft-secondary">@Model.Species.CommonName</span>
+                }
+            </div>
+            <h1 class="course-hero-title">@Model.Title</h1>
+            <p class="course-hero-instructor">Impartido por <strong>@Model.Instructor</strong></p>
+        </div>
+        <div class="course-hero-actions">
+            @if (User.Identity?.IsAuthenticated == true && Model.AvailableSeats > 0 && Model.IsActive && Model.StartDate > DateTime.UtcNow)
+            {
+                <button type="button" class="btn btn-primary btn-lg sidebar-btn"
+                        data-bs-toggle="modal" data-bs-target="#reserveModal">
+                    <i class="bi bi-calendar-plus me-2"></i>Reservar mi cupo
+                </button>
+            }
+            else if (Model.AvailableSeats == 0 || !Model.IsActive || Model.StartDate <= DateTime.UtcNow)
+            {
+                <button type="button" class="btn btn-outline-secondary btn-lg" disabled>
+                    <i class="bi bi-lock me-2"></i>
+                    @(Model.AvailableSeats == 0 ? "Cupos agotados" : "Curso finalizado")
+                </button>
+            }
+            else
+            {
+                <a class="btn btn-outline-primary btn-lg" asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Context.Request.Path">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión para inscribirse
+                </a>
+            }
+        </div>
+
+        <div class="course-hero-meta">
+            <div class="course-meta-item">
+                <i class="bi bi-calendar3"></i>
+                <span>@Model.StartDate.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("es-EC")) @if (Model.EndDate != Model.StartDate) { <span> – </span> @Model.EndDate.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("es-EC")) }</span>
+            </div>
+            <div class="course-meta-item">
+                <i class="bi bi-clock"></i>
+                <span>@Model.StartTime.ToString(@"hh\:mm") – @Model.EndTime.ToString(@"hh\:mm")</span>
+            </div>
+            <div class="course-meta-item">
+                <i class="bi bi-geo-alt"></i>
+                <span>@Model.Venue</span>
+            </div>
+            <div class="course-meta-item">
+                <i class="bi bi-people"></i>
+                <span>@Model.AvailableSeats / @Model.TotalSeats cupos disponibles</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="course-content-grid">
+        <main class="course-main">
+            <div class="course-section">
+                <div class="course-section-header">
+                    <h4><i class="bi bi-book me-2"></i>Temario y Contenidos</h4>
+                </div>
+                <div class="course-section-body">
+                    @if (!string.IsNullOrWhiteSpace(Model.Syllabus))
+                    {
+                        @Html.Raw(Model.Syllabus.Replace("\n", "<br />"))
+                    }
+                    else
+                    {
+                        <ol class="syllabus-list">
+                            <li class="syllabus-item">
+                                <span class="syllabus-number">1</span>
+                                <div class="syllabus-content">
+                                    <h6 class="syllabus-title">Introducción y fundamentos</h6>
+                                    <p class="syllabus-desc">Conceptos base, metodología y objetivos del curso.</p>
+                                </div>
+                            </li>
+                            <li class="syllabus-item">
+                                <span class="syllabus-number">2</span>
+                                <div class="syllabus-content">
+                                    <h6 class="syllabus-title">Metodologías y técnicas de campo</h6>
+                                    <p class="syllabus-desc">Herramientas prácticas, protocolos estandarizados y buenas prácticas.</p>
+                                </div>
+                            </li>
+                            <li class="syllabus-item">
+                                <span class="syllabus-number">3</span>
+                                <div class="syllabus-content">
+                                    <h6 class="syllabus-title">Práctica guiada / Salida de campo</h6>
+                                    <p class="syllabus-desc">Aplicación en terreno real o simulado con supervisión experta.</p>
+                                </div>
+                            </li>
+                            <li class="syllabus-item">
+                                <span class="syllabus-number">4</span>
+                                <div class="syllabus-content">
+                                    <h6 class="syllabus-title">Análisis de datos y reporteo</h6>
+                                    <p class="syllabus-desc">Estandarización de datos, subida a plataformas y comunicación de resultados.</p>
+                                </div>
+                            </li>
+                        </ol>
+                    }
+                </div>
+            </div>
+
+            <div class="course-section">
+                <div class="course-section-header">
+                    <h4><i class="bi bi-person-badge me-2"></i>Instructor</h4>
+                </div>
+                <div class="course-section-body">
+                    <div class="instructor-card">
+                        <div class="instructor-avatar">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div>
+                            <h5 class="instructor-name">@Model.Instructor</h5>
+                            <p class="instructor-title">Especialista en el área</p>
+                            @if (!string.IsNullOrWhiteSpace(Model.InstructorBio))
+                            {
+                                <p class="instructor-bio">@Model.InstructorBio</p>
+                            }
+                            <p class="instructor-bio mb-0">
+                                <i class="bi bi-award me-1"></i>Experiencia comprobada en investigación y docencia en biodiversidad ecuatoriana.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.Species != null)
+            {
+                <div class="course-section">
+                    <div class="course-section-header">
+                        <h4><i class="bi bi-bug me-2"></i>Especie Foco</h4>
+                    </div>
+                    <div class="course-section-body">
+                        <div class="quick-link" asp-controller="Species" asp-action="Details" asp-route-id="@Model.SpeciesId">
+                            <div class="quick-link-icon">
+                                <i class="bi bi-image"></i>
+                            </div>
+                            <div class="quick-link-text">
+                                <strong>@Model.Species.CommonName</strong>
+                                <span>@Model.Species.ScientificName</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </main>
+
+        <aside class="course-sidebar">
+            <div class="sidebar-card">
+                <div class="sidebar-header">
+                    <div class="sidebar-availability @(Model.AvailableSeats > 0 && Model.IsActive && Model.StartDate > DateTime.UtcNow ? "availability-available" : (Model.AvailableSeats == 0 ? "availability-full" : "availability-limited"))">
+                        <div>
+                            <div class="sidebar-seats">@Model.AvailableSeats <span class="sidebar-seats-total">de @Model.TotalSeats cupos</span></div>
+                            <div class="sidebar-seats-total">@(((double)Model.ConfirmedSeats / Model.TotalSeats * 100).ToString("0.0"))% ocupados</div>
+                        </div>
+                    </div>
+                    <div class="sidebar-progress">
+                        <div class="sidebar-progress-bar" style="width: @((double)(Model.ConfirmedSeats + Model.ReservedSeats) / Model.TotalSeats * 100)%"></div>
+                    </div>
+
+                    <div class="sidebar-actions">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            if (Model.AvailableSeats > 0 && Model.IsActive && Model.StartDate > DateTime.UtcNow)
+                            {
+                                <button type="button" class="btn btn-primary btn-lg sidebar-btn"
+                                        data-bs-toggle="modal" data-bs-target="#reserveModal">
+                                    <i class="bi bi-calendar-plus me-2"></i>Reservar mi cupo
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-outline-secondary btn-lg sidebar-btn" disabled>
+                                    <i class="bi bi-lock me-2"></i>
+                                    @(Model.AvailableSeats == 0 ? "Sin cupos disponibles" : "Curso no disponible")
+                                </button>
+                            }
+                        }
+                        else
+                        {
+                            <a class="btn btn-primary btn-lg sidebar-btn"
+                               asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Context.Request.Path">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión para inscribirse
+                            </a>
+                        }
+                    </div>
+
+                    <ul class="sidebar-info-list">
+                        <li>
+                            <span class="sidebar-info-label">Incluye</span>
+                            <span class="sidebar-info-value">Materiales, certificado digital, acceso a grabaciones (si virtual)</span>
+                        </li>
+                        <li>
+                            <span class="sidebar-info-label">Política de cancelación</span>
+                            <span class="sidebar-info-value">Reembolso completo hasta 7 días antes. 50% hasta 48h antes.</span>
+                        </li>
+                        <li>
+                            <span class="sidebar-info-label">Certificado</span>
+                            <span class="sidebar-info-value">Digital verificado al completar el curso</span>
+                        </li>
+                        <li>
+                            <span class="sidebar-info-label">Modalidad</span>
+                            <span class="sidebar-info-value">@Model.Modality</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-price">
+                    $@Model.Price.ToString("N2", new System.Globalization.CultureInfo("es-EC"))
+                    <span class="sidebar-price-currency">USD</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- Modal Reservar Cupo -->
+<div class="modal fade" id="reserveModal" tabindex="-1" aria-labelledby="reserveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-reserve">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reserveModalLabel">
+                    <i class="bi bi-calendar-plus me-2"></i>Reservar cupo: @Model.Title
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-center text-muted mb-4">Completa tu reserva. El cupo se mantendrá por <strong>30 minutos</strong> mientras completas el pago.</p>
+
+                <form class="reserve-form" id="reserveForm" asp-controller="Orders" asp-action="CreateFromCourse" method="post">
+                    <input type="hidden" name="CourseId" value="@Model.Id" />
+                    <input type="hidden" name="Quantity" value="1" />
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="PaymentProvider" id="paypal" value="PayPal" checked required>
+                        <label class="form-check-label payment-option" for="paypal">
+                            <i class="bi bi-paypal me-2 text-primary" style="font-size: 1.25rem;"></i>
+                            <div>
+                                <p class="payment-option-label mb-0">PayPal (Sandbox)</p>
+                                <small class="payment-option-desc">Pago seguro con tarjeta o saldo PayPal</small>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="PaymentProvider" id="payphone" value="PayPhone" required>
+                        <label class="form-check-label payment-option" for="payphone">
+                            <i class="bi bi-phone me-2 text-success" style="font-size: 1.25rem;"></i>
+                            <div>
+                                <p class="payment-option-label mb-0">PayPhone Ecuador</p>
+                                <small class="payment-option-desc">Pago con tarjeta, débito o código QR</small>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="reserve-summary">
+                        <div class="reserve-summary-row">
+                            <span>@Model.Title</span>
+                            <span>$@Model.Price.ToString("N2", new System.Globalization.CultureInfo("es-EC"))</span>
+                        </div>
+                        <div class="reserve-summary-row">
+                            <span>Total</span>
+                            <span>$@Model.Price.ToString("N2", new System.Globalization.CultureInfo("es-EC"))</span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-3">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-credit-card me-2"></i>Continuar al pago
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmación -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered confirmation-modal">
+        <div class="modal-content">
+            <div class="modal-header justify-content-center">
+                <div class="confirmation-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+            </div>
+            <div class="modal-body text-center">
+                <h4 class="mb-2">¡Reserva confirmada!</h4>
+                <p class="text-muted mb-3">Tu cupo ha sido reservado exitosamente.</p>
+                <div class="p-3 bg-light rounded">
+                    <p class="mb-1"><strong>Código de confirmación:</strong></p>
+                    <div class="confirmation-code" id="confirmationCode">CARGANDO...</div>
+                </div>
+                <p class="text-muted small mt-3">Recibirás un correo con los detalles y el código QR para el check-in.</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="window.location.href='/Orders/MyOrders'">
+                    Ver mis cursos
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Modal reserva - envío AJAX
+            const reserveForm = document.getElementById('reserveForm');
+            if (reserveForm) {
+                reserveForm.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const btn = reserveForm.querySelector('button[type="submit"]');
+                    const originalBtnText = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
+
+                    try {
+                        const formData = new FormData(reserveForm);
+                        const response = await fetch(reserveForm.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                            }
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.success) {
+                                // Cerrar modal reserva
+                                const reserveModal = bootstrap.Modal.getInstance(document.getElementById('reserveModal'));
+                                reserveModal.hide();
+
+                                // Mostrar modal confirmación
+                                document.getElementById('confirmationCode').textContent = data.confirmationCode || data.orderId?.substring(0, 8).toUpperCase();
+                                new bootstrap.Modal(document.getElementById('confirmationModal')).show();
+                            } else {
+                                alert('Error: ' + (data.error || 'No se pudo procesar la reserva'));
+                            }
+                        } else {
+                            const err = await response.json();
+                            alert('Error: ' + (err.error || 'Error en la reserva'));
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert('Error de conexión. Intenta nuevamente.');
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = originalBtnText;
+                    }
+                });
+            });
+        });
+    </script>
+}

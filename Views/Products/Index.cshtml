@@ -1,0 +1,123 @@
+@model IReadOnlyList<BioGamaEcuador.Models.Sales.PhysicalProduct>
+@{
+    ViewData["Title"] = "Productos";
+    }
+
+<div class="public-hero product-hero">
+    <div class="public-hero-inner">
+        <span class="public-hero-eyebrow"><i class="bi bi-box-seam"></i> Tienda BioGama</span>
+        <h1 class="public-hero-title">Productos para explorar y conservar</h1>
+        <p class="public-hero-desc">Materiales didácticos, kits de campo y recuerdos pensados para acercarte a la biodiversidad del Ecuador.</p>
+        <div class="public-hero-meta">
+            <span class="badge badge-soft-primary"><i class="bi bi-box me-1"></i>@ViewBag.TotalProducts productos</span>
+            <span class="badge badge-soft-success"><i class="bi bi-check2-circle me-1"></i>@ViewBag.AvailableUnits unidades disponibles</span>
+        </div>
+    </div>
+</div>
+
+<div class="public-content">
+    @if (TempData["Success"] is string successMsg)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">@successMsg<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["Error"] is string errorMsg)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">@errorMsg<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="app-card filter-card mb-4">
+        <div class="app-card-body">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-12 col-md-8">
+                    <label class="form-label" for="search">Buscar productos</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input id="search" name="search" value="@ViewBag.Search" class="form-control border-start-0 ps-0" placeholder="Nombre, tipo de material o temática…" />
+                    </div>
+                </div>
+                <div class="col-6 col-md-2"><button class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i>Buscar</button></div>
+                <div class="col-6 col-md-2"><a asp-action="Index" class="btn btn-outline-secondary w-100">Limpiar</a></div>
+            </form>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="app-card"><div class="empty-state"><i class="bi bi-box2-heart"></i><h5>No encontramos productos</h5><p class="mb-3">Prueba con otra búsqueda o revisa todo el catálogo.</p><a asp-action="Index" class="btn btn-primary btn-sm">Ver todos los productos</a></div></div>
+    }
+    else
+    {
+        <div class="product-grid">
+            @foreach (var p in Model)
+            {
+                var available = p.Stock - p.ReservedStock;
+                var lowStock = available > 0 && available <= p.MinStock;
+                <article class="product-card @(available == 0 ? "product-card--sold-out" : "")">
+                    <div class="product-card-image">
+                        @if (!string.IsNullOrWhiteSpace(p.ImageUrl))
+                        {
+                            <img src="@p.ImageUrl" alt="@p.Name" loading="lazy" />
+                        }
+                        else
+                        {
+                            <div class="product-card-placeholder"><i class="bi bi-box-seam"></i><span>BioGama Ecuador</span></div>
+                        }
+                        <div class="product-card-status">
+                            @if (available <= 0) { <span class="badge badge-soft-danger">Agotado</span> }
+                            else if (lowStock) { <span class="badge badge-soft-warning">Últimas @available unidades</span> }
+                            else { <span class="badge badge-soft-success">Disponible</span> }
+                        </div>
+                    </div>
+                    <div class="product-card-body">
+                        <div class="product-card-sku"><i class="bi bi-upc-scan me-1"></i>@p.SKU</div>
+                        <h2 class="product-card-title">@p.Name</h2>
+                        <p class="product-card-desc">@p.Description</p>
+                        <div class="product-card-footer">
+                            <div><span class="product-card-price">$@p.Price.ToString("N2", new System.Globalization.CultureInfo("es-EC"))</span><small>USD</small></div>
+                            <span class="product-card-stock"><i class="bi bi-box2 me-1"></i>@available disponibles</span>
+                        </div>
+                        @if (available > 0)
+                        {
+                            <form asp-controller="Orders" asp-action="CreateFromProduct" method="post" class="product-card-buy">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@p.Id" />
+                                <label class="visually-hidden" for="qty-@p.Id">Cantidad</label>
+                                <input id="qty-@p.Id" type="number" name="quantity" value="1" min="1" max="@available" class="form-control form-control-sm" />
+                                <button class="btn btn-primary btn-sm"><i class="bi bi-cart-plus me-1"></i>Agregar</button>
+                            </form>
+                        }
+                        else { <button class="btn btn-outline-secondary btn-sm w-100" disabled>Producto agotado</button> }
+                    </div>
+                </article>
+            }
+        </div>
+
+        @if ((int)ViewBag.TotalPages > 1)
+        {
+            <nav class="app-pagination" aria-label="Paginación de productos"><ul class="pagination justify-content-center flex-wrap">
+            @for (var i = 1; i <= (int)ViewBag.TotalPages; i++) { <li class="page-item @(i == (int)ViewBag.Page ? "active" : "")"><a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-search="@ViewBag.Search">@i</a></li> }
+            </ul><p class="app-pagination-info">Página @ViewBag.Page de @ViewBag.TotalPages</p></nav>
+        }
+    }
+</div>
+
+@section Styles {
+    <style>
+        .product-hero { background: linear-gradient(135deg, #eef7f1 0%, #f8fbf4 58%, #fff8ec 100%); }
+        .product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1.25rem; }
+        .product-card { display:flex; flex-direction:column; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-surface); box-shadow:var(--shadow-sm); transition:transform var(--transition-base),box-shadow var(--transition-base),border-color var(--transition-base); }
+        .product-card:hover { transform:translateY(-3px); border-color:var(--color-secondary); box-shadow:var(--shadow-md); }
+        .product-card--sold-out { opacity:.78; }
+        .product-card-image { position:relative; height:194px; background:var(--color-accent-soft); overflow:hidden; }
+        .product-card-image img { height:100%; width:100%; object-fit:cover; transition:transform .35s ease; }
+        .product-card:hover .product-card-image img { transform:scale(1.04); }
+        .product-card-placeholder { height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--color-primary); gap:.5rem; background:linear-gradient(135deg,var(--color-accent-soft),#eef7f1); }
+        .product-card-placeholder i { font-size:3rem; }.product-card-placeholder span { font-size:.78rem; font-weight:600; }
+        .product-card-status { position:absolute; top:.75rem; right:.75rem; }.product-card-body { display:flex; flex:1; flex-direction:column; padding:1rem; }
+        .product-card-sku { color:var(--color-text-muted); font-size:.72rem; letter-spacing:.03em; margin-bottom:.35rem; }.product-card-title { font-size:1rem; line-height:1.35; margin:0 0 .45rem; color:var(--color-text); }
+        .product-card-desc { display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; min-height:2.7rem; color:var(--color-text-muted); font-size:.86rem; margin-bottom:1rem; }
+        .product-card-footer { display:flex; align-items:end; justify-content:space-between; margin-top:auto; padding-top:.75rem; border-top:1px solid var(--color-border-light); }.product-card-price { display:block; color:var(--color-primary); font-weight:700; font-size:1.2rem; line-height:1; }.product-card-footer small { color:var(--color-text-muted); font-size:.72rem; }.product-card-stock { color:var(--color-text-muted); font-size:.75rem; white-space:nowrap; }
+        .product-card-buy { display:grid; grid-template-columns:64px 1fr; gap:.5rem; margin-top:.85rem; }.product-card-buy input { text-align:center; }
+        @@media (max-width:575.98px) { .product-grid { grid-template-columns:1fr; }.product-card-image { height:210px; } }
+    </style>
+}
