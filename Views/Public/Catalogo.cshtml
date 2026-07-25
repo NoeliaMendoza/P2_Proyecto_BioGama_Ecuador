@@ -4,21 +4,15 @@
     ViewData["Title"] = "Catálogo de Especies";
     }
 
-<div class="public-hero">
-    <div class="public-hero-inner">
-        <p class="public-hero-desc">
-            Explora la biodiversidad registrada en reservas naturales del Ecuador.
-            Consulta fichas técnicas de flora, fauna y hongos sin necesidad de iniciar sesión.
-        </p>
-        <div class="public-hero-meta">
-            <span class="badge badge-soft-primary">
-                <i class="bi bi-collection me-1"></i>@ViewBag.TotalEspecies especies
-            </span>
-        </div>
-    </div>
+<p class="text-muted mb-3">
+    Explora la biodiversidad registrada en reservas naturales del Ecuador.
+    Consulta fichas técnicas de flora, fauna y hongos sin necesidad de iniciar sesión.
+</p>
+<div class="d-flex gap-2 mb-3">
+    <span class="badge badge-soft-primary fs-6 px-3 py-2">
+        <i class="bi bi-collection me-1"></i>@ViewBag.TotalEspecies especies
+    </span>
 </div>
-
-<div class="public-content">
     <div class="app-card filter-card mb-4">
         <div class="app-card-body">
             <form method="get" asp-controller="Public" asp-action="Catalogo">
@@ -222,4 +216,4 @@
             <p class="app-pagination-info">Página @paginaActual de @totalPaginas</p>
         </nav>
     }
-</div>
+

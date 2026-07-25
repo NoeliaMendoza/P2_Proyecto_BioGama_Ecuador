@@ -3,17 +3,11 @@
     ViewData["Title"] = "Productos";
     }
 
-<div class="public-hero product-hero">
-    <div class="public-hero-inner">
-        <p class="public-hero-desc">Materiales didácticos, kits de campo y recuerdos pensados para acercarte a la biodiversidad del Ecuador.</p>
-        <div class="public-hero-meta">
-            <span class="badge badge-soft-primary"><i class="bi bi-box me-1"></i>@ViewBag.TotalProducts productos</span>
-            <span class="badge badge-soft-success"><i class="bi bi-check2-circle me-1"></i>@ViewBag.AvailableUnits unidades disponibles</span>
-        </div>
-    </div>
+<p class="text-muted mb-3">Materiales didácticos, kits de campo y recuerdos pensados para acercarte a la biodiversidad del Ecuador.</p>
+<div class="d-flex gap-2 mb-3">
+    <span class="badge badge-soft-primary fs-6 px-3 py-2"><i class="bi bi-box me-1"></i>@ViewBag.TotalProducts productos</span>
+    <span class="badge badge-soft-success fs-6 px-3 py-2"><i class="bi bi-check2-circle me-1"></i>@ViewBag.AvailableUnits unidades disponibles</span>
 </div>
-
-<div class="public-content">
     @if (TempData["Success"] is string successMsg)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">@successMsg<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
@@ -97,4 +91,4 @@
             </ul><p class="app-pagination-info">Página @ViewBag.Page de @ViewBag.TotalPages</p></nav>
         }
     }
-</div>
+

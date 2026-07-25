@@ -13,17 +13,7 @@
     };
 }
 
-<div class="public-content">
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item">
-                <a asp-controller="Public" asp-action="Catalogo">Catálogo</a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">@Model.CommonName</li>
-        </ol>
-    </nav>
-
-    <div class="public-detail-header">
+<div class="public-detail-header">
         <div>
             <h1 class="public-detail-title">@Model.CommonName</h1>
             <p class="public-detail-scientific">@Model.ScientificName</p>
@@ -111,9 +101,8 @@
                             }
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
+    </div>
+</div>
     </div>
 
     <div class="d-flex flex-wrap gap-2">

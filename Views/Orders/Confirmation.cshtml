@@ -5,10 +5,7 @@
     Layout = "_Layout";
 }
 
-<partial name="_Breadcrumb" />
-
-<div class="app-content">
-    <div class="payment-receipt">
+<div class="payment-receipt">
         <div class="payment-receipt-header @($"status-{Model.Payment?.Status?.ToLower()}")">
             <div class="payment-receipt-icon">
                 @switch (Model.Payment?.Status?.ToLower())
@@ -169,7 +166,6 @@
                     <i class="bi bi-printer me-1"></i>Imprimir comprobante
                 </button>
             }
-        </div>
     </div>
 </div>
 

@@ -41,20 +41,19 @@
         ["Details"] = "Detalle",
         ["Delete"] = "Eliminar",
         ["Adopt"] = "Apadrinar",
-        ["Catalogo"] = "Catálogo",
+        ["Catalogo"] = "",
         ["DetalleEspecie"] = "Detalle",
         ["Cart"] = "Carrito",
         ["Checkout"] = "Pago",
         ["MyOrders"] = "Mis Pedidos",
-        ["Confirmation"] = "Confirmación",
-        ["Catalogo"] = ""
+        ["Confirmation"] = "Confirmación"
     };
 
     if (entityLabels.TryGetValue(controller, out var entityLabel))
     {
         if (!string.Equals(action, "Index", StringComparison.OrdinalIgnoreCase))
         {
-            crumbs.Add((entityLabel, controller, "Index"));
+            crumbs.Add((entityLabel, null, null));
             if (actionLabels.TryGetValue(action, out var actionLabel) && !string.IsNullOrEmpty(actionLabel))
             {
                 crumbs.Add((actionLabel, null, null));
