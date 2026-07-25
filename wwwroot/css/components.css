@@ -1372,6 +1372,38 @@ label.control-label {
   margin-bottom: 1rem;
 }
 
+/* ── Manage Nav ──────────────────────────────────────────── */
+
+.manage-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.manage-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.manage-nav-link:hover {
+  background: var(--color-accent-soft);
+  color: var(--color-primary);
+}
+
+.manage-nav-link.active {
+  background: var(--color-accent);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
 @media (max-width: 767.98px) {
   .payment-stat-grid {
     grid-template-columns: 1fr;
