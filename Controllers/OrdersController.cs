@@ -24,6 +24,8 @@ public class OrdersController : Controller
         _payPhone = payPhone;
     }
 
+    public IActionResult Index() => RedirectToAction(nameof(Cart));
+
     private async Task<string> GetUserIdAsync() =>
         (await _context.Users.Where(u => u.UserName == User.Identity!.Name).Select(u => u.Id).FirstOrDefaultAsync())
         ?? throw new UnauthorizedAccessException();
