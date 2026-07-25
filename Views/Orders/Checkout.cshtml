@@ -1,39 +1,56 @@
 @model BioGamaEcuador.Models.Sales.Order
 
-@{ ViewData["Title"] = "Checkout"; Layout = "_Layout"; }
+@{ ViewData["Title"] = "Finalizar compra"; Layout = "_Layout"; }
 
-<div class="page-header mb-4">
-        <div>
-            <p class="page-header-subtitle mb-0">Completa tus datos y selecciona el método de pago</p>
-        </div>
+<div class="checkout-page">
+    <div class="checkout-header mb-4">
+        <h4 class="fw-bold mb-1">Finalizar compra</h4>
+        <p class="text-muted mb-0">Revisa tu pedido y completa el pago</p>
     </div>
 
-    @if (TempData["Error"] is string e)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert"><i class="bi bi-exclamation-circle me-2"></i>@e<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-    }
-
-    <div class="row">
+    <div class="row g-4">
         <div class="col-lg-7">
             <div class="app-card mb-4">
-                <div class="app-card-header"><h6 class="mb-0">Resumen del pedido</h6></div>
+                <div class="app-card-header d-flex align-items-center gap-2">
+                    <span class="step-circle">1</span>
+                    <h6 class="mb-0">Resumen del pedido</h6>
+                </div>
                 <div class="app-card-body p-0">
                     <div class="table-responsive">
-                        <table class="app-table mb-0">
+                        <table class="checkout-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>Item</th>
-                                    <th>Cant.</th>
-                                    <th>Subtotal</th>
+                                    <th>Producto</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th class="text-end">Precio</th>
+                                    <th class="text-end">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var d in Model.Details)
                                 {
                                     <tr>
-                                        <td>@(d.Course?.Title ?? d.PhysicalProduct?.Name ?? "Item")</td>
-                                        <td>@d.Quantity</td>
-                                        <td>$@d.Subtotal.ToString("N2")</td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="checkout-item-icon">
+                                                    @if (d.Course != null)
+                                                    {
+                                                        <i class="bi bi-mortarboard text-primary"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-box-seam text-success"></i>
+                                                    }
+                                                </div>
+                                                <div>
+                                                    <p class="mb-0 fw-medium">@(d.Course?.Title ?? d.PhysicalProduct?.Name ?? "Item")</p>
+                                                    <small class="text-muted">@(d.Course != null ? "Curso presencial" : "Producto fisico")</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">@d.Quantity</td>
+                                        <td class="text-end">$@d.UnitPrice.ToString("N2")</td>
+                                        <td class="text-end fw-medium">$@d.Subtotal.ToString("N2")</td>
                                     </tr>
                                 }
                             </tbody>
@@ -43,85 +60,98 @@
             </div>
 
             <div class="app-card mb-4">
-                <div class="app-card-header"><h6 class="mb-0">Datos de facturación</h6></div>
+                <div class="app-card-header d-flex align-items-center gap-2">
+                    <span class="step-circle">2</span>
+                    <h6 class="mb-0">Datos de facturacion</h6>
+                </div>
                 <div class="app-card-body">
-                    <form asp-action="Checkout" method="post">
+                    <form asp-action="Checkout" method="post" id="checkoutForm">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="orderId" value="@Model.Id" />
 
-                        <div class="form-section">
-                            <h6 class="form-section-title">Información de contacto</h6>
+                        <div class="mb-4">
+                            <label class="form-label fw-medium">Informacion de contacto</label>
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Correo electrónico *</label>
-                                    <input type="email" name="Email" class="form-control" required value="@User.Identity?.Name" />
+                                    <input type="email" name="Email" class="form-control" required value="@User.Identity?.Name" placeholder="Correo electronico *" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Teléfono *</label>
-                                    <input type="tel" name="Phone" class="form-control" placeholder="+593 9X XXX XXXX" required />
+                                    <input type="tel" name="Phone" class="form-control" placeholder="Telefono * +593 9X XXX XXXX" required />
                                 </div>
                             </div>
                         </div>
 
                         @if (Model.Details.Any(d => d.PhysicalProduct != null))
                         {
-                            <div class="form-section">
-                                <h6 class="form-section-title">Dirección de envío</h6>
+                            <div class="mb-4">
+                                <label class="form-label fw-medium">Direccion de envio</label>
                                 <div class="row g-3">
                                     <div class="col-12">
-                                        <label class="form-label">Dirección completa *</label>
-                                        <input type="text" name="ShippingAddress" class="form-control" placeholder="Calle, número, barrio, ciudad" required />
+                                        <input type="text" name="ShippingAddress" class="form-control" placeholder="Direccion completa *" required />
                                     </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Ciudad *</label>
-                                        <input type="text" name="City" class="form-control" required />
+                                    <div class="col-md-4">
+                                        <input type="text" name="City" class="form-control" placeholder="Ciudad *" required />
                                     </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Provincia *</label>
+                                    <div class="col-md-4">
                                         <select name="Province" class="form-select" required>
-                                            <option value="">Seleccionar</option>
+                                            <option value="">Provincia *</option>
                                             <option>Pichincha</option>
                                             <option>Guayas</option>
                                             <option>Azuay</option>
-                                            <option>Manabí</option>
+                                            <option>Manabi</option>
                                             <option>Otra</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Código postal</label>
-                                        <input type="text" name="PostalCode" class="form-control" />
+                                    <div class="col-md-4">
+                                        <input type="text" name="PostalCode" class="form-control" placeholder="Codigo postal" />
                                     </div>
                                 </div>
                             </div>
                         }
 
-                        <div class="form-section">
-                            <h6 class="form-section-title">Método de pago</h6>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="PaymentProvider" id="paypal" value="PayPal" checked required>
-                                <label class="form-check-label payment-option" for="paypal">
-                                    <i class="bi bi-paypal me-2 text-primary" style="font-size: 1.25rem;"></i>
-                                    <div>
-                                        <p class="payment-option-label mb-0">PayPal (Sandbox)</p>
-                                        <small class="payment-option-desc">Pago seguro con tarjeta, saldo PayPal o transferencia</small>
+                        <div>
+                            <label class="form-label fw-medium mb-3">Metodo de pago</label>
+                            <div class="payment-options">
+                                <label class="payment-card" for="paypal">
+                                    <input type="radio" name="PaymentProvider" id="paypal" value="PayPal" checked required>
+                                    <div class="payment-card-content">
+                                        <div class="payment-card-icon paypal">
+                                            <i class="bi bi-paypal"></i>
+                                        </div>
+                                        <div>
+                                            <p class="payment-card-title mb-0">PayPal</p>
+                                            <small class="payment-card-desc">Pago seguro con tarjeta, saldo PayPal o transferencia</small>
+                                        </div>
+                                        <div class="payment-card-check">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </div>
                                     </div>
                                 </label>
-                            </div>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="radio" name="PaymentProvider" id="payphone" value="PayPhone" required>
-                                <label class="form-check-label payment-option" for="payphone">
-                                    <i class="bi bi-phone me-2 text-success" style="font-size: 1.25rem;"></i>
-                                    <div>
-                                        <p class="payment-option-label mb-0">PayPhone Ecuador</p>
-                                        <small class="payment-option-desc">Tarjeta de crédito/débito, código QR o link de pago</small>
+                                <label class="payment-card" for="payphone">
+                                    <input type="radio" name="PaymentProvider" id="payphone" value="PayPhone">
+                                    <div class="payment-card-content">
+                                        <div class="payment-card-icon payphone">
+                                            <i class="bi bi-phone"></i>
+                                        </div>
+                                        <div>
+                                            <p class="payment-card-title mb-0">PayPhone Ecuador</p>
+                                            <small class="payment-card-desc">Tarjeta de credito/debito, codigo QR o link de pago</small>
+                                        </div>
+                                        <div class="payment-card-check">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </div>
                                     </div>
                                 </label>
                             </div>
                         </div>
 
-                        <div class="form-actions d-flex gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg flex-grow-1"><i class="bi bi-credit-card me-2"></i>Pagar $@Model.Total.ToString("N2")</button>
-                            <a asp-action="Cart" class="btn btn-outline-secondary btn-lg"><i class="bi bi-arrow-left me-1"></i>Volver al carrito</a>
+                        <div class="d-grid gap-2 mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-credit-card me-2"></i>Pagar $@Model.Total.ToString("N2")
+                            </button>
+                            <a asp-action="Cart" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>Volver al carrito
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -129,53 +159,76 @@
         </div>
 
         <div class="col-lg-5">
-            <div class="app-card sidebar-card position-sticky" style="top: 90px;">
-                <div class="sidebar-header">
-                    <p class="sidebar-price">$@Model.Total.ToString("N2") <span class="sidebar-price-currency">USD</span></p>
+            <div class="app-card" style="position:sticky;top:90px">
+                <div class="app-card-header">
+                    <h6 class="mb-0"><i class="bi bi-receipt me-2"></i>Resumen de pago</h6>
                 </div>
-                <div class="sidebar-body">
-                    <div class="reserve-summary" style="background: transparent; border: none; padding: 0;">
-                        <div class="reserve-summary-row">
-                            <span>Subtotal (@Model.Details.Count @(Model.Details.Count == 1 ? "artículo" : "artículos"))</span>
-                            <span>$@Model.Subtotal.ToString("N2")</span>
-                        </div>
-                        <div class="reserve-summary-row">
-                            <span>Impuestos (12% IVA)</span>
-                            <span>$@Model.Tax.ToString("N2")</span>
-                        </div>
-                        @if (Model.Details.Any(d => d.PhysicalProduct != null))
-                        {
-                            <div class="reserve-summary-row"><span>Envío (estimado)</span><span>$0.00</span></div>
-                        }
-                        <div class="reserve-summary-row"><span>Total</span><span>$@Model.Total.ToString("N2")</span></div>
+                <div class="app-card-body">
+                    <div class="summary-row">
+                        <span class="summary-label">Subtotal (@Model.Details.Count @(Model.Details.Count == 1 ? "articulo" : "articulos"))</span>
+                        <span class="summary-value">$@Model.Subtotal.ToString("N2")</span>
                     </div>
-                    <ul class="sidebar-info-list mt-3">
-                        <li><span class="sidebar-info-label">Pago seguro</span><span class="sidebar-info-value"><i class="bi bi-shield-lock text-success me-1"></i>SSL</span></li>
-                        <li><span class="sidebar-info-label">Confirmación</span><span class="sidebar-info-value">Inmediata vía correo</span></li>
+                    <div class="summary-row">
+                        <span class="summary-label">IVA (12%)</span>
+                        <span class="summary-value">$@Model.Tax.ToString("N2")</span>
+                    </div>
+                    @if (Model.Details.Any(d => d.PhysicalProduct != null))
+                    {
+                        <div class="summary-row">
+                            <span class="summary-label">Envio</span>
+                            <span class="summary-value text-success">Gratis</span>
+                        </div>
+                    }
+                    <div class="summary-divider"></div>
+                    <div class="summary-row total">
+                        <span class="summary-label">Total</span>
+                        <span class="summary-value total-amount">$@Model.Total.ToString("N2")</span>
+                    </div>
+
+                    <ul class="checkout-info-list">
+                        <li><i class="bi bi-shield-check text-success"></i> Pago seguro con cifrado SSL</li>
+                        <li><i class="bi bi-envelope-check text-primary"></i> Confirmacion inmediata por correo</li>
+                        <li><i class="bi bi-arrow-counterclockwise text-warning"></i> Cancelacion gratuita hasta 24h antes</li>
                     </ul>
                 </div>
             </div>
+        </div>
     </div>
 </div>
 
 @section Styles {
     <style>
-        .payment-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); margin-bottom: 0.5rem; }
-        .payment-option:has(input:checked) { border-color: var(--color-secondary); background: var(--color-accent-soft); }
-        .payment-option input[type="radio"] { margin-top: 0.25rem; accent-color: var(--color-primary); }
-        .payment-option-label { font-weight: var(--font-weight-semibold); color: var(--color-text); margin: 0; }
-        .payment-option-desc { font-size: var(--font-size-xs); color: var(--color-muted); margin: 0.125rem 0 0; }
-        .app-table td { vertical-align: middle; padding: 0.75rem; }
-        .app-table th { padding: 0.75rem; }
-        .sidebar-card { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
-        .sidebar-header { background: var(--color-accent-soft); border-bottom: 1px solid var(--color-border-light); padding: 1.25rem; text-align: center; }
-        .sidebar-price { font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--color-primary); margin: 0; }
-        .sidebar-price-currency { font-size: var(--font-size-lg); font-weight: var(--font-weight-normal); }
-        .reserve-summary-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--color-border-light); }
-        .reserve-summary-row:last-child { border-bottom: none; font-weight: var(--font-weight-bold); font-size: var(--font-size-base); }
-        .sidebar-info-list { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--color-border-light); padding-top: 1rem; }
-        .sidebar-info-list li { display: flex; justify-content: space-between; padding: 0.5rem 0; font-size: var(--font-size-sm); }
-        .sidebar-info-label { color: var(--color-muted); }
-        .sidebar-info-value { font-weight: var(--font-weight-medium); color: var(--color-text); text-align: right; }
+        .checkout-page { max-width: 1100px; margin: 0 auto; }
+        .checkout-header h4 { color: var(--color-text); }
+        .step-circle { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--color-primary); color: #fff; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+        .checkout-table { width: 100%; border-collapse: collapse; }
+        .checkout-table th { background: var(--color-surface-alt); padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--color-muted); text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--color-border); }
+        .checkout-table td { padding: 16px; border-bottom: 1px solid var(--color-border-light); vertical-align: middle; }
+        .checkout-table tbody tr:last-child td { border-bottom: none; }
+        .checkout-item-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--color-accent-soft); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .payment-options { display: flex; flex-direction: column; gap: 12px; }
+        .payment-card { position: relative; cursor: pointer; }
+        .payment-card input { position: absolute; opacity: 0; }
+        .payment-card-content { display: flex; align-items: center; gap: 16px; padding: 16px; border: 2px solid var(--color-border); border-radius: 12px; transition: all .2s; background: #fff; }
+        .payment-card:hover .payment-card-content { border-color: var(--color-primary); }
+        .payment-card input:checked + .payment-card-content { border-color: var(--color-primary); background: var(--color-accent-soft); }
+        .payment-card input:checked + .payment-card-content .payment-card-check { opacity: 1; transform: scale(1); }
+        .payment-card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+        .payment-card-icon.paypal { background: #e8f0fe; color: #0070ba; }
+        .payment-card-icon.payphone { background: #e6f7ed; color: #198754; }
+        .payment-card-title { font-weight: 600; color: var(--color-text); font-size: 15px; }
+        .payment-card-desc { color: var(--color-muted); font-size: 12px; }
+        .payment-card-check { margin-left: auto; font-size: 20px; color: var(--color-primary); opacity: 0; transform: scale(.5); transition: all .2s; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+        .summary-label { color: var(--color-muted); font-size: 14px; }
+        .summary-value { font-weight: 500; color: var(--color-text); font-size: 14px; }
+        .summary-row.total { padding: 12px 0; }
+        .summary-row.total .summary-label { font-size: 16px; font-weight: 600; color: var(--color-text); }
+        .summary-row.total .total-amount { font-size: 22px; font-weight: 700; color: var(--color-primary); }
+        .summary-divider { height: 1px; background: var(--color-border); margin: 4px 0; }
+        .checkout-info-list { list-style: none; padding: 0; margin: 16px 0 0; border-top: 1px solid var(--color-border-light); padding-top: 12px; }
+        .checkout-info-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; color: var(--color-muted); }
+        .checkout-info-list li i { font-size: 16px; }
+        .app-card-header { display: flex; align-items: center; gap: 10px; }
     </style>
 }

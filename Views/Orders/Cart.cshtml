@@ -15,15 +15,6 @@ Layout = "_Layout";
         </div>
     </div>
 
-    @if (TempData["Success"] is string s)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert"><i class="bi bi-check-circle me-2"></i>@s<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-    }
-    @if (TempData["Error"] is string e)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert"><i class="bi bi-exclamation-circle me-2"></i>@e<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-    }
-
     @if (Model == null || !Model.Details.Any())
     {
         <div class="app-card">

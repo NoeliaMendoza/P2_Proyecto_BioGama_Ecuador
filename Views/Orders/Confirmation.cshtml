@@ -154,9 +154,15 @@
         }
 
         <div class="d-flex flex-wrap gap-2 mt-4">
-            <a asp-controller="Orders" asp-action="MyOrders" class="btn btn-primary">
-                <i class="bi bi-list-ul me-1"></i>Ver mis pedidos
+            <a asp-controller="Orders" asp-action="MyOrders" class="btn btn-outline-primary">
+                <i class="bi bi-receipt me-1"></i>Mis compras
             </a>
+            @if (Model.Payment?.Status == "Approved" && Model.Details.Any(d => d.Course != null))
+            {
+                <a asp-controller="MyCourses" asp-action="Index" class="btn btn-primary">
+                    <i class="bi bi-book me-1"></i>Ir a mis cursos
+                </a>
+            }
             <a asp-controller="Courses" asp-action="Index" class="btn btn-outline-secondary">
                 <i class="bi bi-mortarboard me-1"></i>Seguir comprando
             </a>

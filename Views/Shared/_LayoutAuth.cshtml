@@ -12,7 +12,7 @@
     @await RenderSectionAsync("Styles", required: false)
 </head>
 
-<body>
+<body class="auth-page-body">
     <div class="auth-layout">
         <div class="auth-brand-panel d-none d-lg-flex">
             <div class="auth-brand-content">
@@ -24,7 +24,9 @@
             </div>
         </div>
         <div class="auth-form-panel">
-            @RenderBody()
+            <div class="auth-form-shell">
+                @RenderBody()
+            </div>
         </div>
     </div>
 

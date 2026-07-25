@@ -724,63 +724,10 @@
                 <p class="text-muted small mt-3">Recibirás un correo con los detalles y el código QR para el check-in.</p>
             </div>
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="window.location.href='/Orders/MyOrders'">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" onclick="window.location.href='/Orders/MyOrders'">
                     Ver mis cursos
                 </button>
             </div>
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Modal reserva - envío AJAX
-            const reserveForm = document.getElementById('reserveForm');
-            if (reserveForm) {
-                reserveForm.addEventListener('submit', async function (e) {
-                    e.preventDefault();
-                    const btn = reserveForm.querySelector('button[type="submit"]');
-                    const originalBtnText = btn.innerHTML;
-                    btn.disabled = true;
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
-
-                    try {
-                        const formData = new FormData(reserveForm);
-                        const response = await fetch(reserveForm.action, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                            }
-                        });
-
-                        if (response.ok) {
-                            const data = await response.json();
-                            if (data.success) {
-                                // Cerrar modal reserva
-                                const reserveModal = bootstrap.Modal.getInstance(document.getElementById('reserveModal'));
-                                reserveModal.hide();
-
-                                // Mostrar modal confirmación
-                                document.getElementById('confirmationCode').textContent = data.confirmationCode || data.orderId?.substring(0, 8).toUpperCase();
-                                new bootstrap.Modal(document.getElementById('confirmationModal')).show();
-                            } else {
-                                alert('Error: ' + (data.error || 'No se pudo procesar la reserva'));
-                            }
-                        } else {
-                            const err = await response.json();
-                            alert('Error: ' + (err.error || 'Error en la reserva'));
-                        }
-                    } catch (err) {
-                        console.error(err);
-                        alert('Error de conexión. Intenta nuevamente.');
-                    } finally {
-                        btn.disabled = false;
-                        btn.innerHTML = originalBtnText;
-                    }
-                });
-            });
-        });
-    </script>
-}

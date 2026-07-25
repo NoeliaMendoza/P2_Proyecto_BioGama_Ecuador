@@ -8,15 +8,6 @@
     <span class="badge badge-soft-primary fs-6 px-3 py-2"><i class="bi bi-box me-1"></i>@ViewBag.TotalProducts productos</span>
     <span class="badge badge-soft-success fs-6 px-3 py-2"><i class="bi bi-check2-circle me-1"></i>@ViewBag.AvailableUnits unidades disponibles</span>
 </div>
-    @if (TempData["Success"] is string successMsg)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">@successMsg<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-    }
-    @if (TempData["Error"] is string errorMsg)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">@errorMsg<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-    }
-
     <div class="app-card filter-card mb-4">
         <div class="app-card-body">
             <form method="get" class="row g-2 align-items-end">

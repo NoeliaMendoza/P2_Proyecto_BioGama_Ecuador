@@ -1,0 +1,48 @@
+@model BioGamaEcuador.Models.Sales.Payment
+
+<h1>Pago generado</h1>
+
+<p><strong>Orden:</strong> @Model.OrderId</p>
+<p><strong>Estado:</strong> @Model.Status</p>
+<p><strong>Total:</strong> @Model.Amount.ToString("C")</p>
+<p><strong>Transaccion cliente:</strong> @Model.ExternalId</p>
+
+@if (Model.Status == "Pending" && !string.IsNullOrWhiteSpace(Model.GatewayResponse))
+{
+    <a class="btn btn-success" href="@Model.GatewayResponse" target="_blank">
+        Abrir link de pago PayPhone
+    </a>
+}
+
+@if (User.IsInRole("Administrador") && Model.Status == "Pending")
+{
+    <form asp-action="MarkAsPaid" asp-route-id="@Model.Id" method="post" style="display:inline">
+        @Html.AntiForgeryToken()
+        <button class="btn btn-warning">Marcar como pagado para demostracion</button>
+    </form>
+}
+
+<h2>Detalle de la orden</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var detail in Model.Order.Details)
+    {
+        var name = detail.Course?.Title ?? detail.PhysicalProduct?.Name ?? "Producto";
+        <tr>
+            <td>@name</td>
+            <td>@detail.Quantity</td>
+            <td>@detail.UnitPrice.ToString("C")</td>
+            <td>@((detail.Quantity * detail.UnitPrice).ToString("C"))</td>
+        </tr>
+    }
+    </tbody>
+</table>

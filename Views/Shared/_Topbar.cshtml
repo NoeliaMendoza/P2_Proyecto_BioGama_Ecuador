@@ -27,11 +27,7 @@
                 <i class="bi bi-cart3"></i>
             </a>
 
-            <button type="button" class="topbar-btn" aria-label="Notificaciones" title="Notificaciones">
-                <i class="bi bi-bell"></i>
-                <span class="topbar-notif-dot"></span>
-            </button>
-
+            
             <div class="dropdown">
                 <a class="topbar-user dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <div class="topbar-avatar">@initials</div>
@@ -41,6 +37,16 @@
                     <li>
                         <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
                             <i class="bi bi-person-gear me-2"></i>Mi cuenta
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="MyCourses" asp-action="Index">
+                            <i class="bi bi-book me-2"></i>Mis Cursos
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Orders" asp-action="MyOrders">
+                            <i class="bi bi-receipt me-2"></i>Mis Compras
                         </a>
                     </li>
                     @if (User.IsInRole("Admin") || User.IsInRole("Administrador"))

@@ -29,7 +29,7 @@
         <div class="sidebar-section-title">Principal</div>
         <a class="sidebar-link @(IsHomeActive ? "active" : "")" asp-controller="Home" asp-action="Index">
             <i class="bi bi-grid-1x2"></i>
-            <span class="sidebar-label">Dashboard</span>
+            <span class="sidebar-label">Panel</span>
         </a>
 
         <div class="sidebar-section-title">Explorar</div>
@@ -45,10 +45,6 @@
             <i class="bi bi-box-seam"></i>
             <span class="sidebar-label">Productos</span>
         </a>
-        <a class="sidebar-link @(IsActive("Orders", "MyOrders") ? "active" : "")" asp-controller="Orders" asp-action="MyOrders">
-            <i class="bi bi-receipt"></i>
-            <span class="sidebar-label">Mis Pedidos</span>
-        </a>
         <a class="sidebar-link @(IsActive("Ia") ? "active" : "")" asp-controller="Ia" asp-action="Index">
             <i class="bi bi-cpu"></i>
             <span class="sidebar-label">Asistente IA</span>
@@ -60,6 +56,14 @@
             <a class="sidebar-link @(IsActive("Orders", "Cart") ? "active" : "")" asp-controller="Orders" asp-action="Cart">
                 <i class="bi bi-cart"></i>
                 <span class="sidebar-label">Mi Carrito</span>
+            </a>
+            <a class="sidebar-link @(IsActive("MyCourses") ? "active" : "")" asp-controller="MyCourses" asp-action="Index">
+                <i class="bi bi-book"></i>
+                <span class="sidebar-label">Mis Cursos</span>
+            </a>
+            <a class="sidebar-link @(IsActive("Orders", "MyOrders") ? "active" : "")" asp-controller="Orders" asp-action="MyOrders">
+                <i class="bi bi-receipt"></i>
+                <span class="sidebar-label">Mis Compras</span>
             </a>
 
             <div class="sidebar-section-title">Gestión</div>
