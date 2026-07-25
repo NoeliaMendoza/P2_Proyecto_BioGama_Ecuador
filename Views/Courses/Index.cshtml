@@ -166,13 +166,13 @@
             <nav class="app-pagination" aria-label="Paginación cursos">
                 <ul class="pagination justify-content-center flex-wrap">
                     <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
-                        <a class="page-link" asp-controller="Courses" asp-action="Index" asp-route-pagina="1"
+                        <a class="page-link" asp-controller="Courses" asp-action="Index" asp-route-page="1"
                            asp-route-busqueda="@ViewBag.Busqueda" asp-route-modalidad="@ViewBag.ModalidadFiltro"
                            asp-route-estado="@ViewBag.EstadoFiltro">&laquo;</a>
                     </li>
                     <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
                         <a class="page-link" asp-controller="Courses" asp-action="Index"
-                           asp-route-pagina="@(paginaActual - 1)" asp-route-busqueda="@ViewBag.Busqueda"
+                           asp-route-page="@(paginaActual - 1)" asp-route-busqueda="@ViewBag.Busqueda"
                            asp-route-modalidad="@ViewBag.ModalidadFiltro" asp-route-estado="@ViewBag.EstadoFiltro">&lsaquo;</a>
                     </li>
                     @if (inicio > 1)
@@ -182,7 +182,7 @@
                     @for (int i = inicio; i <= fin; i++)
                     {
                         <li class="page-item @(i == paginaActual ? "active" : "")">
-                            <a class="page-link" asp-controller="Courses" asp-action="Index" asp-route-pagina="@i"
+                            <a class="page-link" asp-controller="Courses" asp-action="Index" asp-route-page="@i"
                                asp-route-busqueda="@ViewBag.Busqueda" asp-route-modalidad="@ViewBag.ModalidadFiltro"
                                asp-route-estado="@ViewBag.EstadoFiltro">@i</a>
                         </li>
@@ -193,11 +193,11 @@
                     }
                     <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
                         <a class="page-link" asp-controller="Courses" asp-action="Index"
-                           asp-route-pagina="@(paginaActual + 1)" asp-route-busqueda="@ViewBag.Busqueda"
+                           asp-route-page="@(paginaActual + 1)" asp-route-busqueda="@ViewBag.Busqueda"
                            asp-route-modalidad="@ViewBag.ModalidadFiltro" asp-route-estado="@ViewBag.EstadoFiltro">&rsaquo;</a>
                     </li>
                     <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
-                        <a class="page-link" asp-controller="Courses" asp-action="Index" asp-route-pagina="@totalPaginas"
+                        <a class="page-link" asp-controller="Courses" asp-action="Index" asp-route-page="@totalPaginas"
                            asp-route-busqueda="@ViewBag.Busqueda" asp-route-modalidad="@ViewBag.ModalidadFiltro"
                            asp-route-estado="@ViewBag.EstadoFiltro">&raquo;</a>
                     </li>
