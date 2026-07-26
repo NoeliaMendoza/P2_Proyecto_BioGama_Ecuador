@@ -66,37 +66,40 @@
                 <span class="sidebar-label">Mis Compras</span>
             </a>
 
-            <div class="sidebar-section-title">Gestión</div>
-            <a class="sidebar-link @(IsActive("Species") ? "active" : "")" asp-controller="Species" asp-action="Index">
-                <i class="bi bi-bug"></i>
-                <span class="sidebar-label">Especies</span>
-            </a>
-            <a class="sidebar-link @(IsActive("Families") ? "active" : "")" asp-controller="Families" asp-action="Index">
-                <i class="bi bi-diagram-3"></i>
-                <span class="sidebar-label">Familias</span>
-            </a>
-            <a class="sidebar-link @(IsActive("Researchers") ? "active" : "")" asp-controller="Researchers" asp-action="Index">
-                <i class="bi bi-person-badge"></i>
-                <span class="sidebar-label">Investigadores</span>
-            </a>
-            <a class="sidebar-link @(IsActive("NaturalReserves") ? "active" : "")" asp-controller="NaturalReserves" asp-action="Index">
-                <i class="bi bi-tree"></i>
-                <span class="sidebar-label">Reservas</span>
-            </a>
-            <a class="sidebar-link @(IsActive("Locations") ? "active" : "")" asp-controller="Locations" asp-action="Index">
-                <i class="bi bi-geo-alt"></i>
-                <span class="sidebar-label">Ubicaciones</span>
-            </a>
-            <a class="sidebar-link @(IsActive("Records") ? "active" : "")" asp-controller="Records" asp-action="Index">
-                <i class="bi bi-journal-text"></i>
-                <span class="sidebar-label">Registros</span>
-            </a>
+            @if (User.IsInRole("Administrador") || User.IsInRole("Investigador"))
+            {
+                <div class="sidebar-section-title">Gestión</div>
+                <a class="sidebar-link @(IsActive("Species") ? "active" : "")" asp-controller="Species" asp-action="Index">
+                    <i class="bi bi-bug"></i>
+                    <span class="sidebar-label">Especies</span>
+                </a>
+                <a class="sidebar-link @(IsActive("Families") ? "active" : "")" asp-controller="Families" asp-action="Index">
+                    <i class="bi bi-diagram-3"></i>
+                    <span class="sidebar-label">Familias</span>
+                </a>
+                <a class="sidebar-link @(IsActive("Researchers") ? "active" : "")" asp-controller="Researchers" asp-action="Index">
+                    <i class="bi bi-person-badge"></i>
+                    <span class="sidebar-label">Investigadores</span>
+                </a>
+                <a class="sidebar-link @(IsActive("NaturalReserves") ? "active" : "")" asp-controller="NaturalReserves" asp-action="Index">
+                    <i class="bi bi-tree"></i>
+                    <span class="sidebar-label">Reservas</span>
+                </a>
+                <a class="sidebar-link @(IsActive("Locations") ? "active" : "")" asp-controller="Locations" asp-action="Index">
+                    <i class="bi bi-geo-alt"></i>
+                    <span class="sidebar-label">Ubicaciones</span>
+                </a>
+                <a class="sidebar-link @(IsActive("Records") ? "active" : "")" asp-controller="Records" asp-action="Index">
+                    <i class="bi bi-journal-text"></i>
+                    <span class="sidebar-label">Registros</span>
+                </a>
 
-            <div class="sidebar-section-title">Analítica</div>
-            <a class="sidebar-link @(IsActive("Reports") ? "active" : "")" asp-controller="Reports" asp-action="Index">
-                <i class="bi bi-bar-chart-line"></i>
-                <span class="sidebar-label">Reportes</span>
-            </a>
+                <div class="sidebar-section-title">Analítica</div>
+                <a class="sidebar-link @(IsActive("Reports") ? "active" : "")" asp-controller="Reports" asp-action="Index">
+                    <i class="bi bi-bar-chart-line"></i>
+                    <span class="sidebar-label">Reportes</span>
+                </a>
+            }
             @if (User.IsInRole("Admin") || User.IsInRole("Administrador"))
             {
                 <div class="sidebar-section-title">Administración</div>

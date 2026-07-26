@@ -26,6 +26,7 @@ builder.Services
         options.Password.RequireNonAlphanumeric = false;
     })
     .AddRoles<IdentityRole>()
+    .AddErrorDescriber<BioGamaEcuador.Services.SpanishIdentityErrorDescriber>()
     .AddEntityFrameworkStores<AppDbContext>();
 
 builder.Services

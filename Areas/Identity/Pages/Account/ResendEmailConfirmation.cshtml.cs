@@ -45,8 +45,9 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Required]
-            [EmailAddress]
+            [Display(Name = "Correo electrónico")]
+            [Required(ErrorMessage = "Este campo es obligatorio.")]
+            [EmailAddress(ErrorMessage = "Debe ingresar un correo electrónico válido.")]
             public string Email { get; set; }
         }
 
@@ -78,7 +79,7 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account
                 protocol: Request.Scheme);
             await _emailSender.SendEmailAsync(
                 Input.Email,
-                "Confirm your email",
+                "Confirma tu correo electrónico",
                 $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
             ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");

@@ -1,17 +1,17 @@
 ﻿@page
 @model EnableAuthenticatorModel
 @{
-    ViewData["Title"] = "Configurar aplicacion de autenticacion";
+    ViewData["Title"] = "Configurar aplicación de autenticación";
     ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
 }
 
 
 <div>
-    <p>Sigue estos pasos para configurar tu aplicacion de autenticacion:</p>
+    <p>Sigue estos pasos para configurar tu aplicación de autenticación:</p>
     <ol class="list">
         <li>
             <p>
-                Descarga una aplicacion de autenticacion como Microsoft Authenticator para
+                Descarga una aplicación de autenticación como Microsoft Authenticator para
                 <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> y
                 <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> o
                 Google Authenticator para
@@ -20,22 +20,22 @@
             </p>
         </li>
         <li>
-            <p>Escanea el codigo QR o ingresa esta clave <kbd>@Model.SharedKey</kbd> en tu aplicacion de autenticacion. Los espacios y mayusculas no importan.</p>
+            <p>Escanea el código QR o ingresa esta clave <kbd>@Model.SharedKey</kbd> en tu aplicación de autenticación. Los espacios y mayúsculas no importan.</p>
             <div id="qrCode" style="width:200px;height:200px;margin:16px 0">
-                <img src="data:image/png;base64,@Model.QrCodeBase64" alt="Codigo QR" style="width:200px;height:200px" />
+                <img src="data:image/png;base64,@Model.QrCodeBase64" alt="Código QR" style="width:200px;height:200px" />
             </div>
         </li>
         <li>
             <p>
-                Una vez que hayas escaneado el codigo QR o ingresado la clave, la aplicacion te proporcionara
-                un codigo unico. Ingresa el codigo en el campo de confirmacion a continuacion.
+                Una vez que hayas escaneado el código QR o ingresado la clave, la aplicación te proporcionará
+                un código único. Ingresa el código en el campo de confirmación a continuación.
             </p>
             <div class="row">
                 <div class="col-md-6">
                     <form id="send-code" method="post">
                         <div class="form-floating mb-3">
-                            <input asp-for="Input.Code" class="form-control" autocomplete="off" placeholder="Ingresa el codigo"/>
-                            <label asp-for="Input.Code" class="control-label form-label">Codigo de verificacion</label>
+                            <input asp-for="Input.Code" class="form-control" autocomplete="off" placeholder="Ingresa el código"/>
+                            <label asp-for="Input.Code" class="control-label form-label">Código de verificación</label>
                             <span asp-validation-for="Input.Code" class="text-danger"></span>
                         </div>
                         <button type="submit" class="w-100 btn btn-lg btn-primary">Verificar</button>

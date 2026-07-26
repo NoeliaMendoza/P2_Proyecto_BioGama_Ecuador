@@ -2,7 +2,16 @@
 
 @{
     ViewData["Title"] = Model.CommonName;
-    
+    string ImageSrc(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return "";
+        var src = url.Trim();
+        if (Uri.TryCreate(src, UriKind.Absolute, out _))
+            return src.Contains(" ") ? src.Replace(" ", "%20") : src;
+        if (!src.StartsWith("~/") && !src.StartsWith("/"))
+            src = "~/images/" + src.TrimStart('/');
+        return Url.Content(src);
+    }
     var statusCode = Model.ConservationStatus?.Code ?? "";
     var statusBadge = statusCode switch
     {
@@ -13,27 +22,10 @@
     };
 }
 
-<div class="public-detail-header">
-        <div>
-            <h1 class="public-detail-title">@Model.CommonName</h1>
-            <p class="public-detail-scientific">@Model.ScientificName</p>
-            <p class="public-detail-meta">
-                <i class="bi bi-calendar3 me-1"></i>Registrado: @Model.CreatedAt.ToString("dd/MM/yyyy")
-            </p>
-        </div>
-        <div class="public-detail-badges">
-            @if (Model.ConservationStatus != null)
-            {
-                <span class="badge @statusBadge">@Model.ConservationStatus.Name (@Model.ConservationStatus.Code)</span>
-            }
-            @if (Model.IsEndemic)
-            {
-                <span class="badge badge-soft-primary">
-                    <i class="bi bi-geo-alt me-1"></i>Endémica
-                </span>
-            }
-        </div>
-    </div>
+<div class="public-content">
+    <a asp-controller="Public" asp-action="Catalogo" class="btn btn-outline-secondary btn-sm mb-4">
+        <i class="bi bi-arrow-left me-1"></i>Volver al catálogo
+    </a>
 
     <div class="app-card detail-card overflow-hidden mb-4">
         <div class="row g-0">
@@ -41,85 +33,88 @@
                 <div class="detail-image">
                     @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
                     {
-                        var imageUrl = Model.ImageUrl.Trim();
-                        var imageSrc = imageUrl;
-                        var isAbsolute = Uri.TryCreate(imageUrl, UriKind.Absolute, out _);
-                        if (isAbsolute)
-                        {
-                            imageSrc = imageUrl.Contains(" ") ? imageUrl.Replace(" ", "%20") : imageUrl;
-                        }
-                        else
-                        {
-                            if (!imageUrl.StartsWith("~/") && !imageUrl.StartsWith("/"))
-                            {
-                                imageUrl = "~/images/" + imageUrl.TrimStart('/');
-                            }
-                            imageSrc = Url.Content(imageUrl);
-                        }
-                        <img src="@imageSrc" alt="@Model.CommonName" class="w-100" />
+                        <img src="@ImageSrc(Model.ImageUrl)" alt="@Model.CommonName" class="w-100" style="max-height:400px;object-fit:cover" />
                     }
                     else
                     {
-                        <div class="text-center text-muted">
-                            <i class="bi bi-image" style="font-size: 3rem; opacity: 0.3;"></i>
-                            <p class="mt-2 small mb-0">@(Model.Family?.Name ?? "Sin imagen disponible")</p>
+                        <div class="text-center text-muted py-4">
+                            <div class="stat-card-icon primary mx-auto mb-3"><i class="bi bi-flower1"></i></div>
+                            <p class="mb-1 fw-medium">@Model.CommonName</p>
+                            <p class="small mb-0 opacity-75">@(Model.Family?.Name ?? "Sin imagen disponible")</p>
                         </div>
                     }
                 </div>
             </div>
             <div class="col-md-7">
                 <div class="app-card-body">
-                    <h2 class="h5 fw-semibold mb-3">Ficha técnica</h2>
-                    <table class="table table-borderless public-spec-table mb-0">
-                        <tbody>
-                            <tr>
-                                <th>Nombre científico</th>
-                                <td><em>@Model.ScientificName</em></td>
-                            </tr>
-                            <tr>
-                                <th>Nombre común</th>
-                                <td>@Model.CommonName</td>
-                            </tr>
-                            <tr>
-                                <th>Familia</th>
-                                <td>@(Model.Family?.Name ?? "—")</td>
-                            </tr>
-                            <tr>
-                                <th>Estado de conservación</th>
-                                <td>@(Model.ConservationStatus?.Name ?? "—")</td>
-                            </tr>
-                            <tr>
-                                <th>Endémica</th>
-                                <td>@(Model.IsEndemic ? "Sí" : "No")</td>
-                            </tr>
-                            @if (!string.IsNullOrWhiteSpace(Model.Description))
+                    <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+                        <div>
+                            <h1 class="h3 fw-bold mb-1" style="letter-spacing:-0.02em">@Model.CommonName</h1>
+                            <p class="text-muted fst-italic mb-0"><em>@Model.ScientificName</em></p>
+                        </div>
+                        <div class="d-flex flex-wrap gap-1">
+                            @if (Model.ConservationStatus != null)
                             {
-                                <tr>
-                                    <th>Descripción</th>
-                                    <td>@Model.Description</td>
-                                </tr>
+                                <span class="badge @statusBadge">@Model.ConservationStatus.Name (@Model.ConservationStatus.Code)</span>
                             }
-                        </tbody>
-                    </table>
-    </div>
-</div>
+                            @if (Model.IsEndemic)
+                            {
+                                <span class="badge badge-soft-primary"><i class="bi bi-geo-alt me-1"></i>Endémica</span>
+                            }
+                        </div>
+                    </div>
+
+                    <hr class="my-3" />
+
+                    <dl class="row mb-0" style="font-size:var(--font-size-sm)">
+                        <dt class="col-sm-4 text-muted fw-medium">Nombre científico</dt>
+                        <dd class="col-sm-8"><em>@Model.ScientificName</em></dd>
+                        <dt class="col-sm-4 text-muted fw-medium">Nombre común</dt>
+                        <dd class="col-sm-8">@Model.CommonName</dd>
+                        <dt class="col-sm-4 text-muted fw-medium">Familia</dt>
+                        <dd class="col-sm-8">@(Model.Family?.Name ?? "—")</dd>
+                        @if (!string.IsNullOrWhiteSpace(Model.Description))
+                        {
+                            <dt class="col-sm-4 text-muted fw-medium">Descripción</dt>
+                            <dd class="col-sm-8">@Model.Description</dd>
+                        }
+                        <dt class="col-sm-4 text-muted fw-medium">Estado de conservación</dt>
+                        <dd class="col-sm-8">@(Model.ConservationStatus?.Name ?? "—")</dd>
+                        <dt class="col-sm-4 text-muted fw-medium">Endémica</dt>
+                        <dd class="col-sm-8">@(Model.IsEndemic ? "Sí" : "No")</dd>
+                        <dt class="col-sm-4 text-muted fw-medium">Registrado</dt>
+                        <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy")</dd>
+                    </dl>
+
+                    @if (User.IsInRole("Administrador") || User.IsInRole("Investigador"))
+                    {
+                        <hr class="my-3" />
+                        <div class="d-flex gap-2">
+                            <a asp-controller="Species" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                                <i class="bi bi-pencil me-1"></i>Editar
+                            </a>
+                            @if (User.IsInRole("Administrador"))
+                            {
+                                <a asp-controller="Species" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash me-1"></i>Eliminar
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="d-flex flex-wrap gap-2">
-        <a asp-controller="Public" asp-action="Catalogo" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i>Volver al catálogo
-        </a>
-        @if (User.IsInRole("Administrador") || User.IsInRole("Investigador"))
-        {
-            <a asp-controller="Species" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
-                <i class="bi bi-pencil me-1"></i>Editar
-            </a>
-            @if (User.IsInRole("Administrador"))
-            {
-                <a asp-controller="Species" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-sm">
-                    <i class="bi bi-trash me-1"></i>Eliminar
-                </a>
-            }
-        }
-    </div>
+    @if (Model.ConservationStatus != null && !string.IsNullOrWhiteSpace(Model.ConservationStatus.Description))
+    {
+        <div class="app-card mb-4">
+            <div class="app-card-body">
+                <h5 class="fw-semibold mb-2">
+                    <i class="bi bi-shield-check me-2 text-muted"></i>@Model.ConservationStatus.Name (@Model.ConservationStatus.Code)
+                </h5>
+                <p class="small text-muted mb-0">@Model.ConservationStatus.Description</p>
+            </div>
+        </div>
+    }
 </div>
