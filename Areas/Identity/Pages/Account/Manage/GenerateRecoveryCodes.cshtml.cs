@@ -75,7 +75,7 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             RecoveryCodes = recoveryCodes.ToArray();
 
             _logger.LogInformation("User with ID '{UserId}' has generated new 2FA recovery codes.", userId);
-            StatusMessage = "You have generated new recovery codes.";
+            StatusMessage = "Ha generado nuevos códigos de recuperación.";
             return RedirectToPage("./ShowRecoveryCodes");
         }
     }

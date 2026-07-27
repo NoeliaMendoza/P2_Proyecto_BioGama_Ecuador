@@ -12,60 +12,73 @@
     {
         @if (Model.Is2faEnabled)
         {
-            if (Model.RecoveryCodesLeft == 0)
-            {
-                <div class="alert alert-danger">
-                    <strong><i class="bi bi-exclamation-triangle me-1"></i>No te quedan códigos de recuperación.</strong>
-                    <p class="mb-0">Debes <a asp-page="./GenerateRecoveryCodes">generar un nuevo conjunto de códigos de recuperación</a> antes de poder iniciar sesión con un código de recuperación.</p>
-                </div>
-            }
-            else if (Model.RecoveryCodesLeft == 1)
-            {
-                <div class="alert alert-danger">
-                    <strong><i class="bi bi-exclamation-triangle me-1"></i>Te queda 1 código de recuperación.</strong>
-                    <p class="mb-0">Puedes <a asp-page="./GenerateRecoveryCodes">generar un nuevo conjunto de códigos de recuperación</a>.</p>
-                </div>
-            }
-            else if (Model.RecoveryCodesLeft <= 3)
-            {
-                <div class="alert alert-warning">
-                    <strong><i class="bi bi-exclamation-triangle me-1"></i>Te quedan @Model.RecoveryCodesLeft códigos de recuperación.</strong>
-                    <p class="mb-0">Deberías <a asp-page="./GenerateRecoveryCodes">generar un nuevo conjunto de códigos de recuperación</a>.</p>
-                </div>
-            }
+            <div class="app-card mb-4">
+                <div class="app-card-body p-4">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-shield-check me-1"></i>Autenticación de dos factores</h6>
+                    @if (Model.RecoveryCodesLeft == 0)
+                    {
+                        <div class="alert alert-danger">
+                            <strong><i class="bi bi-exclamation-triangle me-1"></i>No te quedan códigos de recuperación.</strong>
+                            <p class="mb-0">Debes <a asp-page="./GenerateRecoveryCodes">generar un nuevo conjunto de códigos de recuperación</a> antes de poder iniciar sesión con un código de recuperación.</p>
+                        </div>
+                    }
+                    else if (Model.RecoveryCodesLeft == 1)
+                    {
+                        <div class="alert alert-danger">
+                            <strong><i class="bi bi-exclamation-triangle me-1"></i>Te queda 1 código de recuperación.</strong>
+                            <p class="mb-0">Puedes <a asp-page="./GenerateRecoveryCodes">generar un nuevo conjunto de códigos de recuperación</a>.</p>
+                        </div>
+                    }
+                    else if (Model.RecoveryCodesLeft <= 3)
+                    {
+                        <div class="alert alert-warning">
+                            <strong><i class="bi bi-exclamation-triangle me-1"></i>Te quedan @Model.RecoveryCodesLeft códigos de recuperación.</strong>
+                            <p class="mb-0">Deberías <a asp-page="./GenerateRecoveryCodes">generar un nuevo conjunto de códigos de recuperación</a>.</p>
+                        </div>
+                    }
 
-            if (Model.IsMachineRemembered)
-            {
-                <form method="post" class="d-inline-block">
-                    <button type="submit" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-circle me-1"></i>Olvidar este navegador
-                    </button>
-                </form>
-            }
-            <a asp-page="./Disable2fa" class="btn btn-outline-danger me-2">
-                <i class="bi bi-shield-x me-1"></i>Deshabilitar 2FA
-            </a>
-            <a asp-page="./GenerateRecoveryCodes" class="btn btn-outline-warning">
-                <i class="bi bi-arrow-repeat me-1"></i>Restablecer códigos de recuperación
-            </a>
+                    <div class="d-flex gap-2 flex-wrap">
+                        @if (Model.IsMachineRemembered)
+                        {
+                            <form method="post">
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-x-circle me-1"></i>Olvidar este navegador
+                                </button>
+                            </form>
+                        }
+                        <a asp-page="./Disable2fa" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-shield-x me-1"></i>Deshabilitar 2FA
+                        </a>
+                        <a asp-page="./GenerateRecoveryCodes" class="btn btn-outline-warning btn-sm">
+                            <i class="bi bi-arrow-repeat me-1"></i>Generar nuevos códigos de recuperación
+                        </a>
+                    </div>
+                </div>
+            </div>
         }
 
-        <h5 class="fw-bold mt-4 mb-3"><i class="bi bi-phone me-1"></i>Aplicación de autenticación</h5>
-        @if (!Model.HasAuthenticator)
-        {
-            <a id="enable-authenticator" asp-page="./EnableAuthenticator" class="btn btn-primary">
-                <i class="bi bi-plus-circle me-1"></i>Agregar aplicación de autenticación
-            </a>
-        }
-        else
-        {
-            <a id="enable-authenticator" asp-page="./EnableAuthenticator" class="btn btn-primary me-2">
-                <i class="bi bi-gear me-1"></i>Configurar aplicación de autenticación
-            </a>
-            <a id="reset-authenticator" asp-page="./ResetAuthenticator" class="btn btn-outline-danger">
-                <i class="bi bi-arrow-repeat me-1"></i>Restablecer aplicación de autenticación
-            </a>
-        }
+        <div class="app-card">
+            <div class="app-card-body p-4">
+                <h6 class="fw-bold mb-3"><i class="bi bi-phone me-1"></i>Aplicación de autenticación</h6>
+                @if (!Model.HasAuthenticator)
+                {
+                    <a id="enable-authenticator" asp-page="./EnableAuthenticator" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle me-1"></i>Agregar aplicación de autenticación
+                    </a>
+                }
+                else
+                {
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a id="enable-authenticator" asp-page="./EnableAuthenticator" class="btn btn-primary btn-sm">
+                            <i class="bi bi-gear me-1"></i>Configurar aplicación de autenticación
+                        </a>
+                        <a id="reset-authenticator" asp-page="./ResetAuthenticator" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-arrow-repeat me-1"></i>Restablecer aplicación de autenticación
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
     }
     else
     {

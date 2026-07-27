@@ -62,7 +62,7 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             }
 
             _logger.LogInformation("User with ID '{UserId}' has disabled 2fa.", _userManager.GetUserId(User));
-            StatusMessage = "2fa has been disabled. You can reenable 2fa when you setup an authenticator app";
+            StatusMessage = "La autenticación en dos pasos ha sido deshabilitada. Puede volver a activarla configurando una aplicación de autenticación.";
             return RedirectToPage("./TwoFactorAuthentication");
         }
     }

@@ -125,7 +125,7 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             _logger.LogInformation("User changed their password successfully.");
             var email = await _userManager.GetEmailAsync(user);
             if (email != null) await _bioGamaEmail.SendPasswordChangedAsync(email);
-            StatusMessage = "Your password has been changed.";
+            StatusMessage = "Su contraseña ha sido cambiada.";
 
             return RedirectToPage();
         }

@@ -137,7 +137,7 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             var email = await _userManager.GetEmailAsync(user);
             if (email != null) await _bioGamaEmail.SendMfaActivatedAsync(email);
 
-            StatusMessage = "Your authenticator app has been verified.";
+            StatusMessage = "Su aplicación de autenticación ha sido verificada.";
 
             if (await _userManager.CountRecoveryCodesAsync(user) == 0)
             {

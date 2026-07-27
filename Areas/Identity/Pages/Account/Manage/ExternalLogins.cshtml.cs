@@ -89,12 +89,12 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             var result = await _userManager.RemoveLoginAsync(user, loginProvider, providerKey);
             if (!result.Succeeded)
             {
-                StatusMessage = "The external login was not removed.";
+                StatusMessage = "El inicio de sesión externo no fue eliminado.";
                 return RedirectToPage();
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "The external login was removed.";
+            StatusMessage = "El inicio de sesión externo fue eliminado.";
             return RedirectToPage();
         }
 
@@ -127,14 +127,14 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             var result = await _userManager.AddLoginAsync(user, info);
             if (!result.Succeeded)
             {
-                StatusMessage = "The external login was not added. External logins can only be associated with one account.";
+                StatusMessage = "El inicio de sesión externo no fue añadido. Solo se puede asociar una cuenta por inicio de sesión.";
                 return RedirectToPage();
             }
 
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
-            StatusMessage = "The external login was added.";
+            StatusMessage = "El inicio de sesión externo fue añadido.";
             return RedirectToPage();
         }
     }

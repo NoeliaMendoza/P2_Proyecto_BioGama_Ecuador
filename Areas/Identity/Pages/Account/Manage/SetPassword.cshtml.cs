@@ -106,7 +106,7 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your password has been set.";
+            StatusMessage = "Su contraseña ha sido establecida.";
 
             return RedirectToPage();
         }

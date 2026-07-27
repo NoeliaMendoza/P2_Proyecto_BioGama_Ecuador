@@ -59,7 +59,7 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             _logger.LogInformation("User with ID '{UserId}' has reset their authentication app key.", user.Id);
 
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.";
+            StatusMessage = "La clave de su aplicación de autenticación ha sido restablecida. Deberá configurar su aplicación de autenticación con la nueva clave.";
 
             return RedirectToPage("./EnableAuthenticator");
         }

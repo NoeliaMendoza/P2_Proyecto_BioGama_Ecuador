@@ -82,7 +82,7 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             }
 
             await _signInManager.ForgetTwoFactorClientAsync();
-            StatusMessage = "The current browser has been forgotten. When you login again from this browser you will be prompted for your 2fa code.";
+            StatusMessage = "El navegador actual ha sido olvidado. Al iniciar sesión nuevamente desde este navegador, se le solicitará su código de verificación.";
             return RedirectToPage();
         }
     }
