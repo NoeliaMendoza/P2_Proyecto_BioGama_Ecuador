@@ -48,47 +48,53 @@
     </div>
 </div>
 
-<div class="app-card">
-    <div class="table-card">
-        <table class="app-table">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Reino</th>
-                    <th>Estado</th>
-                    <th>Creado</th>
-                    <th class="actions-cell">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
+<div class="app-card table-card">
+    <div class="app-card-header">
+        <h5><i class="bi bi-flower2 me-2"></i>Listado de familias</h5>
+        <span class="badge badge-soft-primary">Total: @ViewBag.TotalItems</span>
+    </div>
+    <div class="app-card-body p-0">
+        <div class="table-responsive">
+            <table class="app-table">
+                <thead>
                     <tr>
-                        <td class="fw-medium">@item.Name</td>
-                        <td>@item.Kingdom</td>
-                        <td>
-                            <span class="badge @(item.IsActive ? "badge-soft-success" : "badge-soft-secondary")">
-                                @(item.IsActive ? "Activo" : "Inactivo")
-                            </span>
-                        </td>
-                        <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td>
-                        <td class="actions-cell">
-                            <div class="btn-action-group">
-                                <a class="btn-action view" asp-action="Details" asp-route-id="@item.Id" title="Ver" data-bs-toggle="tooltip"><i class="bi bi-eye"></i></a>
-                                @if (User.IsInRole("Administrador") || User.IsInRole("Investigador"))
-                                {
-                                    <a class="btn-action edit" asp-action="Edit" asp-route-id="@item.Id" title="Editar" data-bs-toggle="tooltip"><i class="bi bi-pencil"></i></a>
-                                }
-                                @if (User.IsInRole("Administrador"))
-                                {
-                                    <a class="btn-action delete" asp-action="Delete" asp-route-id="@item.Id" title="Eliminar" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></a>
-                                }
-                            </div>
-                        </td>
+                        <th>Nombre</th>
+                        <th>Reino</th>
+                        <th>Estado</th>
+                        <th>Creado</th>
+                        <th class="actions-cell">Acciones</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-medium">@item.Name</td>
+                            <td>@item.Kingdom</td>
+                            <td>
+                                <span class="badge @(item.IsActive ? "badge-soft-success" : "badge-soft-secondary")">
+                                    @(item.IsActive ? "Activo" : "Inactivo")
+                                </span>
+                            </td>
+                            <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            <td class="actions-cell">
+                                <div class="btn-action-group">
+                                    <a class="btn-action view" asp-action="Details" asp-route-id="@item.Id" title="Ver" data-bs-toggle="tooltip"><i class="bi bi-eye"></i></a>
+                                    @if (User.IsInRole("Administrador") || User.IsInRole("Investigador"))
+                                    {
+                                        <a class="btn-action edit" asp-action="Edit" asp-route-id="@item.Id" title="Editar" data-bs-toggle="tooltip"><i class="bi bi-pencil"></i></a>
+                                    }
+                                    @if (User.IsInRole("Administrador"))
+                                    {
+                                        <a class="btn-action delete" asp-action="Delete" asp-route-id="@item.Id" title="Eliminar" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

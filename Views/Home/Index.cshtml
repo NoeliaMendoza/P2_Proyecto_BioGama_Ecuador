@@ -4,23 +4,35 @@
 @{
     ViewData["Title"] = "Dashboard";
     var isAuth = User.Identity?.IsAuthenticated == true;
+    var isAdmin = User.IsInRole("Administrador");
+    var isInvestigador = User.IsInRole("Investigador");
+    var isPublicUser = isAuth && !isAdmin && !isInvestigador;
 
     int totalEspecies = 0, totalFlora = 0, totalFauna = 0, totalHongos = 0;
     int totalInvestigadores = 0, totalReservas = 0, totalRegistros = 0;
+    int totalFamilias = 0, totalUbicaciones = 0;
     var registrosRecientes = new List<BioGamaEcuador.Models.Record>();
     var registrosPorRegion = new List<dynamic>();
     var especiesPorEstado = new List<dynamic>();
+    bool tienePerfilInvestigador = false;
+
+    totalEspecies = await Db.Species.CountAsync(s => s.IsActive);
+    totalRegistros = await Db.Records.CountAsync(r => r.IsActive);
+    totalReservas = await Db.NaturalReserves.CountAsync(r => r.IsActive);
+    totalFamilias = await Db.Families.CountAsync(f => f.IsActive);
 
     if (isAuth)
     {
-        totalEspecies = await Db.Species.CountAsync(s => s.IsActive);
-        totalRegistros = await Db.Records.CountAsync(r => r.IsActive);
         totalInvestigadores = await Db.Researchers.CountAsync(r => r.IsActive);
-        totalReservas = await Db.NaturalReserves.CountAsync(r => r.IsActive);
+        totalUbicaciones = await Db.Locations.CountAsync(l => l.IsActive);
 
         totalFlora = await Db.Species.CountAsync(s => s.IsActive && s.Family != null && (EF.Functions.ILike(s.Family.Kingdom, "%vegetal%") || EF.Functions.ILike(s.Family.Kingdom, "%plantae%")));
         totalFauna = await Db.Species.CountAsync(s => s.IsActive && s.Family != null && (EF.Functions.ILike(s.Family.Kingdom, "%animal%") || EF.Functions.ILike(s.Family.Kingdom, "%animalia%")));
         totalHongos = await Db.Species.CountAsync(s => s.IsActive && s.Family != null && (EF.Functions.ILike(s.Family.Kingdom, "%fungi%") || EF.Functions.ILike(s.Family.Kingdom, "%hongo%")));
+
+        var userEmailCtx = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? User.Identity?.Name;
+        tienePerfilInvestigador = isInvestigador && !string.IsNullOrEmpty(userEmailCtx)
+            && await Db.Researchers.AnyAsync(r => r.Email == userEmailCtx);
 
         registrosRecientes = await Db.Records
             .AsNoTracking()
@@ -34,8 +46,8 @@
 
         registrosPorRegion = (await Db.Records
             .AsNoTracking()
-            .Where(r => r.IsActive)
-            .Include(r => r.Location!)
+            .Where(r => r.IsActive && r.Location != null && r.Location.NaturalReserve != null)
+            .Include(r => r.Location)
                 .ThenInclude(l => l.NaturalReserve)
             .GroupBy(r => r.Location!.NaturalReserve!.Region)
             .Select(g => new { Region = g.Key, Total = g.Count() })
@@ -56,54 +68,375 @@
 
 @if (!isAuth)
 {
-    <div class="welcome-hero">
-        <div class="stat-card-icon primary mx-auto mb-3" style="width:56px;height:56px;font-size:1.5rem;">
-            <i class="bi bi-flower1"></i>
+    <div class="landing-hero" style="background-image: url('/images/Amazonas.webp');">
+        <div class="landing-hero-overlay"></div>
+        <div class="landing-hero-content">
+            <span class="landing-hero-badge">Biodiversidad del Ecuador</span>
+            <h1 class="landing-hero-title">BioGama Ecuador</h1>
+            <p class="landing-hero-subtitle">Centraliza el conocimiento sobre la biodiversidad ecuatoriana. Flora, fauna y hongos documentados por investigadores de todo el país.</p>
+            <div class="landing-hero-actions">
+                <a asp-controller="Public" asp-action="Catalogo" class="btn btn-light btn-lg px-4">
+                    <i class="bi bi-book me-2"></i>Explorar especies
+                </a>
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-light btn-lg px-4">
+                    <i class="bi bi-person-plus me-2"></i>Registrarse
+                </a>
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-light btn-lg px-4">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión
+                </a>
+            </div>
         </div>
-        <h1>BioGama Ecuador</h1>
-        <p>Centraliza el conocimiento sobre la biodiversidad del Ecuador. Flora, fauna y hongos en un solo lugar.</p>
-        <div class="d-flex justify-content-center gap-2 flex-wrap">
-            <a asp-controller="Public" asp-action="Catalogo" class="btn btn-primary btn-lg">
-                <i class="bi bi-book me-2"></i>Explorar Especies
-            </a>
-            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-primary btn-lg">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Acceder
+    </div>
+
+    <div class="landing-stats-bar">
+        <div class="landing-stat-item">
+            <div class="landing-stat-number" id="statEspecies">0</div>
+            <div class="landing-stat-label">Especies registradas</div>
+        </div>
+        <div class="landing-stat-divider"></div>
+        <div class="landing-stat-item">
+            <div class="landing-stat-number" id="statFamilias">0</div>
+            <div class="landing-stat-label">Familias biológicas</div>
+        </div>
+        <div class="landing-stat-divider"></div>
+        <div class="landing-stat-item">
+            <div class="landing-stat-number" id="statReservas">0</div>
+            <div class="landing-stat-label">Reservas naturales</div>
+        </div>
+        <div class="landing-stat-divider"></div>
+        <div class="landing-stat-item">
+            <div class="landing-stat-number" id="statRegistros">0</div>
+            <div class="landing-stat-label">Avistamientos</div>
+        </div>
+    </div>
+
+    <div class="landing-section">
+        <div class="landing-section-header">
+            <h2>¿Qué puedes hacer?</h2>
+            <p>Explora, colabora y contribuye al conocimiento de la biodiversidad ecuatoriana.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="landing-feature-card">
+                    <div class="landing-feature-icon" style="background: var(--color-accent); color: var(--color-primary);">
+                        <i class="bi bi-search-heart"></i>
+                    </div>
+                    <h5>Explorar catálogo</h5>
+                    <p>Navega por miles de especies de flora, fauna y hongos documentadas con información científica detallada.</p>
+                    <a asp-controller="Public" asp-action="Catalogo" class="landing-feature-link">
+                        Ver especies <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="landing-feature-card">
+                    <div class="landing-feature-icon" style="background: #e0f2fe; color: #0369a1;">
+                        <i class="bi bi-journal-text"></i>
+                    </div>
+                    <h5>Documentar hallazgos</h5>
+                    <p>Los investigadores pueden registrar avistamientos, ubicaciones y observaciones de campo en tiempo real.</p>
+                    <a asp-area="Identity" asp-page="/Account/Register" class="landing-feature-link">
+                        Unirse como investigador <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="landing-feature-card">
+                    <div class="landing-feature-icon" style="background: #fef3c7; color: #b45309;">
+                        <i class="bi bi-bar-chart-line"></i>
+                    </div>
+                    <h5>Reportes y estadísticas</h5>
+                    <p>Accede a datos consolidados sobre distribución de especies, estados de conservación y más.</p>
+                    <a asp-area="Identity" asp-page="/Account/Login" class="landing-feature-link">
+                        Iniciar sesión <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="landing-section landing-section-alt">
+        <div class="landing-section-header">
+            <h2>Tres roles, un objetivo</h2>
+            <p>Cada usuario tiene un propósito en la conservación de la biodiversidad.</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-4">
+                <div class="landing-role-card">
+                    <div class="landing-role-icon" style="background: var(--color-accent);">
+                        <i class="bi bi-shield-check" style="color: var(--color-primary);"></i>
+                    </div>
+                    <h5>Administrador</h5>
+                    <p>Gestiona el catálogo completo, familias, reservas, ubicaciones y usuarios del sistema.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="landing-role-card">
+                    <div class="landing-role-icon" style="background: #e0f2fe;">
+                        <i class="bi bi-binoculars" style="color: #0369a1;"></i>
+                    </div>
+                    <h5>Investigador</h5>
+                    <p>Registra hallazgos de campo, documenta especies y contribuye con observaciones científicas.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="landing-role-card">
+                    <div class="landing-role-icon" style="background: #f0faf4;">
+                        <i class="bi bi-globe-americas" style="color: var(--color-primary-light);"></i>
+                    </div>
+                    <h5>Público</h5>
+                    <p>Consulta la biodiversidad registrada, explora el catálogo y aprende sobre las especies del Ecuador.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="landing-section text-center pb-5">
+        <div class="landing-cta">
+            <h3>¿Listo para explorar la biodiversidad del Ecuador?</h3>
+            <p>Únete a nuestra comunidad y contribuye al conocimiento científico.</p>
+            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg px-5">
+                <i class="bi bi-person-plus me-2"></i>Crear cuenta gratuita
             </a>
         </div>
     </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="app-card role-card h-100">
-                <div class="app-card-body text-center">
-                    <div class="stat-card-icon primary mx-auto"><i class="bi bi-shield-check"></i></div>
-                    <h5 class="fw-semibold">Administrador</h5>
-                    <p class="text-muted small mb-0">Gestiona catálogo, familias, reservas y ubicaciones.</p>
+    <script>
+        (function() {
+            var stats = [
+                { el: document.getElementById('statEspecies'), target: @totalEspecies },
+                { el: document.getElementById('statFamilias'), target: @totalFamilias },
+                { el: document.getElementById('statReservas'), target: @totalReservas },
+                { el: document.getElementById('statRegistros'), target: @totalRegistros }
+            ];
+            function animateStats() {
+                stats.forEach(function(s) {
+                    if (!s.el || s.target === 0) return;
+                    var duration = 1500, start = null;
+                    function step(timestamp) {
+                        if (!start) start = timestamp;
+                        var progress = Math.min((timestamp - start) / duration, 1);
+                        var eased = 1 - Math.pow(1 - progress, 3);
+                        s.el.textContent = Math.floor(eased * s.target).toLocaleString('es');
+                        if (progress < 1) requestAnimationFrame(step);
+                        else s.el.textContent = s.target.toLocaleString('es');
+                    }
+                    requestAnimationFrame(step);
+                });
+            }
+            if ('IntersectionObserver' in window) {
+                var obs = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(e) { if (e.isIntersecting) { animateStats(); obs.disconnect(); } });
+                });
+                document.querySelectorAll('.landing-stats-bar')[0] && obs.observe(document.querySelector('.landing-stats-bar'));
+            } else { animateStats(); }
+        })();
+    </script>
+}
+else if (isPublicUser)
+{
+    <div class="public-dash-hero" style="background-image: url('/images/Amazonas.webp');">
+        <div class="public-dash-overlay"></div>
+        <div class="public-dash-content">
+            <span class="public-dash-badge">Bienvenido</span>
+            <h1 class="public-dash-title">Explora la biodiversidad</h1>
+            <p class="public-dash-desc">Accede al catálogo completo de especies, consulta registros de avistamiento y conoce más sobre la riqueza natural del Ecuador.</p>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-card-icon primary"><i class="bi bi-bug"></i></div>
+                <div class="stat-card-label">Especies</div>
+                <div class="stat-card-value">@totalEspecies.ToString("N0")</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-card-icon secondary"><i class="bi bi-flower2"></i></div>
+                <div class="stat-card-label">Flora</div>
+                <div class="stat-card-value">@totalFlora.ToString("N0")</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-card-icon info"><i class="bi bi-binoculars"></i></div>
+                <div class="stat-card-label">Fauna</div>
+                <div class="stat-card-value">@totalFauna.ToString("N0")</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-card-icon warning"><i class="bi bi-moisture"></i></div>
+                <div class="stat-card-label">Hongos</div>
+                <div class="stat-card-value">@totalHongos.ToString("N0")</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-2 mb-4">
+        <div class="col-sm-6 col-lg">
+            <div class="stat-card">
+                <div class="stat-card-icon primary"><i class="bi bi-tree"></i></div>
+                <div class="stat-card-label">Familias</div>
+                <div class="stat-card-value">@totalFamilias.ToString("N0")</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg">
+            <div class="stat-card">
+                <div class="stat-card-icon info"><i class="bi bi-journal-text"></i></div>
+                <div class="stat-card-label">Registros</div>
+                <div class="stat-card-value">@totalRegistros.ToString("N0")</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg">
+            <div class="stat-card">
+                <div class="stat-card-icon secondary"><i class="bi bi-geo-alt"></i></div>
+                <div class="stat-card-label">Ubicaciones</div>
+                <div class="stat-card-value">@totalUbicaciones.ToString("N0")</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg">
+            <div class="stat-card">
+                <div class="stat-card-icon warning"><i class="bi bi-person-badge"></i></div>
+                <div class="stat-card-label">Investigadores</div>
+                <div class="stat-card-value">@totalInvestigadores.ToString("N0")</div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="app-card h-100">
+                <div class="app-card-header">
+                    <h6>Registros por región</h6>
+                </div>
+                <div class="app-card-body">
+                    <div class="chart-container">
+                        <canvas id="chartRegiones"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="app-card role-card h-100">
-                <div class="app-card-body text-center">
-                    <div class="stat-card-icon secondary mx-auto"><i class="bi bi-binoculars"></i></div>
-                    <h5 class="fw-semibold">Investigador</h5>
-                    <p class="text-muted small mb-0">Registra hallazgos de campo y documenta especies.</p>
+        <div class="col-lg-6">
+            <div class="app-card h-100">
+                <div class="app-card-header">
+                    <h6>Especies por estado de conservación</h6>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="app-card role-card h-100">
-                <div class="app-card-body text-center">
-                    <div class="stat-card-icon info mx-auto"><i class="bi bi-globe-americas"></i></div>
-                    <h5 class="fw-semibold">Público</h5>
-                    <p class="text-muted small mb-0">Consulta la biodiversidad registrada sin iniciar sesión.</p>
+                <div class="app-card-body">
+                    <div class="chart-container">
+                        <canvas id="chartEstados"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="app-card table-card">
+        <div class="app-card-header">
+            <h6><i class="bi bi-clock-history me-2"></i>Actividad reciente</h6>
+            <a asp-controller="Records" asp-action="Index" class="btn btn-outline-primary btn-sm">Ver todos</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table app-table">
+                <thead>
+                    <tr>
+                        <th>Especie</th>
+                        <th>Investigador</th>
+                        <th>Ubicación</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!registrosRecientes.Any())
+                    {
+                        <tr>
+                            <td colspan="4">
+                                <div class="empty-state py-4">
+                                    <i class="bi bi-inbox"></i>
+                                    <p class="mb-0">No hay registros recientes</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var r in registrosRecientes)
+                    {
+                        <tr>
+                            <td class="fw-medium">@r.Species?.CommonName</td>
+                            <td>@r.Researcher?.Name</td>
+                            <td>@r.Location?.PlaceName</td>
+                            <td>@r.DiscoveryDate.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+        <script>
+            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+            Chart.defaults.color = '#6b7280';
+
+            var regionData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                registrosPorRegion.Select(r => new { label = (string)r.Region, value = (int)r.Total })));
+            var estadoData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                especiesPorEstado.Select(e => new { label = (string)e.Code, value = (int)e.Total })));
+
+            if (regionData.length) {
+                new Chart(document.getElementById('chartRegiones'), {
+                    type: 'bar',
+                    data: {
+                        labels: regionData.map(d => d.label),
+                        datasets: [{
+                            label: 'Registros',
+                            data: regionData.map(d => d.value),
+                            backgroundColor: 'rgba(64, 145, 108, 0.7)',
+                            borderColor: '#40916c',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            if (estadoData.length) {
+                new Chart(document.getElementById('chartEstados'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: estadoData.map(d => d.label),
+                        datasets: [{
+                            data: estadoData.map(d => d.value),
+                            backgroundColor: ['#1b4332','#40916c','#52b788','#74c69d','#95d5b2','#b7e4c7','#d8f3dc','#0369a1'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 12 } } }
+                    }
+                });
+            }
+        </script>
+    }
 }
 else
 {
+    @* Admin / Investigador dashboard — unchanged *@
     <div class="page-header">
         <div>
             <p class="page-header-subtitle">Resumen general del sistema</p>
@@ -174,17 +507,29 @@ else
                     <h6><i class="bi bi-lightning me-2"></i>Accesos rápidos</h6>
                 </div>
                 <div class="app-card-body py-2">
-                    <a asp-controller="Species" asp-action="Create" class="quick-link">
-                        <div class="quick-link-icon"><i class="bi bi-plus-lg"></i></div>
-                        <div class="quick-link-text"><strong>Nueva especie</strong><span>Registrar en catálogo</span></div>
-                    </a>
-                    <a asp-controller="Records" asp-action="Create" class="quick-link">
-                        <div class="quick-link-icon"><i class="bi bi-journal-plus"></i></div>
-                        <div class="quick-link-text"><strong>Nuevo registro</strong><span>Documentar hallazgo</span></div>
-                    </a>
+                    @if (isAdmin || isInvestigador)
+                    {
+                        <a asp-controller="Species" asp-action="Create" class="quick-link">
+                            <div class="quick-link-icon"><i class="bi bi-plus-lg"></i></div>
+                            <div class="quick-link-text"><strong>Nueva especie</strong><span>Registrar en catálogo</span></div>
+                        </a>
+                    }
+                    @if (isAdmin || (isInvestigador && tienePerfilInvestigador))
+                    {
+                        <a asp-controller="Records" asp-action="Create" class="quick-link">
+                            <div class="quick-link-icon"><i class="bi bi-journal-plus"></i></div>
+                            <div class="quick-link-text"><strong>Nuevo registro</strong><span>Documentar hallazgo</span></div>
+                        </a>
+                    }
+                    @if (!isAdmin && !isInvestigador)
+                    {
+                        <a asp-controller="Records" asp-action="Index" class="quick-link">
+                            <div class="quick-link-icon"><i class="bi bi-list-ul"></i></div>
+                            <div class="quick-link-text"><strong>Ver registros</strong><span>Explorar hallazgos</span></div>
+                        </a>
+                    }
                 </div>
             </div>
-        </div>
     </div>
 
     <div class="row g-3 mb-4">
@@ -261,9 +606,9 @@ else
             Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
             Chart.defaults.color = '#6b7280';
 
-            const regionData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            var regionData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
                 registrosPorRegion.Select(r => new { label = (string)r.Region, value = (int)r.Total })));
-            const estadoData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            var estadoData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
                 especiesPorEstado.Select(e => new { label = (string)e.Code, value = (int)e.Total })));
 
             if (regionData.length) {

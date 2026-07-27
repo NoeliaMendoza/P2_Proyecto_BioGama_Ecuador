@@ -6,7 +6,16 @@
 
 <div class="page-header">
     <div>
-        <p class="page-header-subtitle"><span class="badge badge-soft-secondary">@ViewBag.TotalItems registros</span></p>
+        <p class="page-header-subtitle">
+            <span class="badge badge-soft-secondary">@ViewBag.TotalItems registros</span>
+            @if (ViewBag.ReinoCounts != null)
+            {
+                foreach (System.Collections.Generic.KeyValuePair<string, int> kv in ViewBag.ReinoCounts)
+                {
+                    <span class="badge badge-soft-info ms-1">@kv.Key: @kv.Value</span>
+                }
+            }
+        </p>
     </div>
     <div class="page-header-actions">
         @if (User.IsInRole("Administrador") || User.IsInRole("Investigador"))
@@ -22,7 +31,7 @@
     <div class="app-card-body">
         <form method="get" asp-action="Index">
             <div class="row g-2 align-items-end">
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Buscar</label>
                     <input type="text" name="busqueda" class="form-control"
                            placeholder="Nombre común o científico…" value="@ViewBag.Busqueda" />
@@ -34,6 +43,16 @@
                         @foreach (var f in (List<string>?)ViewBag.Familias ?? new List<string>())
                         {
                             <option value="@f" selected="@(ViewBag.FamiliaFiltro == f)">@f</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Reino</label>
+                    <select name="kingdom" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var k in (List<string>?)ViewBag.Kingdoms ?? new List<string>())
+                        {
+                            <option value="@k" selected="@(ViewBag.KingdomFiltro == k)">@k</option>
                         }
                     </select>
                 </div>
@@ -119,13 +138,14 @@
         }
         <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
             <a class="page-link" asp-action="Index" asp-route-pagina="1" asp-route-busqueda="@ViewBag.Busqueda"
-               asp-route-familia="@ViewBag.FamiliaFiltro" asp-route-estado="@ViewBag.EstadoFiltro"
+               asp-route-familia="@ViewBag.FamiliaFiltro" asp-route-kingdom="@ViewBag.KingdomFiltro"
+               asp-route-estado="@ViewBag.EstadoFiltro"
                asp-route-endemica="@(ViewBag.EndémicaFiltro == null ? "" : (ViewBag.EndémicaFiltro == true ? "true" : "false"))">&laquo;</a>
         </li>
         <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
             <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual - 1)"
                asp-route-busqueda="@ViewBag.Busqueda" asp-route-familia="@ViewBag.FamiliaFiltro"
-               asp-route-estado="@ViewBag.EstadoFiltro"
+               asp-route-kingdom="@ViewBag.KingdomFiltro" asp-route-estado="@ViewBag.EstadoFiltro"
                asp-route-endemica="@(ViewBag.EndémicaFiltro == null ? "" : (ViewBag.EndémicaFiltro == true ? "true" : "false"))">&lsaquo;</a>
         </li>
         @if (inicio > 1) { <li class="page-item disabled"><span class="page-link">…</span></li> }
@@ -133,7 +153,8 @@
         {
             <li class="page-item @(i == paginaActual ? "active" : "")">
                 <a class="page-link" asp-action="Index" asp-route-pagina="@i" asp-route-busqueda="@ViewBag.Busqueda"
-                   asp-route-familia="@ViewBag.FamiliaFiltro" asp-route-estado="@ViewBag.EstadoFiltro"
+                   asp-route-familia="@ViewBag.FamiliaFiltro" asp-route-kingdom="@ViewBag.KingdomFiltro"
+                   asp-route-estado="@ViewBag.EstadoFiltro"
                    asp-route-endemica="@(ViewBag.EndémicaFiltro == null ? "" : (ViewBag.EndémicaFiltro == true ? "true" : "false"))">@i</a>
             </li>
         }
@@ -141,13 +162,13 @@
         <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
             <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual + 1)"
                asp-route-busqueda="@ViewBag.Busqueda" asp-route-familia="@ViewBag.FamiliaFiltro"
-               asp-route-estado="@ViewBag.EstadoFiltro"
+               asp-route-kingdom="@ViewBag.KingdomFiltro" asp-route-estado="@ViewBag.EstadoFiltro"
                asp-route-endemica="@(ViewBag.EndémicaFiltro == null ? "" : (ViewBag.EndémicaFiltro == true ? "true" : "false"))">&rsaquo;</a>
         </li>
         <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
             <a class="page-link" asp-action="Index" asp-route-pagina="@totalPaginas"
                asp-route-busqueda="@ViewBag.Busqueda" asp-route-familia="@ViewBag.FamiliaFiltro"
-               asp-route-estado="@ViewBag.EstadoFiltro"
+               asp-route-kingdom="@ViewBag.KingdomFiltro" asp-route-estado="@ViewBag.EstadoFiltro"
                asp-route-endemica="@(ViewBag.EndémicaFiltro == null ? "" : (ViewBag.EndémicaFiltro == true ? "true" : "false"))">&raquo;</a>
         </li>
     </ul>

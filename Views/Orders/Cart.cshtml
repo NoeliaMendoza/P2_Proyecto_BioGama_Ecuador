@@ -5,158 +5,186 @@ ViewData["Title"] = "Mi Carrito";
 Layout = "_Layout";
 }
 
-<div class="page-header mb-4">
-        <div>
-            <p class="page-header-subtitle mb-0">Revisa tus selecciones antes de proceder al pago</p>
-        </div>
-        <div class="page-header-actions">
-            <a asp-controller="Products" asp-action="Index" class="btn btn-outline-secondary me-2"><i class="bi bi-box me-1"></i>Productos</a>
-            <a asp-controller="Courses" asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-plus-lg me-1"></i>Seguir comprando</a>
+<div class="page-header d-flex flex-wrap align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Mi Carrito</h4>
+        <p class="text-muted mb-0">Revisa tus selecciones antes de proceder al pago</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-controller="Products" asp-action="Index" class="btn btn-outline-primary"><i class="bi bi-box me-1"></i>Productos</a>
+        <a asp-controller="Courses" asp-action="Index" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Seguir comprando</a>
+    </div>
+</div>
+
+@if (Model == null || !Model.Details.Any())
+{
+    <div class="app-card">
+        <div class="empty-state">
+            <i class="bi bi-cart-x" style="font-size:3rem;color:var(--color-muted)"></i>
+            <h5 class="mt-3">Tu carrito está vacío</h5>
+            <p class="mb-3">Agrega cursos o productos para continuar.</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <a asp-controller="Products" asp-action="Index" class="btn btn-primary"><i class="bi bi-box me-1"></i>Ver productos</a>
+                <a asp-controller="Courses" asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-mortarboard me-1"></i>Ver cursos</a>
+            </div>
         </div>
     </div>
-
-    @if (Model == null || !Model.Details.Any())
-    {
-        <div class="app-card">
-            <div class="empty-state">
-                <i class="bi bi-cart-x"></i>
-                <h5>Tu carrito está vacío</h5>
-                <p class="mb-3">Agrega cursos o productos para continuar.</p>
-                <a asp-controller="Products" asp-action="Index" class="btn btn-primary"><i class="bi bi-box me-1"></i>Ver productos</a>
-                <a asp-controller="Courses" asp-action="Index" class="btn btn-outline-secondary ms-2"><i class="bi bi-mortarboard me-1"></i>Ver cursos</a>
-            </div>
-        </div>
-    }
-    else
-    {
-        <div class="app-card mb-4">
-            <div class="app-card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">@Model.Details.Count @(Model.Details.Count == 1 ? "artículo" : "artículos")</h5>
-            </div>
-            <div class="app-card-body p-0">
-                <div class="table-card">
-                    <div class="table-responsive">
-                        <table class="app-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 45%;">Producto / Curso</th>
-                                    <th style="width: 15%;">Precio unit.</th>
-                                    <th style="width: 15%;">Cant.</th>
-                                    <th style="width: 15%;">Subtotal</th>
-                                    <th style="width: 10%;"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var d in Model.Details)
-                                {
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-3">
-                                                <div class="cart-item-image" style="width: 56px; height: 56px; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-bg); flex-shrink: 0;">
-                                                    @if (d.Course?.ImageUrl != null) { <img src="@d.Course.ImageUrl" alt="@d.Course.Title" class="w-100 h-100 object-fit-cover" /> }
-                                                    else if (d.PhysicalProduct?.ImageUrl != null) { <img src="@d.PhysicalProduct.ImageUrl" alt="@d.PhysicalProduct.Name" class="w-100 h-100 object-fit-cover" /> }
-                                                    else
-                                                    {
-                                                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
-                                                            <i class="bi @(d.Course != null ? "bi-mortarboard" : "bi-box")" style="font-size: 1.25rem;"></i>
-                                                        </div>
-                                                    }
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-1" style="font-size:0.9rem;">@(d.Course?.Title ?? d.PhysicalProduct?.Name ?? "Item")</h6>
-                                                    @if (d.Course != null)
-                                                    {
-                                                        <small class="text-muted">@d.Course.Modality · @d.Course.StartDate.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("es-EC"))</small>
-                                                    }
-                                                    else
-                                                    {
-                                                        <small class="text-muted">SKU: @d.PhysicalProduct?.SKU</small>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>$@d.UnitPrice.ToString("N2")</td>
-                                        <td>
-                                            <form asp-action="UpdateQuantity" method="post" class="d-flex gap-1 align-items-center">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="detailId" value="@d.Id" />
-                                                <input type="number" name="quantity" value="@d.Quantity" min="1"
-                                                       max="@(d.Course?.AvailableSeats ?? d.PhysicalProduct?.AvailableStock ?? 99)"
-                                                       class="form-control form-control-sm text-center qty-input" style="width: 55px;" />
-                                                <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-repeat"></i></button>
-                                            </form>
-                                        </td>
-                                        <td class="fw-semibold">$@d.Subtotal.ToString("N2")</td>
-                                        <td>
-                                            <form asp-action="DeleteDetail" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este artículo?')">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="detailId" value="@d.Id" />
-                                                <button type="submit" class="btn-action delete" title="Eliminar"><i class="bi bi-trash"></i></button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="app-card">
+                <div class="app-card-header">
+                    <h6 class="mb-0"><span class="badge bg-primary rounded-pill me-2">@Model.Details.Count</span>@(Model.Details.Count == 1 ? "Artículo" : "Artículos") en tu carrito</h6>
                 </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-lg-7">
-                <a asp-action="Checkout" class="btn btn-primary btn-lg w-100"><i class="bi bi-credit-card me-2"></i>Proceder al pago</a>
-            </div>
-            <div class="col-lg-5">
-                <div class="app-card sidebar-card position-sticky" style="top: 90px;">
-                    <div class="sidebar-header">
-                        <p class="sidebar-price">$@Model.Total.ToString("N2") <span class="sidebar-price-currency">USD</span></p>
-                    </div>
-                    <div class="sidebar-body">
-                        <div class="reserve-summary" style="background: transparent; border: none; padding: 0;">
-                            <div class="reserve-summary-row">
-                                <span>Subtotal (@Model.Details.Count @(Model.Details.Count == 1 ? "artículo" : "artículos"))</span>
-                                <span>$@Model.Subtotal.ToString("N2")</span>
-                            </div>
-                            <div class="reserve-summary-row">
-                                <span>Impuestos (12% IVA)</span>
-                                <span>$@Model.Tax.ToString("N2")</span>
-                            </div>
-                            @if (Model.Details.Any(d => d.PhysicalProduct != null))
-                            {
-                                <div class="reserve-summary-row">
-                                    <span>Envío (estimado)</span>
-                                    <span>$0.00</span>
-                                </div>
-                            }
-                            <div class="reserve-summary-row">
-                                <span>Total</span>
-                                <span>$@Model.Total.ToString("N2")</span>
-                            </div>
+                <div class="app-card-body p-0">
+                    <div class="table-card">
+                        <div class="table-responsive">
+                            <table class="cart-table">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th class="text-end">Precio unit.</th>
+                                        <th class="text-center">Cant.</th>
+                                        <th class="text-end">Subtotal</th>
+                                        <th class="text-center"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var d in Model.Details)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="cart-item-thumb">
+                                                        @if (d.Course?.ImageUrl != null) { <img src="@d.Course.ImageUrl" alt="@d.Course.Title" /> }
+                                                        else if (d.PhysicalProduct?.ImageUrl != null) { <img src="@d.PhysicalProduct.ImageUrl" alt="@d.PhysicalProduct.Name" /> }
+                                                        else
+                                                        {
+                                                            <i class="bi @(d.Course != null ? "bi-mortarboard" : "bi-box")"></i>
+                                                        }
+                                                    </div>
+                                                    <div class="min-w-0">
+                                                        <p class="cart-item-title mb-0">@(d.Course?.Title ?? d.PhysicalProduct?.Name ?? "Item")</p>
+                                                        @if (d.Course != null)
+                                                        {
+                                                            <small class="cart-item-meta"><i class="bi bi-calendar me-1"></i>@d.Course.StartDate.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("es-EC")) · @d.Course.Modality</small>
+                                                        }
+                                                        else
+                                                        {
+                                                            <small class="cart-item-meta">SKU: @d.PhysicalProduct?.SKU</small>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-end cart-price">$@d.UnitPrice.ToString("N2")</td>
+                                            <td class="text-center">
+                                                <form asp-action="UpdateQuantity" method="post" class="cart-qty-form">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="detailId" value="@d.Id" />
+                                                    <div class="input-group input-group-sm qty-group">
+                                                        <button type="button" class="btn btn-outline-secondary qty-btn" onclick="this.parentElement.querySelector('input[name=quantity]').stepDown(); this.closest('form').requestSubmit();">-</button>
+                                                        <input type="number" name="quantity" value="@d.Quantity" min="1"
+                                                               max="@(d.Course?.AvailableSeats ?? d.PhysicalProduct?.AvailableStock ?? 99)"
+                                                               class="form-control text-center qty-input" />
+                                                        <button type="button" class="btn btn-outline-secondary qty-btn" onclick="this.parentElement.querySelector('input[name=quantity]').stepUp(); this.closest('form').requestSubmit();">+</button>
+                                                    </div>
+                                                </form>
+                                            </td>
+                                            <td class="text-end cart-subtotal">$@d.Subtotal.ToString("N2")</td>
+                                            <td class="text-center">
+                                                <form asp-action="DeleteDetail" method="post" onsubmit="return confirm('¿Eliminar este artículo?')">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="detailId" value="@d.Id" />
+                                                    <button type="submit" class="cart-remove-btn" title="Eliminar"><i class="bi bi-x-lg"></i></button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    }
+
+        <div class="col-lg-4">
+            <div class="app-card cart-summary-card">
+                <div class="app-card-header">
+                    <h6 class="mb-0"><i class="bi bi-receipt me-2"></i>Resumen</h6>
+                </div>
+                <div class="app-card-body">
+                    <div class="cart-summary-row">
+                        <span class="cart-summary-label">Subtotal</span>
+                        <span class="cart-summary-value">$@Model.Subtotal.ToString("N2")</span>
+                    </div>
+                    <div class="cart-summary-row">
+                        <span class="cart-summary-label">IVA (12%)</span>
+                        <span class="cart-summary-value">$@Model.Tax.ToString("N2")</span>
+                    </div>
+                    @if (Model.Details.Any(d => d.PhysicalProduct != null))
+                    {
+                        <div class="cart-summary-row">
+                            <span class="cart-summary-label">Envío</span>
+                            <span class="cart-summary-value text-success">Gratis</span>
+                        </div>
+                    }
+                    <div class="cart-summary-divider"></div>
+                    <div class="cart-summary-row cart-summary-total">
+                        <span class="cart-summary-label">Total</span>
+                        <span class="cart-summary-amount">$@Model.Total.ToString("N2")</span>
+                    </div>
+                    <a asp-action="Checkout" class="btn btn-primary w-100 mt-3">
+                        <i class="bi bi-credit-card me-2"></i>Proceder al pago
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @section Styles {
     <style>
-        .cart-item-image { background: var(--color-bg); flex-shrink: 0; }
-        .cart-item-image img { width: 100%; height: 100%; object-fit: cover; }
-        .qty-input { -moz-appearance: textfield; }
+        .cart-item-thumb {
+            width: 60px; height: 60px; border-radius: 10px; overflow: hidden;
+            background: var(--color-surface-alt); flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--color-muted);
+        }
+        .cart-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .cart-item-title { font-size: 0.9rem; font-weight: 600; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cart-item-meta { font-size: 0.75rem; color: var(--color-muted); }
+        .min-w-0 { min-width: 0; flex: 1; }
+        .cart-table { width: 100%; border-collapse: collapse; }
+        .cart-table thead th {
+            background: var(--color-surface-alt); padding: 12px 16px;
+            font-size: 0.7rem; font-weight: 700; color: var(--color-muted);
+            text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--color-border);
+        }
+        .cart-table tbody td { padding: 16px; border-bottom: 1px solid var(--color-border-light); vertical-align: middle; }
+        .cart-table tbody tr:last-child td { border-bottom: none; }
+        .cart-price { font-size: 0.85rem; color: var(--color-text); white-space: nowrap; }
+        .cart-subtotal { font-size: 0.9rem; font-weight: 700; color: var(--color-text); white-space: nowrap; }
+        .qty-group { width: 120px; }
+        .qty-group .qty-btn { border-color: var(--color-border); padding: 2px 8px; font-size: 0.75rem; line-height: 1; }
+        .qty-input { -moz-appearance: textfield; font-size: 0.8rem; height: 30px; }
         .qty-input::-webkit-outer-spin-button,
         .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .app-table td { vertical-align: middle; }
-        .app-table thead th { font-size: var(--font-size-xs); }
-        .app-table tbody td { font-size: var(--font-size-sm); }
-        .sidebar-card { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
-        .sidebar-header { background: var(--color-accent-soft); border-bottom: 1px solid var(--color-border-light); padding: 1.25rem; text-align: center; }
-        .sidebar-price { font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--color-primary); margin: 0; }
-        .sidebar-price-currency { font-size: var(--font-size-lg); font-weight: var(--font-weight-normal); }
-        .sidebar-body { padding: 1.25rem; }
-        .reserve-summary-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--color-border-light); }
-        .reserve-summary-row:last-child { border-bottom: none; font-weight: var(--font-weight-bold); font-size: var(--font-size-base); }
+        .cart-remove-btn {
+            background: none; border: none; color: var(--color-danger); opacity: 0.4;
+            font-size: 0.85rem; padding: 4px; transition: opacity 0.15s; cursor: pointer;
+        }
+        .cart-remove-btn:hover { opacity: 1; }
+        .cart-summary-card { position: sticky; top: 90px; }
+        .cart-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+        .cart-summary-label { font-size: 0.85rem; color: var(--color-muted); }
+        .cart-summary-value { font-size: 0.85rem; font-weight: 600; color: var(--color-text); }
+        .cart-summary-divider { height: 1px; background: var(--color-border); margin: 8px 0; }
+        .cart-summary-total { padding: 12px 0 8px; }
+        .cart-summary-total .cart-summary-label { font-size: 1rem; font-weight: 700; color: var(--color-text); }
+        .cart-summary-amount { font-size: 1.3rem; font-weight: 800; color: var(--color-primary); }
+        .empty-state { text-align: center; padding: 3rem 1rem; }
     </style>
 }
 

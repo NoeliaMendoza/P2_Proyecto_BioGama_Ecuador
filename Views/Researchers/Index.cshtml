@@ -4,89 +4,83 @@
     ViewData["Title"] = "Investigadores";
 }
 
-<div class="page-header d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <div>
-        <h2 class="mb-1">Investigadores</h2>
-        <p class="text-muted mb-0">Investigadores y científicos del proyecto <span class="badge bg-secondary ms-1">Total: @ViewBag.TotalItems</span></p>
+        <h1 class="page-header-title">Investigadores</h1>
+        <p class="page-header-subtitle">Científicos y colaboradores del proyecto</p>
     </div>
-    @if (User.IsInRole("Administrador"))
-    {
-        <a class="btn btn-primary" asp-action="Create">
-            <i class="bi bi-plus-lg me-1"></i>Nuevo investigador
-        </a>
-    }
-</div>
-
-<div class="card shadow-sm mb-4 filter-card">
-    <div class="card-body py-3">
-        <form method="get" asp-action="Index">
-            <div class="row g-2 align-items-center">
-                <div class="col-12 col-md-5">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="nombre" class="form-control" placeholder="Buscar por nombre…" value="@ViewBag.Nombre" />
-                    </div>
-                </div>
-                <div class="col-12 col-md-5">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-building"></i></span>
-                        <input type="text" name="institucion" class="form-control" placeholder="Buscar por institución…" value="@ViewBag.Institucion" />
-                    </div>
-                </div>
-                <div class="col-12 col-md-2 d-flex gap-2">
-                    <button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-                    <a asp-action="Index" class="btn btn-outline-secondary w-100"><i class="bi bi-x-circle me-1"></i>Limpiar</a>
-                </div>
-            </div>
-        </form>
+    <div class="page-header-actions">
+        @if (User.IsInRole("Administrador"))
+        {
+            <a class="btn btn-primary" asp-action="Create">
+                <i class="bi bi-plus-lg me-1"></i>Nuevo investigador
+            </a>
+        }
     </div>
 </div>
 
-<div class="card shadow-sm app-card">
-    <div class="card-body p-0">
+<div class="filter-card">
+    <div class="app-card">
+        <div class="app-card-body">
+            <form method="get" asp-action="Index">
+                <div class="row g-2 align-items-center">
+                    <div class="col-12 col-md-5">
+                        <input type="text" name="nombre" class="form-control" placeholder="Buscar por nombre…"
+                               value="@ViewBag.Nombre" />
+                    </div>
+                    <div class="col-12 col-md-5">
+                        <input type="text" name="institucion" class="form-control" placeholder="Buscar por institución…"
+                               value="@ViewBag.Institucion" />
+                    </div>
+                    <div class="col-12 col-md-2 d-flex gap-2">
+                        <button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary w-100"><i class="bi bi-x-circle me-1"></i>Limpiar</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="app-card table-card">
+    <div class="app-card-header">
+        <h5><i class="bi bi-people me-2"></i>Listado de investigadores</h5>
+        <span class="badge badge-soft-primary">Total: @ViewBag.TotalItems</span>
+    </div>
+    <div class="app-card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+            <table class="app-table">
+                <thead>
                     <tr>
                         <th>Nombre</th>
                         <th>Institución</th>
                         <th>Correo</th>
                         <th>Especialidad</th>
-                        <th>Estado</th>
-                        <th>Creado</th>
-                        <th class="text-center">Acciones</th>
+                        <th class="actions-cell">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model)
                     {
                         <tr>
-                            <td class="fw-semibold">@item.Name</td>
+                            <td class="fw-medium">@item.Name</td>
                             <td>@item.Institution</td>
                             <td>@item.Email</td>
                             <td>@item.Specialty</td>
-                            <td>
-                                @if (item.IsActive)
-                                {
-                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Activo</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Inactivo</span>
-                                }
-                            </td>
-                            <td class="text-muted small">@item.CreatedAt.ToString("dd/MM/yyyy")</td>
-                            <td class="text-center">
-                                <div class="btn-action-group d-flex justify-content-center gap-1">
-                                    <a class="btn btn-sm btn-outline-info" asp-action="Details" asp-route-id="@item.Id" title="Ver detalles">
+                            <td class="actions-cell">
+                                <div class="btn-action-group">
+                                    @if (User.IsInRole("Administrador"))
+                                    {
+                                        <a class="btn-action edit" asp-action="Edit" asp-route-id="@item.Id" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    }
+                                    <a class="btn-action view" asp-action="Details" asp-route-id="@item.Id" title="Ver detalles">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     @if (User.IsInRole("Administrador"))
                                     {
-                                        <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@item.Id" title="Editar">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@item.Id" title="Eliminar">
+                                        <a class="btn-action delete" asp-action="Delete" asp-route-id="@item.Id" title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     }
@@ -96,11 +90,19 @@
                     }
                 </tbody>
             </table>
+            @if (!Model.Any())
+            {
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <h5>No hay investigadores registrados</h5>
+                    <p>Comience creando un nuevo investigador.</p>
+                </div>
+            }
         </div>
     </div>
 </div>
 
-<nav class="mt-4" aria-label="Paginación">
+<nav class="mt-3" aria-label="Paginación">
     <ul class="pagination justify-content-center">
         @{
             int paginaActual = (int)ViewBag.PaginaActual;
@@ -110,25 +112,21 @@
             int fin = Math.Min(totalPaginas, paginaActual + rango);
         }
 
-        @* « Primera *@
         <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
             <a class="page-link" asp-action="Index" asp-route-pagina="1" asp-route-nombre="@ViewBag.Nombre"
                asp-route-institucion="@ViewBag.Institucion">&laquo;</a>
         </li>
 
-        @* ‹ Anterior *@
         <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
             <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual - 1)"
                asp-route-nombre="@ViewBag.Nombre" asp-route-institucion="@ViewBag.Institucion">&lsaquo;</a>
         </li>
 
-        @* … izquierdo *@
         @if (inicio > 1)
         {
             <li class="page-item disabled"><span class="page-link">…</span></li>
         }
 
-        @* Rango central *@
         @for (int i = inicio; i <= fin; i++)
         {
             <li class="page-item @(i == paginaActual ? "active" : "")">
@@ -137,19 +135,16 @@
             </li>
         }
 
-        @* … derecho *@
         @if (fin < totalPaginas)
         {
             <li class="page-item disabled"><span class="page-link">…</span></li>
         }
 
-        @* › Siguiente *@
         <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
             <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual + 1)"
                asp-route-nombre="@ViewBag.Nombre" asp-route-institucion="@ViewBag.Institucion">&rsaquo;</a>
         </li>
 
-        @* » Última *@
         <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
             <a class="page-link" asp-action="Index" asp-route-pagina="@totalPaginas" asp-route-nombre="@ViewBag.Nombre"
                asp-route-institucion="@ViewBag.Institucion">&raquo;</a>

@@ -1,24 +1,36 @@
 @model BioGamaEcuador.Models.Record
-@{
-    ViewData["Title"] = "Registro #" + Model.Id;
-}
 
-@using System.Security.Claims
 @{
-    var currentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? User.Identity?.Name;
-    bool puedeEditar = User.IsInRole("Administrador") || (User.IsInRole("Investigador") &&
-        string.Equals(Model.Researcher?.Email, currentEmail, StringComparison.OrdinalIgnoreCase));
-    bool puedeEliminar = User.IsInRole("Administrador");
+    ViewData["Title"] = "Detalle del registro";
 }
 
 <div class="page-header">
     <div>
-        <h1 class="page-header-title">Registro #@Model.Id</h1>
-        <p class="page-header-subtitle">Detalle del avistamiento</p>
+        <h1 class="page-header-title">@(Model.Species?.CommonName ?? "Registro #" + Model.Id)</h1>
+        <p class="page-header-subtitle">
+            <span class="badge badge-soft-secondary">Registro #@Model.Id</span>
+            <span class="badge @(Model.IsActive ? "badge-soft-success" : "badge-soft-danger") ms-1">
+                @(Model.IsActive ? "Activo" : "Inactivo")
+            </span>
+        </p>
     </div>
     <div class="page-header-actions">
+        @if (User.IsInRole("Administrador") ||
+            (User.IsInRole("Investigador") && Model.Researcher != null &&
+             User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value == Model.Researcher.Email))
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="bi bi-pencil me-1"></i>Editar
+            </a>
+        }
+        @if (User.IsInRole("Administrador"))
+        {
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                <i class="bi bi-trash me-1"></i>Eliminar
+            </a>
+        }
         <a asp-action="Index" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Volver al listado
+            <i class="bi bi-arrow-left me-1"></i>Volver
         </a>
     </div>
 </div>
@@ -27,86 +39,101 @@
     <div class="col-lg-8">
         <div class="app-card">
             <div class="app-card-header">
-                <h5><i class="bi bi-clipboard-data me-2"></i>Información del registro</h5>
-                @if (Model.IsActive)
+                <h5><i class="bi bi-info-circle me-2"></i>Información del espécimen</h5>
+            </div>
+            <div class="app-card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Nombre científico</dt>
+                    <dd class="col-sm-8"><em>@(Model.Species?.ScientificName ?? "—")</em></dd>
+
+                    <dt class="col-sm-4 text-muted">Nombre común</dt>
+                    <dd class="col-sm-8">@(Model.Species?.CommonName ?? "—")</dd>
+
+                    <dt class="col-sm-4 text-muted">Fecha de descubrimiento</dt>
+                    <dd class="col-sm-8">@Model.DiscoveryDate.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                    <dt class="col-sm-4 text-muted">Cantidad observada</dt>
+                    <dd class="col-sm-8">@Model.ObservedQuantity</dd>
+
+                    <dt class="col-sm-4 text-muted">Estado de conservación</dt>
+                    <dd class="col-sm-8">@(Model.Species?.ConservationStatus?.Name ?? "—")</dd>
+
+                    <dt class="col-sm-4 text-muted">Es endémica</dt>
+                    <dd class="col-sm-8">@(Model.Species?.IsEndemic == true ? "Sí" : "No")</dd>
+                </dl>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Observations))
+        {
+            <div class="app-card mt-4">
+                <div class="app-card-header">
+                    <h5><i class="bi bi-card-text me-2"></i>Observaciones</h5>
+                </div>
+                <div class="app-card-body">
+                    <p class="mb-0">@Model.Observations</p>
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.Species?.Description))
+        {
+            <div class="app-card mt-4">
+                <div class="app-card-header">
+                    <h5><i class="bi bi-journal-text me-2"></i>Descripción de la especie</h5>
+                </div>
+                <div class="app-card-body">
+                    <p class="mb-0">@Model.Species.Description</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-lg-4">
+        <div class="app-card">
+            <div class="app-card-header">
+                <h5><i class="bi bi-person me-2"></i>Investigador</h5>
+            </div>
+            <div class="app-card-body">
+                @if (Model.Researcher != null)
                 {
-                    <span class="badge badge-soft-success">Activo</span>
+                    <p class="mb-1 fw-medium">@Model.Researcher.Name</p>
+                    <p class="text-muted small mb-0">@Model.Researcher.Institution</p>
                 }
                 else
                 {
-                    <span class="badge badge-soft-secondary">Inactivo</span>
+                    <p class="text-muted mb-0">—</p>
                 }
             </div>
+        </div>
+
+        <div class="app-card mt-4">
+            <div class="app-card-header">
+                <h5><i class="bi bi-geo-alt me-2"></i>Ubicación</h5>
+            </div>
             <div class="app-card-body">
-                <dl class="row mb-0 detail-card">
-                    <dt class="col-sm-4"><i class="bi bi-tree text-success me-1"></i> Especie</dt>
-                    <dd class="col-sm-8">@(Model.Species?.CommonName ?? "—") <span class="text-muted fst-italic">@Model.Species?.ScientificName</span></dd>
-
-                    <dt class="col-sm-4"><i class="bi bi-geo-alt text-danger me-1"></i> Ubicación</dt>
-                    <dd class="col-sm-8">@(Model.Location?.PlaceName ?? "—")</dd>
-
-                    <dt class="col-sm-4"><i class="bi bi-person-badge text-primary me-1"></i> Investigador</dt>
-                    <dd class="col-sm-8">@(Model.Researcher?.Name ?? "—")</dd>
-
-                    <dt class="col-sm-4"><i class="bi bi-calendar-event text-muted me-1"></i> Fecha del hallazgo</dt>
-                    <dd class="col-sm-8">@Model.DiscoveryDate.ToString("dd/MM/yyyy")</dd>
-
-                    <dt class="col-sm-4"><i class="bi bi-hash text-muted me-1"></i> Cantidad observada</dt>
-                    <dd class="col-sm-8"><span class="badge badge-soft-success fs-6">@(Model.ObservedQuantity > 0 ? Model.ObservedQuantity + " individuos" : "—")</span></dd>
-
-                    <dt class="col-sm-4"><i class="bi bi-chat-text text-muted me-1"></i> Observaciones</dt>
-                    <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.Observations) ? "—" : Model.Observations)</dd>
-
-                    <dt class="col-sm-4"><i class="bi bi-clock text-muted me-1"></i> Creado el</dt>
-                    <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
-
-                    @if (Model.UpdatedAt.HasValue)
+                @if (Model.Location != null)
+                {
+                    <p class="mb-1 fw-medium">@Model.Location.PlaceName</p>
+                    <p class="text-muted small mb-0">
+                        @Model.Location.Latitude&deg;, @Model.Location.Longitude&deg;
+                        @if (Model.Location.Altitude > 0)
+                        {
+                            <br />@(Model.Location.Altitude) <text>msnm</text>
+                        }
+                    </p>
+                    @if (Model.Location.NaturalReserve != null)
                     {
-                        <dt class="col-sm-4"><i class="bi bi-arrow-repeat text-muted me-1"></i> Actualizado el</dt>
-                        <dd class="col-sm-8">@Model.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                        <p class="text-muted small mb-0 mt-2">
+                            <i class="bi bi-tree me-1"></i>@Model.Location.NaturalReserve.Name
+                        </p>
                     }
-                </dl>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">—</p>
+                }
             </div>
-            <div class="app-card-footer">
-                <div class="d-flex gap-2">
-                    @if (puedeEditar)
-                    {
-                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
-                            <i class="bi bi-pencil"></i> Editar
-                        </a>
-                    }
-                    @if (puedeEliminar)
-                    {
-                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
-                            <i class="bi bi-trash"></i> Eliminar
-                        </a>
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="stat-card text-center">
-            <div class="stat-card-icon primary mx-auto">
-                <i class="bi bi-tree"></i>
-            </div>
-            <div class="stat-card-label">Especie</div>
-            <div class="stat-card-value" style="font-size:var(--font-size-base);">@(Model.Species?.CommonName ?? "—")</div>
-            <div class="stat-card-trend">@Model.Species?.ScientificName</div>
-        </div>
-        <div class="stat-card text-center mt-3">
-            <div class="stat-card-icon secondary mx-auto">
-                <i class="bi bi-geo-alt"></i>
-            </div>
-            <div class="stat-card-label">Ubicación</div>
-            <div class="stat-card-value" style="font-size:var(--font-size-base);">@(Model.Location?.PlaceName ?? "—")</div>
-        </div>
-        <div class="stat-card text-center mt-3">
-            <div class="stat-card-icon info mx-auto">
-                <i class="bi bi-person-badge"></i>
-            </div>
-            <div class="stat-card-label">Investigador</div>
-            <div class="stat-card-value" style="font-size:var(--font-size-base);">@(Model.Researcher?.Name ?? "—")</div>
         </div>
     </div>
 </div>

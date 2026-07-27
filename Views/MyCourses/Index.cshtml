@@ -1,8 +1,17 @@
 @model IEnumerable<BioGamaEcuador.Models.Sales.Enrollment>
+@using System.Security.Cryptography
+@using System.Text
 
 @{
     ViewData["Title"] = "Mis Cursos";
     Layout = "_Layout";
+
+    string MeetingLink(Guid courseId)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(courseId.ToString()))[..4];
+        var code = Convert.ToHexString(hash).ToLower();
+        return $"https://meet.google.com/{code}";
+    }
 }
 
 <div class="page-header d-flex flex-wrap align-items-center justify-content-between mb-4">
@@ -23,7 +32,7 @@
         <div class="empty-state">
             <i class="bi bi-book" style="font-size:3rem;color:var(--color-muted)"></i>
             <h5 class="mt-3">No tienes cursos inscritos</h5>
-            <p class="mb-3">Cuando compres un curso y el pago sea confirmado, aparecera aqui.</p>
+            <p class="mb-3">Cuando compres un curso y el pago sea confirmado, aparecerá aquí.</p>
             <a asp-controller="Courses" asp-action="Index" class="btn btn-primary">
                 <i class="bi bi-mortarboard me-1"></i>Ver cursos disponibles
             </a>
@@ -32,95 +41,147 @@
 }
 else
 {
-    <div class="row g-4">
+    <div class="course-grid">
         @foreach (var enrollment in Model)
         {
             var course = enrollment.Course;
-            <div class="col-lg-4 col-md-6">
-                <div class="app-card h-100">
-                    <div class="course-card-img">
-                        @if (!string.IsNullOrEmpty(course?.ImageUrl))
-                        {
-                            <img src="@course.ImageUrl" alt="@course?.Title" />
-                        }
-                        else
-                        {
-                            <div class="course-card-placeholder">
-                                <i class="bi bi-mortarboard"></i>
-                            </div>
-                        }
-                        <span class="course-card-badge">@course?.Modality</span>
-                    </div>
-                    <div class="app-card-body p-3">
-                        <h6 class="fw-bold mb-1">@course?.Title</h6>
-                        @if (!string.IsNullOrEmpty(course?.Instructor))
-                        {
-                            <p class="text-muted small mb-2">
-                                <i class="bi bi-person me-1"></i>@course.Instructor
-                            </p>
-                        }
-                        <div class="d-flex flex-wrap gap-2 small text-muted mb-2">
-                            @if (course?.StartDate != null)
-                            {
-                                <span><i class="bi bi-calendar me-1"></i>@course.StartDate.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("es-EC"))</span>
-                            }
-                            @if (!string.IsNullOrEmpty(course?.Venue))
-                            {
-                                <span><i class="bi bi-geo-alt me-1"></i>@course.Venue</span>
-                            }
+            var isVirtual = string.Equals(course?.Modality, "Virtual", StringComparison.OrdinalIgnoreCase);
+            <article class="course-card">
+                <div class="course-card-image">
+                    @if (!string.IsNullOrEmpty(course?.ImageUrl))
+                    {
+                        <img src="@course.ImageUrl" alt="@course.Title" loading="lazy" />
+                    }
+                    else
+                    {
+                        <div class="course-card-image-placeholder">
+                            <i class="bi bi-mortarboard"></i>
+                            <span>@course?.Modality</span>
                         </div>
-                        <div class="d-flex align-items-center justify-content-between mt-3 pt-3 border-top">
-                            <span class="badge badge-soft-success">Activo</span>
-                            <small class="text-muted">Comprado el @enrollment.EnrolledAt.ToString("dd/MM/yyyy")</small>
-                        </div>
-                        <a href="#" class="btn btn-primary w-100 mt-3">
-                            <i class="bi bi-play-circle me-1"></i>Acceder al curso
-                        </a>
+                    }
+                    <div class="course-card-status">
+                        <span class="badge badge-soft-primary">@course?.Modality</span>
                     </div>
                 </div>
-            </div>
+
+                <div class="course-card-body">
+                    <h3 class="course-card-title">@course?.Title</h3>
+                    @if (!string.IsNullOrEmpty(course?.Instructor))
+                    {
+                        <p class="course-card-instructor">
+                            <i class="bi bi-person-badge me-1"></i>@course.Instructor
+                        </p>
+                    }
+
+                    <div class="course-card-meta mb-2">
+                        @if (course?.StartDate != null)
+                        {
+                            <div class="course-meta-row">
+                                <i class="bi bi-calendar3"></i>
+                                <span>@course.StartDate.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("es-EC"))</span>
+                            </div>
+                        }
+                        <div class="course-meta-row">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>@(isVirtual ? "Online" : course?.Venue ?? "-")</span>
+                        </div>
+                    </div>
+
+                    @if (isVirtual)
+                    {
+                        <div class="course-access-info">
+                            <i class="bi bi-camera-video"></i>
+                            <span>Enlace:</span>
+                            <a href="@MeetingLink(course!.Id)" target="_blank" class="course-access-link">@MeetingLink(course!.Id)</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <a href="https://www.google.com/maps/search/@Uri.EscapeDataString(course?.Venue ?? "")" target="_blank" class="course-access-link course-access-map">
+                            <i class="bi bi-map me-1"></i>Ver en Google Maps
+                        </a>
+                    }
+
+                    <div class="course-card-footer">
+                        <div class="d-flex flex-column gap-1">
+                            <span class="badge badge-soft-success w-fit">Activo</span>
+                            <small class="text-muted" style="font-size:11px;">Comprado el @enrollment.EnrolledAt.ToString("dd/MM/yyyy")</small>
+                        </div>
+                        <div class="d-flex gap-1">
+                            <a asp-controller="Courses" asp-action="Details" asp-route-id="@course?.Id" class="btn btn-outline-primary btn-sm" title="Detalles">
+                                <i class="bi bi-info-circle"></i>
+                            </a>
+                            @if (isVirtual)
+                            {
+                                <a href="@MeetingLink(course!.Id)" target="_blank" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-camera-video me-1"></i>Entrar
+                                </a>
+                            }
+                        </div>
+                    </div>
+
+                    @if (course?.StartDate > DateTime.UtcNow)
+                    {
+                        <form asp-controller="MyCourses" asp-action="Cancel" method="post" class="mt-2" onsubmit="return confirm('¿Estás seguro de cancelar tu inscripción a este curso?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="enrollmentId" value="@enrollment.Id" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                <i class="bi bi-x-circle me-1"></i>Cancelar inscripción
+                            </button>
+                        </form>
+                    }
+                </div>
+            </article>
         }
     </div>
 }
 
-@section Styles {
-    <style>
-        .course-card-img {
-            position: relative;
-            height: 160px;
-            overflow: hidden;
-            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-            background: var(--color-surface-alt);
-        }
-        .course-card-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .course-card-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: var(--color-muted);
-        }
-        .course-card-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: var(--color-primary);
-            color: #fff;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-        }
-    </style>
-}
+<style>
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+    .course-access-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 10px;
+        background: var(--color-accent-soft);
+        border-radius: var(--radius-md);
+        font-size: 12px;
+        margin-bottom: 4px;
+        word-break: break-all;
+    }
+    .course-access-info i {
+        font-size: 14px;
+        color: var(--color-primary);
+        flex-shrink: 0;
+    }
+    .course-access-info span {
+        color: var(--color-muted);
+        flex-shrink: 0;
+    }
+    .course-access-link {
+        color: var(--color-primary);
+        font-weight: 500;
+        text-decoration: none;
+    }
+    .course-access-link:hover {
+        text-decoration: underline;
+    }
+    .course-access-map {
+        display: inline-flex;
+        align-items: center;
+        font-size: 12px;
+        padding: 6px 10px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        margin-bottom: 4px;
+        transition: var(--transition-base);
+    }
+    .course-access-map:hover {
+        border-color: var(--color-primary-light);
+        text-decoration: none;
+    }
+    .w-fit { width: fit-content; }
+</style>

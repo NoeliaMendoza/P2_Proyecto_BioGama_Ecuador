@@ -76,7 +76,7 @@
                                     <input type="email" name="Email" class="form-control" required value="@User.Identity?.Name" placeholder="Correo electronico *" />
                                 </div>
                                 <div class="col-md-6">
-                                    <input type="tel" name="Phone" class="form-control" placeholder="Telefono * +593 9X XXX XXXX" required />
+                                    <input type="tel" name="Phone" class="form-control" placeholder="Teléfono * +593 9XXXXXXXX" required pattern="^(\+593|00593|0)?\d{8,9}$" title="Ingresa un número válido de Ecuador: +593 9XXXXXXXX o 09XXXXXXXX" />
                                 </div>
                             </div>
                         </div>

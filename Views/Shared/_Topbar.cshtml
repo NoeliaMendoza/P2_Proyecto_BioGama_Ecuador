@@ -1,13 +1,24 @@
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
+@inject BioGamaEcuador.Data.AppDbContext DbContext
 
 @{
     var title = ViewData["Title"]?.ToString() ?? "BioGama Ecuador";
     var userName = UserManager.GetUserName(User) ?? "Usuario";
     var initials = string.Join("", userName.Split('@', ' ').Where(s => s.Length > 0).Take(2).Select(s => char.ToUpper(s[0])));
     if (initials.Length == 0) initials = "U";
+    var userId = UserManager.GetUserId(User);
+    var cartCount = 0;
+    if (userId != null)
+    {
+        cartCount = await DbContext.Database.SqlQueryRaw<int>(
+            "SELECT COALESCE(SUM(od.\"Quantity\"), 0) AS \"Value\" FROM \"OrderDetails\" od INNER JOIN \"Orders\" o ON o.\"Id\" = od.\"OrderId\" WHERE o.\"UserId\" = {0} AND o.\"Status\" = 'Pending'",
+            userId
+        ).FirstOrDefaultAsync();
+    }
 }
 
 <header class="app-topbar">
@@ -23,8 +34,12 @@
     <div class="topbar-right">
         @if (SignInManager.IsSignedIn(User))
         {
-            <a class="topbar-btn" asp-controller="Orders" asp-action="Cart" aria-label="Carrito" title="Carrito">
+            <a class="topbar-btn position-relative" asp-controller="Orders" asp-action="Cart" aria-label="Carrito" title="Carrito">
                 <i class="bi bi-cart3"></i>
+                @if (cartCount > 0)
+                {
+                    <span class="badge bg-primary rounded-pill position-absolute top-0 start-100 translate-middle" style="font-size:10px;min-width:18px;">@cartCount</span>
+                }
             </a>
 
             

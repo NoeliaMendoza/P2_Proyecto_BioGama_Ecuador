@@ -1,10 +1,14 @@
 @model BioGamaEcuador.Models.Sales.Course
+@using Microsoft.EntityFrameworkCore
+@inject Microsoft.AspNetCore.Identity.UserManager<Microsoft.AspNetCore.Identity.IdentityUser> UserManager
+@inject BioGamaEcuador.Data.AppDbContext DbContext
 
 @{
     ViewData["Title"] = Model.Title;
-    }
-
-@inject Microsoft.AspNetCore.Identity.UserManager<Microsoft.AspNetCore.Identity.IdentityUser> UserManager
+    var currentUserId = UserManager.GetUserId(User);
+    var alreadyEnrolled = currentUserId != null && await DbContext.Enrollments
+        .AnyAsync(e => e.CourseId == Model.Id && e.UserId == currentUserId && e.Status != "Cancelled");
+}
 
 @section Styles {
     <style>
@@ -441,7 +445,13 @@
             <p class="course-hero-instructor">Impartido por <strong>@Model.Instructor</strong></p>
         </div>
         <div class="course-hero-actions">
-            @if (User.Identity?.IsAuthenticated == true && Model.AvailableSeats > 0 && Model.IsActive && Model.StartDate > DateTime.UtcNow)
+            @if (alreadyEnrolled)
+            {
+                <button type="button" class="btn btn-success btn-lg sidebar-btn" disabled>
+                    <i class="bi bi-check-circle me-2"></i>Ya estás inscrito
+                </button>
+            }
+            else if (User.Identity?.IsAuthenticated == true && Model.AvailableSeats > 0 && Model.IsActive && Model.StartDate > DateTime.UtcNow)
             {
                 <button type="button" class="btn btn-primary btn-lg sidebar-btn"
                         data-bs-toggle="modal" data-bs-target="#reserveModal">
@@ -589,7 +599,13 @@
                     </div>
 
                     <div class="sidebar-actions">
-                        @if (User.Identity?.IsAuthenticated == true)
+                        @if (alreadyEnrolled)
+                        {
+                            <button type="button" class="btn btn-success btn-lg sidebar-btn" disabled>
+                                <i class="bi bi-check-circle me-2"></i>Ya estás inscrito
+                            </button>
+                        }
+                        else if (User.Identity?.IsAuthenticated == true)
                         {
                             if (Model.AvailableSeats > 0 && Model.IsActive && Model.StartDate > DateTime.UtcNow)
                             {
@@ -660,28 +676,6 @@
                 <form class="reserve-form" id="reserveForm" asp-controller="Orders" asp-action="CreateFromCourse" method="post">
                     <input type="hidden" name="CourseId" value="@Model.Id" />
                     <input type="hidden" name="Quantity" value="1" />
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="PaymentProvider" id="paypal" value="PayPal" checked required>
-                        <label class="form-check-label payment-option" for="paypal">
-                            <i class="bi bi-paypal me-2 text-primary" style="font-size: 1.25rem;"></i>
-                            <div>
-                                <p class="payment-option-label mb-0">PayPal (Sandbox)</p>
-                                <small class="payment-option-desc">Pago seguro con tarjeta o saldo PayPal</small>
-                            </div>
-                        </label>
-                    </div>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="PaymentProvider" id="payphone" value="PayPhone" required>
-                        <label class="form-check-label payment-option" for="payphone">
-                            <i class="bi bi-phone me-2 text-success" style="font-size: 1.25rem;"></i>
-                            <div>
-                                <p class="payment-option-label mb-0">PayPhone Ecuador</p>
-                                <small class="payment-option-desc">Pago con tarjeta, débito o código QR</small>
-                            </div>
-                        </label>
-                    </div>
 
                     <div class="reserve-summary">
                         <div class="reserve-summary-row">

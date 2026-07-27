@@ -1,5 +1,8 @@
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
 @inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@inject BioGamaEcuador.Data.AppDbContext DbContext
 
 @{
     var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
@@ -12,6 +15,16 @@
 
     bool IsHomeActive = IsActive("Home", "Index");
     bool isAuthenticated = SignInManager.IsSignedIn(User);
+
+    var userId = UserManager.GetUserId(User);
+    var cartCount = 0;
+    if (userId != null)
+    {
+        cartCount = await DbContext.Database.SqlQueryRaw<int>(
+            "SELECT COALESCE(SUM(od.\"Quantity\"), 0) AS \"Value\" FROM \"OrderDetails\" od INNER JOIN \"Orders\" o ON o.\"Id\" = od.\"OrderId\" WHERE o.\"UserId\" = {0} AND o.\"Status\" = 'Pending'",
+            userId
+        ).FirstOrDefaultAsync();
+    }
 }
 
 <aside class="app-sidebar" id="appSidebar">
@@ -56,6 +69,10 @@
             <a class="sidebar-link @(IsActive("Orders", "Cart") ? "active" : "")" asp-controller="Orders" asp-action="Cart">
                 <i class="bi bi-cart"></i>
                 <span class="sidebar-label">Mi Carrito</span>
+                @if (cartCount > 0)
+                {
+                    <span class="badge bg-primary rounded-pill ms-auto">@cartCount</span>
+                }
             </a>
             <a class="sidebar-link @(IsActive("MyCourses") ? "active" : "")" asp-controller="MyCourses" asp-action="Index">
                 <i class="bi bi-book"></i>

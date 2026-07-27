@@ -42,16 +42,16 @@ else
 {
     <div class="app-card">
         <div class="table-card">
-            <table class="app-table">
+            <table class="orders-table">
                 <thead>
                     <tr>
                         <th>Pedido</th>
                         <th>Fecha</th>
-                        <th>Articulos</th>
-                        <th>Total</th>
-                        <th>Metodo</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
+                        <th>Artículos</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-center">Método</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -126,7 +126,17 @@ else
                                             "Cancelled" => "badge-soft-secondary",
                                             "Refunded" => "badge-soft-danger",
                                             _ => "badge-soft-info"
-                                        })">@o.Status</span>
+                                        })">@(o.Status switch
+                                        {
+                                            "Confirmed" => "Confirmado",
+                                            "Delivered" => "Entregado",
+                                            "Pending" => "Pendiente",
+                                            "Processing" => "Procesando",
+                                            "Shipped" => "Enviado",
+                                            "Cancelled" => "Cancelado",
+                                            "Refunded" => "Reembolsado",
+                                            _ => o.Status
+                                        })</span>
                                     @if (o.Payment != null)
                                     {
                                         <span class="badge @(
@@ -139,7 +149,16 @@ else
                                                 "Expired" => "badge-soft-danger",
                                                 "Refunded" => "badge-soft-danger",
                                                 _ => "badge-soft-info"
-                                            })" style="font-size:10px">Pago: @o.Payment.Status</span>
+                                            })" style="font-size:10px">Pago: @(o.Payment.Status switch
+                                            {
+                                                "Approved" => "Aprobado",
+                                                "Pending" => "Pendiente",
+                                                "Cancelled" => "Cancelado",
+                                                "Failed" => "Fallido",
+                                                "Expired" => "Expirado",
+                                                "Refunded" => "Reembolsado",
+                                                _ => o.Payment.Status
+                                            })</span>
                                     }
                                 </div>
                             </td>
@@ -207,5 +226,31 @@ else
     .btn-action-group {
         display: flex;
         gap: 4px;
+        justify-content: center;
+    }
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .orders-table thead th {
+        background: var(--color-surface-alt, #f5f6fa);
+        padding: 12px 16px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--color-muted, #6c757d);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--color-border, #e0e4e8);
+    }
+    .orders-table tbody td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--color-border-light, #eef0f4);
+        vertical-align: middle;
+    }
+    .orders-table tbody tr:hover {
+        background: var(--color-surface-alt, #f5f6fa);
+    }
+    .orders-table tbody tr:last-child td {
+        border-bottom: none;
     }
 </style>

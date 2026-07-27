@@ -71,13 +71,19 @@
                     <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy")</dd>
                 </dl>
 
-                <div class="form-actions mt-4">
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
-                        <i class="bi bi-pencil me-1"></i>Editar
-                    </a>
-                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-sm">
-                        <i class="bi bi-trash me-1"></i>Eliminar
-                    </a>
+                <div class="form-actions mt-4 d-flex gap-2">
+                    @if (User.IsInRole("Administrador") || User.IsInRole("Investigador"))
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                            <i class="bi bi-pencil me-1"></i>Editar
+                        </a>
+                    }
+                    @if (User.IsInRole("Administrador"))
+                    {
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash me-1"></i>Eliminar
+                        </a>
+                    }
                 </div>
             </div>
         </div>
