@@ -17,14 +17,17 @@ namespace BioGamaEcuador.Models
         public int? ConservationStatusId { get; set; }
         public ConservationStatus? ConservationStatus { get; set; }
 
+        [Required(AllowEmptyStrings = true, ErrorMessage = "La descripción es obligatoria.")]
         [StringLength(500, ErrorMessage = "La descripción debe tener máximo {1} caracteres.")]
         public string Description { get; set; } = string.Empty;
 
+        [Required(AllowEmptyStrings = true, ErrorMessage = "La URL de la imagen es obligatoria.")]
         [StringLength(300, ErrorMessage = "La URL de la imagen debe tener máximo {1} caracteres.")]
         public string ImageUrl { get; set; } = string.Empty;
 
         public bool IsEndemic { get; set; } = false;
 
+        [Required(ErrorMessage = "La familia es obligatoria.")]
         public int FamilyId { get; set; }
         public Family? Family { get; set; }
 

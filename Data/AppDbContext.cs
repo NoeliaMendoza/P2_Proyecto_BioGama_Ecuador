@@ -30,6 +30,9 @@ public class AppDbContext : IdentityDbContext
     public DbSet<InventoryMovement> InventoryMovements { get; set; }
     public DbSet<Sucursal> Sucursales { get; set; }
 
+    // Mail queue
+    public DbSet<PendingEmail> PendingEmails { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
