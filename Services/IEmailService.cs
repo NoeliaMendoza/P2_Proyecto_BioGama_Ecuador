@@ -26,4 +26,5 @@ public interface IEmailService
     Task SendEnrollmentConfirmedAsync(string to, EnrollmentConfirmationInfo info);
     Task SendPaymentFailedAsync(string to, Guid orderId, string reason);
     Task SendLowStockAlertAsync(string to, string productName, int stock);
+    Task SendEmailAsync(string to, string subject, string body);
 }

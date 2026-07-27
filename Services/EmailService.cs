@@ -89,6 +89,9 @@ public sealed class EmailService(IOptions<EmailSettings> options) : IEmailServic
         await SendAsync(to, $"Pago fallido - Pedido #{orderId} - BioGama Ecuador", body);
     }
 
+    public Task SendEmailAsync(string to, string subject, string body)
+        => SendAsync(to, subject, body);
+
     public async Task SendLowStockAlertAsync(string to, string productName, int stock)
     {
         var body = EmailLayout("Alerta de stock bajo",

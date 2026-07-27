@@ -1,20 +1,46 @@
 using System.Globalization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using BioGamaEcuador.Data;
 using BioGamaEcuador.Data.Seeders;
+using BioGamaEcuador.Workers;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
+static string? ReadSecret(string name)
+{
+    var path = $"/run/secrets/{name}";
+    return File.Exists(path) ? File.ReadAllText(path).Trim() : null;
+}
+
 var builder = WebApplication.CreateBuilder(args);
+
+var dbPassword = ReadSecret("db_password");
+var emailPass = ReadSecret("email_password");
+if (emailPass != null)
+{
+    builder.Configuration["EmailSettings:Password"] = emailPass;
+}
+
+var isMailWorker = string.Equals(
+    builder.Configuration["SERVICE_TYPE"], "mailworker",
+    StringComparison.OrdinalIgnoreCase);
+
+var connStr = builder.Configuration.GetConnectionString("DefaultConnection");
+if (dbPassword != null && connStr != null)
+{
+    var csb = new Npgsql.NpgsqlConnectionStringBuilder(connStr) { Password = dbPassword };
+    connStr = csb.ConnectionString;
+}
 
 builder.Services.AddControllersWithViews()
     .AddDataAnnotationsLocalization();
 builder.Services.AddRazorPages();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connStr!));
 
 builder.Services
     .AddDefaultIdentity<IdentityUser>(options =>
@@ -30,12 +56,17 @@ builder.Services
     .AddEntityFrameworkStores<AppDbContext>();
 
 builder.Services
-    .AddAuthentication()
-    .AddGoogle(options =>
+    .AddAuthentication();
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
+{
+    builder.Services.AddAuthentication().AddGoogle(options =>
     {
-        options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
-        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
     });
+}
 
 // Configuración y Servicios de Pasarelas de Pago
 builder.Services.Configure<BioGamaEcuador.Settings.PayPhoneSettings>(
@@ -62,6 +93,26 @@ builder.Services.Configure<BioGamaEcuador.Settings.OllamaSettings>(
     builder.Configuration.GetSection("Ollama"));
 builder.Services.AddHttpClient<BioGamaEcuador.Services.Ollama.IOllamaService, BioGamaEcuador.Services.Ollama.OllamaService>();
 
+// ── Compartir cookies de autenticación entre réplicas ──────
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo("/root/.aspnet/DataProtection-Keys"))
+    .SetApplicationName("BioGamaEcuador");
+
+// ── Sesiones distribuidas (PostgreSQL) ─────────────────────
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// ── Worker de correo (solo en modo mailworker) ─────────────
+if (isMailWorker)
+{
+    builder.Services.AddHostedService<MailWorker>();
+}
+
 var app = builder.Build();
 
 var cultura = new CultureInfo("es-EC");
@@ -84,18 +135,44 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-app.MapRazorPages();
-
-using (var scope = app.Services.CreateScope())
+// Health check para Docker Swarm (sin DI para evitar errores de autenticación)
+app.MapGet("/health", () =>
 {
-    await IdentitySeeder.SeedAsync(scope.ServiceProvider);
-    await SalesModuleSeeder.SeedAsync(scope.ServiceProvider);
-}
+    return Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
+});
 
-app.Run();
+// En modo mailworker no se inicia el servidor web
+if (!isMailWorker)
+{
+    app.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+    app.MapRazorPages();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        try
+        {
+            await db.Database.MigrateAsync();
+        }
+        catch (Exception ex)
+        {
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            logger.LogWarning(ex, "Migration failed (likely race condition between replicas), continuing...");
+        }
+        await IdentitySeeder.SeedAsync(scope.ServiceProvider);
+        await SalesModuleSeeder.SeedAsync(scope.ServiceProvider);
+    }
+
+    app.Run();
+}
+else
+{
+    // En modo mailworker solo corre el BackgroundService
+    app.Run();
+}
