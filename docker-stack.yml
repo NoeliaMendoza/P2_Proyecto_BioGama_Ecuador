@@ -12,6 +12,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./database/backup.sql:/docker-entrypoint-initdb.d/backup.sql
+      - ./database/seed-extra.sql:/docker-entrypoint-initdb.d/seed-extra.sql
     networks:
       - biogama-net
     healthcheck:
