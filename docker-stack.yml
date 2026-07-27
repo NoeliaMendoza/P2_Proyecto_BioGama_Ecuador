@@ -1,0 +1,180 @@
+version: "3.8"
+
+services:
+
+  db:
+    image: postgres:16-alpine
+    hostname: db
+    environment:
+      POSTGRES_DB: biogama_ecuador
+      POSTGRES_USER: biogama_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/backup.sql:/docker-entrypoint-initdb.d/backup.sql
+    networks:
+      - biogama-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U biogama_user -d biogama_ecuador"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    secrets:
+      - db_password
+
+  web:
+    image: biogama-web:latest
+    hostname: web
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ConnectionStrings__DefaultConnection: >-
+        Host=db;Port=5432;Database=biogama_ecuador;Username=biogama_user;Password=placeholder
+      Ollama__BaseUrl: http://ollama:11434
+      Ollama__Model: gemma2:2b
+      Ollama__TimeoutSeconds: "120"
+      Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID}
+      Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET}
+      PayPal__ClientId: ${PAYPAL_CLIENT_ID}
+      PayPal__ClientSecret: ${PAYPAL_CLIENT_SECRET}
+      PayPal__BaseUrl: https://api-m.sandbox.paypal.com
+      PayPal__ReturnUrl: http://localhost:8080/Payment/Success
+      PayPal__CancelUrl: http://localhost:8080/Payment/Cancel
+      PayPhone__Token: ${PAYPHONE_TOKEN}
+      PayPhone__StoreId: ${PAYPHONE_STORE_ID}
+      EmailSettings__SmtpServer: smtp.gmail.com
+      EmailSettings__SmtpPort: "587"
+      EmailSettings__SenderName: BioGama
+      EmailSettings__SenderEmail: ${EMAIL_SENDER_EMAIL}
+      EmailSettings__Password: ${EMAIL_PASSWORD}
+    secrets:
+      - db_password
+      - email_password
+      - aspnetcore_keys
+    volumes:
+      - aspnetcore-keys:/root/.aspnet/DataProtection-Keys
+    networks:
+      - biogama-net
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  ollama:
+    image: ollama/ollama:latest
+    hostname: ollama
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - biogama-net
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 120s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
+  mail:
+    image: biogama-web:latest
+    hostname: mail
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      SERVICE_TYPE: mailworker
+      ConnectionStrings__DefaultConnection: >-
+        Host=db;Port=5432;Database=biogama_ecuador;Username=biogama_user;Password=placeholder
+      EmailSettings__SmtpServer: smtp.gmail.com
+      EmailSettings__SmtpPort: "587"
+      EmailSettings__SenderName: BioGama
+      EmailSettings__SenderEmail: ${EMAIL_SENDER_EMAIL}
+      EmailSettings__Password_FILE: /run/secrets/email_password
+    secrets:
+      - db_password
+      - email_password
+    networks:
+      - biogama-net
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep -q dotnet || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+networks:
+  biogama-net:
+    driver: overlay
+    attachable: true
+
+volumes:
+  postgres-data:
+    driver: local
+  ollama-data:
+    driver: local
+  aspnetcore-keys:
+    driver: local
+
+secrets:
+  db_password:
+    external: true
+  email_password:
+    external: true
+  aspnetcore_keys:
+    external: true

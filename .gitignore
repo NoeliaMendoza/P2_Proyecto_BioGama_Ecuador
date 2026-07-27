@@ -42,6 +42,10 @@ bld/
 # Secrets
 appsettings.json
 appsettings.Development.json
+.env
+
+# Large database backup (181MB+ — not suitable for Git)
+database/backup.sql
 
 # OS
 .DS_Store
