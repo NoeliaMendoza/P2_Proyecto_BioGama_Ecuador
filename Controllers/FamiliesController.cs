@@ -65,7 +65,7 @@ namespace BioGamaEcuador.Controllers
         [Authorize(Roles = "Administrador,Investigador")]
         public IActionResult Create()
         {
-            return View();
+            return View(new Family { IsActive = true });
         }
 
         [HttpPost]

@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -100,7 +101,7 @@ public class OrdersController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateFromCourse(Guid courseId, int quantity, string paymentProvider)
+    public async Task<IActionResult> CreateFromCourse(Guid courseId, int quantity)
     {
         var userId = await GetUserIdAsync();
 
@@ -118,10 +119,11 @@ public class OrdersController : Controller
             return RedirectToAction("Details", "Courses", new { id = courseId });
         }
 
+        Guid cartId = Guid.Empty;
         await using var tx = await _context.Database.BeginTransactionAsync();
         try
         {
-            var cartId = await GetOrCreateCartIdAsync(userId);
+            cartId = await GetOrCreateCartIdAsync(userId);
             var price = await _context.Courses.Where(c => c.Id == courseId).Select(c => c.Price).FirstAsync();
 
             var existingDetailId = await _context.Database.SqlQueryRaw<Guid?>(
@@ -163,10 +165,6 @@ public class OrdersController : Controller
             await RecalculateOrderTotalsAsync(cartId);
             await _context.SaveChangesAsync();
             await tx.CommitAsync();
-
-            await _audit.LogAsync("OrderCreated", "Order", cartId.ToString(), null, $"CourseId={courseId},Qty={quantity},Provider={paymentProvider}", userId, HttpContext.Connection.RemoteIpAddress?.ToString());
-            TempData["Success"] = "Cupo reservado. Ahora completa el pago.";
-            return RedirectToAction("Checkout", new { orderId = cartId });
         }
         catch (Exception ex)
         {
@@ -174,6 +172,10 @@ public class OrdersController : Controller
             TempData["Error"] = ex.InnerException?.Message ?? ex.Message;
             return RedirectToAction("Details", "Courses", new { id = courseId });
         }
+
+        try { await _audit.LogAsync("OrderCreated", "Order", cartId.ToString(), null, $"CourseId={courseId},Qty={quantity}", userId, HttpContext.Connection.RemoteIpAddress?.ToString()); } catch { /* audit failure is non-fatal */ }
+        TempData["Success"] = "Cupo reservado. Ahora completa el pago.";
+        return RedirectToAction("Checkout", new { orderId = cartId });
     }
 
     // ── Products ────────────────────────────────────────
@@ -417,6 +419,12 @@ public class OrdersController : Controller
             .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId && o.Status == "Pending");
         if (order == null) return NotFound();
 
+        if (!string.IsNullOrWhiteSpace(Phone) && !Regex.IsMatch(Phone, @"^(\+593|00593|0)?\d{8,9}$"))
+        {
+            ModelState.AddModelError("Phone", "Ingresa un número telefónico válido de Ecuador.");
+            return View(order);
+        }
+
         order.ShippingAddress = ShippingAddress ?? "";
 
         var payment = await _context.Payments.FirstOrDefaultAsync(p => p.OrderId == order.Id);
@@ -611,8 +619,6 @@ public class OrdersController : Controller
 
             await _context.SaveChangesAsync();
             await tx.CommitAsync();
-
-            await _audit.LogAsync("PaymentApproved", "Payment", payment.Id.ToString(), "Pending", "Approved", userId, HttpContext.Connection.RemoteIpAddress?.ToString());
         }
         catch
         {
@@ -620,6 +626,7 @@ public class OrdersController : Controller
             return Json(new { success = false, message = "Error al confirmar el pago." });
         }
 
+            try { await _audit.LogAsync("PaymentApproved", "Payment", payment.Id.ToString(), "Pending", "Approved", userId, HttpContext.Connection.RemoteIpAddress?.ToString()); } catch { }
         return Json(new { success = true, redirect = Url.Action("Confirmation", new { id = payment.OrderId }) });
     }
 

@@ -19,10 +19,21 @@ namespace BioGamaEcuador.Controllers
 
         // GET: Species — los 3 roles
         [Authorize(Roles = "Administrador,Investigador,UsuarioPublico")]
-        public async Task<IActionResult> Index(string busqueda, string familia, string estado, string endemica, int pagina = 1)
+        public async Task<IActionResult> Index(string busqueda, string familia, string estado, string endemica, string? kingdom, int pagina = 1)
         {
             const int tamano = 50;
             var query = _context.Species.AsNoTracking().Include(s => s.Family).Include(s => s.ConservationStatus).Where(s => s.IsActive);
+
+            var reinoCounts = await _context.Species.AsNoTracking()
+                .Where(s => s.IsActive && s.Family != null)
+                .Include(s => s.Family)
+                .GroupBy(s => s.Family!.Kingdom)
+                .Select(g => new { Kingdom = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(k => k.Kingdom ?? "Sin reino", v => v.Count);
+            var sinFamilia = await _context.Species.CountAsync(s => s.IsActive && s.Family == null);
+            if (sinFamilia > 0) reinoCounts["Sin familia"] = sinFamilia;
+            ViewBag.ReinoCounts = reinoCounts;
+
             if (!string.IsNullOrWhiteSpace(busqueda))
             {
                 query = query.Where(s => EF.Functions.ILike(s.CommonName, $"%{busqueda}%") || EF.Functions.Like(s.ScientificName, $"%{busqueda}%"));
@@ -34,6 +45,10 @@ namespace BioGamaEcuador.Controllers
             if (!string.IsNullOrWhiteSpace(estado))
             {
                 query = query.Where(s => s.ConservationStatus != null && s.ConservationStatus.Code == estado);
+            }
+            if (!string.IsNullOrWhiteSpace(kingdom))
+            {
+                query = query.Where(s => s.Family != null && s.Family.Kingdom == kingdom);
             }
             if (!string.IsNullOrWhiteSpace(endemica))
             {
@@ -59,8 +74,10 @@ namespace BioGamaEcuador.Controllers
             ViewBag.Busqueda = busqueda;
             ViewBag.Familias = await _context.Families.Where(f => f.IsActive).Select(f => f.Name).Distinct().OrderBy(n => n).ToListAsync();
             ViewBag.Estados = await _context.ConservationStatuses.Where(cs => cs.IsActive).OrderBy(cs => cs.Code).Select(cs => cs.Code).ToListAsync();
+            ViewBag.Kingdoms = await _context.Families.Where(f => f.IsActive).Select(f => f.Kingdom).Distinct().OrderBy(k => k).ToListAsync();
             ViewBag.FamiliaFiltro = familia;
             ViewBag.EstadoFiltro = estado;
+            ViewBag.KingdomFiltro = kingdom;
             ViewBag.EndémicaFiltro = string.IsNullOrWhiteSpace(endemica) ? (bool?)null : (endemica == "true");
             return View(datos);
         }

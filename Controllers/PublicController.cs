@@ -39,7 +39,7 @@ namespace BioGamaEcuador.Controllers
 
             // Filtro por familia
             if (!string.IsNullOrWhiteSpace(familia))
-                query = query.Where(s => s.Family != null && s.Family.Name == familia);
+                query = query.Where(s => s.Family != null && EF.Functions.ILike(s.Family.Name.Trim(), familia.Trim()));
 
             // Filtro por estado de conservación
             if (!string.IsNullOrWhiteSpace(estado))
@@ -57,12 +57,13 @@ namespace BioGamaEcuador.Controllers
                 .Take(tamano)
                 .ToListAsync();
 
-            // Datos para los filtros dropdown
+            // Datos para los filtros dropdown (familias activas, sin duplicados)
             ViewBag.Familias = await _context.Families
                 .AsNoTracking()
                 .Where(f => f.IsActive)
-                .OrderBy(f => f.Name)
-                .Select(f => f.Name)
+                .Select(f => f.Name.Trim())
+                .Distinct()
+                .OrderBy(n => n)
                 .ToListAsync();
 
             ViewBag.Estados = await _context.ConservationStatuses
@@ -76,7 +77,7 @@ namespace BioGamaEcuador.Controllers
             ViewBag.TotalPaginas = (int)Math.Ceiling(total / (double)tamano);
             ViewBag.TotalEspecies = total;
             ViewBag.Busqueda = busqueda;
-            ViewBag.FamiliaFiltro = familia;
+            ViewBag.FamiliaFiltro = familia?.Trim();
             ViewBag.EstadoFiltro = estado;
             ViewBag.EndémicaFiltro = endemica;
 

@@ -201,7 +201,10 @@ namespace BioGamaEcuador.Controllers
             if (isInvestigator)
             {
                 var currentResearcher = await GetCurrentResearcherAsync();
-                if (currentResearcher == null) return Forbid();
+                if (currentResearcher == null || currentResearcher.Id != entry.ResearcherId)
+                {
+                    return Forbid();
+                }
                 entry.ResearcherId = currentResearcher.Id;
             }
 

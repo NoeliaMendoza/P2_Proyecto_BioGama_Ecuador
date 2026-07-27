@@ -118,21 +118,35 @@ public class PaymentController : Controller
             foreach (var detail in order.Details)
             {
                 if (detail.PhysicalProductId.HasValue)
+                {
                     await _inventory.ConfirmAsync(detail.PhysicalProductId.Value, detail.Quantity, $"Order:{order.Id}", "system");
+                }
                 else if (detail.CourseId.HasValue)
+                {
+                    var enrollment = await _context.Enrollments
+                        .FirstOrDefaultAsync(e => e.OrderId == order.Id && e.CourseId == detail.CourseId);
+                    if (enrollment != null) enrollment.Status = "Confirmed";
+                    var course = await _context.Courses.FindAsync(detail.CourseId);
+                    if (course != null)
+                    {
+                        course.ReservedSeats -= detail.Quantity;
+                        course.ConfirmedSeats += detail.Quantity;
+                    }
                     await _inventory.LogConfirmationAsync(detail.CourseId.Value, detail.Quantity, $"Order:{order.Id}", "system");
+                }
             }
 
             await _context.SaveChangesAsync();
             await tx.CommitAsync();
-            await _audit.LogAsync("PaymentMarkedAsPaid", "Payment", id.ToString(), "Pending", "Approved", User.Identity!.Name ?? "admin", HttpContext.Connection.RemoteIpAddress?.ToString());
-            TempData["Success"] = "Pago marcado como pagado correctamente.";
         }
         catch
         {
             await tx.RollbackAsync();
             throw;
         }
+
+            try { await _audit.LogAsync("PaymentMarkedAsPaid", "Payment", id.ToString(), "Pending", "Approved", User.Identity!.Name ?? "admin", HttpContext.Connection.RemoteIpAddress?.ToString()); } catch { }
+            TempData["Success"] = "Pago marcado como pagado correctamente.";
 
         return RedirectToAction(nameof(Details), new { id });
     }
@@ -173,10 +187,26 @@ public class PaymentController : Controller
                 }
                 else if (detail.CourseId.HasValue)
                 {
+                    var enrollment = await _context.Enrollments
+                        .FirstOrDefaultAsync(e => e.OrderId == order.Id && e.CourseId == detail.CourseId);
                     if (approved)
+                    {
+                        if (enrollment != null) enrollment.Status = "Confirmed";
+                        var course = await _context.Courses.FindAsync(detail.CourseId);
+                        if (course != null)
+                        {
+                            course.ReservedSeats -= detail.Quantity;
+                            course.ConfirmedSeats += detail.Quantity;
+                        }
                         await _inventory.LogConfirmationAsync(detail.CourseId.Value, detail.Quantity, $"Order:{order.Id}", "system");
+                    }
                     else
+                    {
+                        if (enrollment != null) enrollment.Status = "Cancelled";
+                        await _context.Database.ExecuteSqlInterpolatedAsync(
+                            $"UPDATE \"Courses\" SET \"ReservedSeats\" = GREATEST(0, \"ReservedSeats\" - {detail.Quantity}) WHERE \"Id\" = {detail.CourseId}");
                         await _inventory.LogReleaseAsync(detail.CourseId.Value, detail.Quantity, $"Order:{order.Id}|failed", "system");
+                    }
                 }
             }
 
@@ -189,13 +219,14 @@ public class PaymentController : Controller
 
             await _context.SaveChangesAsync();
             await tx.CommitAsync();
-            await _audit.LogAsync("PaymentWebhookReceived", "Payment", payment.Id.ToString(), "Pending", payment.Status, "system", body.ClientTransactionId);
         }
         catch
         {
             await tx.RollbackAsync();
             throw;
         }
+
+            try { await _audit.LogAsync("PaymentWebhookReceived", "Payment", payment.Id.ToString(), "Pending", payment.Status, "system", body.ClientTransactionId); } catch { }
 
         return Ok(payment.Status);
     }
@@ -267,13 +298,14 @@ public class PaymentController : Controller
 
             await _context.SaveChangesAsync();
             await tx.CommitAsync();
-            await _audit.LogAsync("PaymentApproved", "Payment", payment.Id.ToString(), "Pending", "Approved", User.Identity!.Name ?? "system", HttpContext.Connection.RemoteIpAddress?.ToString());
         }
         catch
         {
             await tx.RollbackAsync();
             throw;
         }
+
+            try { await _audit.LogAsync("PaymentApproved", "Payment", payment.Id.ToString(), "Pending", "Approved", User.Identity!.Name ?? "system", HttpContext.Connection.RemoteIpAddress?.ToString()); } catch { }
 
         return RedirectToActionResult(payment.OrderId);
     }
