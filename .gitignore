@@ -44,7 +44,7 @@ appsettings.json
 appsettings.Development.json
 .env
 
-# Large database backup (181MB+ — not suitable for Git)
+# Large database backup (raw SQL — ~182MB uncompressed)
 database/backup.sql
 
 # OS
