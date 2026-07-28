@@ -376,63 +376,6 @@ else if (isPublicUser)
         </div>
     </div>
 
-    @section Scripts {
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-        <script>
-            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
-            Chart.defaults.color = '#6b7280';
-
-            var regionData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                registrosPorRegion.Select(r => new { label = (string)r.Region, value = (int)r.Total })));
-            var estadoData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                especiesPorEstado.Select(e => new { label = (string)e.Code, value = (int)e.Total })));
-
-            if (regionData.length) {
-                new Chart(document.getElementById('chartRegiones'), {
-                    type: 'bar',
-                    data: {
-                        labels: regionData.map(d => d.label),
-                        datasets: [{
-                            label: 'Registros',
-                            data: regionData.map(d => d.value),
-                            backgroundColor: 'rgba(64, 145, 108, 0.7)',
-                            borderColor: '#40916c',
-                            borderWidth: 1,
-                            borderRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
-                            x: { grid: { display: false } }
-                        }
-                    }
-                });
-            }
-
-            if (estadoData.length) {
-                new Chart(document.getElementById('chartEstados'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: estadoData.map(d => d.label),
-                        datasets: [{
-                            data: estadoData.map(d => d.value),
-                            backgroundColor: ['#1b4332','#40916c','#52b788','#74c69d','#95d5b2','#b7e4c7','#d8f3dc','#0369a1'],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 12 } } }
-                    }
-                });
-            }
-        </script>
-    }
 }
 else
 {
@@ -531,6 +474,7 @@ else
                 </div>
             </div>
     </div>
+    </div>
 
     <div class="row g-3 mb-4">
         <div class="col-lg-6">
@@ -600,61 +544,62 @@ else
         </div>
     </div>
 
-    @section Scripts {
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-        <script>
-            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
-            Chart.defaults.color = '#6b7280';
+}
 
-            var regionData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                registrosPorRegion.Select(r => new { label = (string)r.Region, value = (int)r.Total })));
-            var estadoData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                especiesPorEstado.Select(e => new { label = (string)e.Code, value = (int)e.Total })));
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+        Chart.defaults.color = '#6b7280';
 
-            if (regionData.length) {
-                new Chart(document.getElementById('chartRegiones'), {
-                    type: 'bar',
-                    data: {
-                        labels: regionData.map(d => d.label),
-                        datasets: [{
-                            label: 'Registros',
-                            data: regionData.map(d => d.value),
-                            backgroundColor: 'rgba(64, 145, 108, 0.7)',
-                            borderColor: '#40916c',
-                            borderWidth: 1,
-                            borderRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
-                            x: { grid: { display: false } }
-                        }
+        var regionData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            registrosPorRegion.Select(r => new { label = (string)r.Region, value = (int)r.Total })));
+        var estadoData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            especiesPorEstado.Select(e => new { label = (string)e.Code, value = (int)e.Total })));
+
+        if (regionData.length) {
+            new Chart(document.getElementById('chartRegiones'), {
+                type: 'bar',
+                data: {
+                    labels: regionData.map(d => d.label),
+                    datasets: [{
+                        label: 'Registros',
+                        data: regionData.map(d => d.value),
+                        backgroundColor: 'rgba(64, 145, 108, 0.7)',
+                        borderColor: '#40916c',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+                        x: { grid: { display: false } }
                     }
-                });
-            }
+                }
+            });
+        }
 
-            if (estadoData.length) {
-                new Chart(document.getElementById('chartEstados'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: estadoData.map(d => d.label),
-                        datasets: [{
-                            data: estadoData.map(d => d.value),
-                            backgroundColor: ['#1b4332','#40916c','#52b788','#74c69d','#95d5b2','#b7e4c7','#d8f3dc','#0369a1'],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 12 } } }
-                    }
-                });
-            }
-        </script>
-    }
+        if (estadoData.length) {
+            new Chart(document.getElementById('chartEstados'), {
+                type: 'doughnut',
+                data: {
+                    labels: estadoData.map(d => d.label),
+                    datasets: [{
+                        data: estadoData.map(d => d.value),
+                        backgroundColor: ['#1b4332','#40916c','#52b788','#74c69d','#95d5b2','#b7e4c7','#d8f3dc','#0369a1'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 12 } } }
+                }
+            });
+        }
+    </script>
 }
