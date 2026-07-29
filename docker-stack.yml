@@ -44,9 +44,9 @@ services:
       ASPNETCORE_URLS: http://0.0.0.0:8080
       ConnectionStrings__DefaultConnection: >-
         Host=db;Port=5432;Database=biogama_ecuador;Username=biogama_user;Password=placeholder
-      Ollama__BaseUrl: http://ollama:11434
-      Ollama__Model: gemma2:2b
-      Ollama__TimeoutSeconds: "120"
+      # Ollama__BaseUrl: http://ollama:11434
+      # Ollama__Model: gemma2:2b
+      # Ollama__TimeoutSeconds: "120"
       Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID}
       Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET}
       PayPal__ClientId: ${PAYPAL_CLIENT_ID}
@@ -97,29 +97,29 @@ services:
         reservations:
           memory: 256M
 
-  ollama:
-    image: ollama/ollama:latest
-    hostname: ollama
-    volumes:
-      - ollama-data:/root/.ollama
-    networks:
-      - biogama-net
-    healthcheck:
-      test: ["CMD", "ollama", "list"]
-      interval: 30s
-      timeout: 15s
-      retries: 3
-      start_period: 120s
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-      resources:
-        limits:
-          memory: 4G
-        reservations:
-          memory: 2G
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   hostname: ollama
+  #   volumes:
+  #     - ollama-data:/root/.ollama
+  #   networks:
+  #     - biogama-net
+  #   healthcheck:
+  #     test: ["CMD", "ollama", "list"]
+  #     interval: 30s
+  #     timeout: 15s
+  #     retries: 3
+  #     start_period: 120s
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #         - node.role == manager
+  #     resources:
+  #       limits:
+  #         memory: 4G
+  #       reservations:
+  #         memory: 2G
 
   mail:
     image: biogama-web:latest
