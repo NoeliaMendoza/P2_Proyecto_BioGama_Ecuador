@@ -1,6 +1,7 @@
 using BioGamaEcuador.Data;
 using BioGamaEcuador.Models.Admin;
 using BioGamaEcuador.Models.Sales;
+using BioGamaEcuador.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -10,7 +11,7 @@ namespace BioGamaEcuador.Controllers;
 
 [Authorize(Roles = "Admin,Administrador")]
 [Route("Admin/Courses")]
-public sealed class AdminCoursesController(AppDbContext context) : Controller
+public sealed class AdminCoursesController(AppDbContext context, IAuditService audit) : Controller
 {
     [HttpGet("")]
     public async Task<IActionResult> Index(string? search, string? modality, string? status, DateTime? date, int page = 1)
@@ -53,7 +54,7 @@ public sealed class AdminCoursesController(AppDbContext context) : Controller
     }
     [HttpPost("Delete/{id:guid}"), ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
-    { var c = await context.Courses.SingleOrDefaultAsync(x => x.Id == id); if (c is null) return NotFound(); c.DeletedAt = DateTime.UtcNow; c.UpdatedAt = DateTime.UtcNow; await context.SaveChangesAsync(); TempData["Success"] = "Curso eliminado."; return RedirectToAction(nameof(Index)); }
+    { var c = await context.Courses.SingleOrDefaultAsync(x => x.Id == id); if (c is null) return NotFound(); c.DeletedAt = DateTime.UtcNow; c.UpdatedAt = DateTime.UtcNow; await audit.LogAsync("SoftDelete", "Course", c.Id.ToString(), null, null, "system", null); await context.SaveChangesAsync(); TempData["Success"] = "Curso eliminado."; return RedirectToAction(nameof(Index)); }
     [HttpGet("Delete/{id:guid}")]
     public async Task<IActionResult> DeleteConfirmation(Guid id) { var course = await context.Courses.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id); return course is null ? NotFound() : View("Delete", course); }
     [HttpGet("Enrollments/{courseId:guid}")]

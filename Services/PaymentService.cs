@@ -85,9 +85,11 @@ public class PaymentService : IPaymentService
         var payment = await _context.Payments.FirstOrDefaultAsync(p => p.OrderId == orderId && p.ExternalId == transactionId);
         if (payment != null)
         {
+            var oldStatus = payment.Status;
             payment.Status = result.Success ? "Approved" : "Failed";
             if (result.Success) payment.ConfirmedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
+            await _audit.LogAsync("PaymentVerified", "Payment", payment.Id.ToString(), oldStatus, payment.Status, "system", null);
         }
 
         return result;
@@ -101,8 +103,10 @@ public class PaymentService : IPaymentService
         var payment = await _context.Payments.FirstOrDefaultAsync(p => p.OrderId == orderId && p.ExternalId == transactionId);
         if (payment != null)
         {
+            var oldStatus = payment.Status;
             payment.Status = "Cancelled";
             await _context.SaveChangesAsync();
+            await _audit.LogAsync("PaymentCancelled", "Payment", payment.Id.ToString(), oldStatus, "Cancelled", "system", null);
         }
 
         return result.Success;

@@ -11,7 +11,7 @@ namespace BioGamaEcuador.Controllers;
 
 [Authorize(Roles = "Admin,Administrador")]
 [Route("Admin/Inventory")]
-public sealed class InventoryController(AppDbContext context, IInventoryService inventory, IEmailService email) : Controller
+public sealed class InventoryController(AppDbContext context, IInventoryService inventory, IEmailService email, IAuditService audit) : Controller
 {
     [HttpGet("")]
     public async Task<IActionResult> Index(string? type, Guid? productId, Guid? courseId, DateTime? from, DateTime? to)
@@ -33,7 +33,13 @@ public sealed class InventoryController(AppDbContext context, IInventoryService 
     }
 
     [HttpPost("Entry"), ValidateAntiForgeryToken]
-    public Task<IActionResult> Entry(InventoryTransactionViewModel m) => Operate(m, (x, u) => inventory.EntryAsync(x.ProductId, x.Quantity, x.Reference, u, x.Notes), "Entrada registrada.");
+    public async Task<IActionResult> Entry(InventoryTransactionViewModel m)
+    {
+        if (!ModelState.IsValid) { TempData["Error"] = "Revisa los datos del movimiento."; return RedirectToAction(nameof(Index)); }
+        try { await inventory.EntryAsync(m.ProductId, m.Quantity, m.Reference, UserId(), m.Notes); await audit.LogAsync("InventoryEntry", "PhysicalProduct", m.ProductId.ToString(), null, $"+{m.Quantity}", UserId(), HttpContext.Connection.RemoteIpAddress?.ToString()); TempData["Success"] = "Entrada registrada."; }
+        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException) { TempData["Error"] = ex.Message; }
+        return RedirectToAction(nameof(Index));
+    }
     [HttpPost("Exit"), ValidateAntiForgeryToken]
     public async Task<IActionResult> Exit(InventoryTransactionViewModel m)
     {
@@ -41,6 +47,7 @@ public sealed class InventoryController(AppDbContext context, IInventoryService 
         try
         {
             await inventory.ExitAsync(m.ProductId, m.Quantity, m.Reference, UserId(), m.Notes);
+            await audit.LogAsync("InventoryExit", "PhysicalProduct", m.ProductId.ToString(), null, $"-{m.Quantity}", UserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
             await CheckLowStockAsync(m.ProductId);
             TempData["Success"] = "Salida registrada.";
         }
@@ -51,7 +58,7 @@ public sealed class InventoryController(AppDbContext context, IInventoryService 
     public async Task<IActionResult> Adjustment(InventoryAdjustmentViewModel m)
     {
         if (!ModelState.IsValid) { TempData["Error"] = "Revisa los datos del ajuste."; return RedirectToAction(nameof(Index)); }
-        try { await inventory.AdjustAsync(m.ProductId, m.NewStock, m.Reference, UserId(), m.Notes); await CheckLowStockAsync(m.ProductId); TempData["Success"] = "Ajuste registrado."; }
+        try { await inventory.AdjustAsync(m.ProductId, m.NewStock, m.Reference, UserId(), m.Notes); await audit.LogAsync("InventoryAdjustment", "PhysicalProduct", m.ProductId.ToString(), null, $"NewStock={m.NewStock}", UserId(), HttpContext.Connection.RemoteIpAddress?.ToString()); await CheckLowStockAsync(m.ProductId); TempData["Success"] = "Ajuste registrado."; }
         catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException) { TempData["Error"] = ex.Message; }
         return RedirectToAction(nameof(Index));
     }

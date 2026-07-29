@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BioGamaEcuador.Data;
 using BioGamaEcuador.Models;
+using BioGamaEcuador.Services;
 
 namespace BioGamaEcuador.Controllers
 {
@@ -11,10 +12,12 @@ namespace BioGamaEcuador.Controllers
     public class RecordsController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IAuditService _audit;
 
-        public RecordsController(AppDbContext context)
+        public RecordsController(AppDbContext context, IAuditService audit)
         {
             _context = context;
+            _audit = audit;
         }
 
         private async Task<Researcher?> GetCurrentResearcherAsync()
@@ -249,6 +252,7 @@ namespace BioGamaEcuador.Controllers
             {
                 entry.IsActive = false;
                 entry.DeletedAt = DateTime.UtcNow;
+                await _audit.LogAsync("SoftDelete", "Record", entry.Id.ToString(), null, null, "system", null);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));

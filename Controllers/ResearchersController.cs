@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BioGamaEcuador.Data;
 using BioGamaEcuador.Models;
+using BioGamaEcuador.Services;
 
 namespace BioGamaEcuador.Controllers
 {
@@ -15,10 +16,12 @@ namespace BioGamaEcuador.Controllers
     public class ResearchersController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IAuditService _audit;
 
-        public ResearchersController(AppDbContext context)
+        public ResearchersController(AppDbContext context, IAuditService audit)
         {
             _context = context;
+            _audit = audit;
         }
 
         private static DateTime ToUtcKind(DateTime value)
@@ -201,6 +204,7 @@ namespace BioGamaEcuador.Controllers
             {
                 researcher.IsActive = false;
                 researcher.DeletedAt = DateTime.UtcNow;
+                await _audit.LogAsync("SoftDelete", "Researcher", researcher.Id.ToString(), null, null, "system", null);
             }
 
             await _context.SaveChangesAsync();

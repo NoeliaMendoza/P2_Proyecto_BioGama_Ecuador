@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BioGamaEcuador.Data;
 using BioGamaEcuador.Models;
+using BioGamaEcuador.Services;
 
 namespace BioGamaEcuador.Controllers
 {
@@ -15,10 +16,12 @@ namespace BioGamaEcuador.Controllers
     public class NaturalReservesController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IAuditService _audit;
 
-        public NaturalReservesController(AppDbContext context)
+        public NaturalReservesController(AppDbContext context, IAuditService audit)
         {
             _context = context;
+            _audit = audit;
         }
 
         // GET: NaturalReserves
@@ -192,6 +195,7 @@ namespace BioGamaEcuador.Controllers
             {
                 naturalReserve.IsActive = false;
                 naturalReserve.DeletedAt = DateTime.UtcNow;
+                await _audit.LogAsync("SoftDelete", "NaturalReserve", naturalReserve.Id.ToString(), null, null, "system", null);
             }
 
             await _context.SaveChangesAsync();

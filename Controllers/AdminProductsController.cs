@@ -1,6 +1,7 @@
 using BioGamaEcuador.Data;
 using BioGamaEcuador.Models.Admin;
 using BioGamaEcuador.Models.Sales;
+using BioGamaEcuador.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -10,7 +11,7 @@ namespace BioGamaEcuador.Controllers;
 
 [Authorize(Roles = "Admin,Administrador")]
 [Route("Admin/Products")]
-public sealed class AdminProductsController(AppDbContext context) : Controller
+public sealed class AdminProductsController(AppDbContext context, IAuditService audit) : Controller
 {
     [HttpGet("")]
     public async Task<IActionResult> Index(string? search, string? sku, bool lowStock = false)
@@ -19,7 +20,7 @@ public sealed class AdminProductsController(AppDbContext context) : Controller
     [HttpPost("Create"), ValidateAntiForgeryToken] public async Task<IActionResult> Create(ProductFormViewModel model) { await SkuAsync(model.SKU); if(!ModelState.IsValid){await SpeciesAsync();return View(model);}var p=new PhysicalProduct();Apply(model,p);context.PhysicalProducts.Add(p);await context.SaveChangesAsync();TempData["Success"]="Producto creado.";return RedirectToAction(nameof(Index)); }
     [HttpGet("Edit/{id:guid}")] public async Task<IActionResult> Edit(Guid id){var p=await context.PhysicalProducts.FindAsync(id);if(p is null)return NotFound();await SpeciesAsync();return View(ToForm(p));}
     [HttpPost("Edit/{id:guid}"), ValidateAntiForgeryToken] public async Task<IActionResult> Edit(Guid id, ProductFormViewModel model){if(id!=model.Id)return BadRequest();var p=await context.PhysicalProducts.SingleOrDefaultAsync(x=>x.Id==id);if(p is null)return NotFound();await SkuAsync(model.SKU,id);if(model.Stock<p.ReservedStock)ModelState.AddModelError(nameof(model.Stock),"No puede ser menor al stock reservado.");if(!ModelState.IsValid){await SpeciesAsync();return View(model);}Apply(model,p);await context.SaveChangesAsync();TempData["Success"]="Producto actualizado.";return RedirectToAction(nameof(Index));}
-    [HttpPost("Delete/{id:guid}"), ValidateAntiForgeryToken] public async Task<IActionResult> Delete(Guid id){var p=await context.PhysicalProducts.SingleOrDefaultAsync(x=>x.Id==id);if(p is null)return NotFound();p.DeletedAt=DateTime.UtcNow;p.UpdatedAt=DateTime.UtcNow;await context.SaveChangesAsync();TempData["Success"]="Producto eliminado.";return RedirectToAction(nameof(Index));}
+    [HttpPost("Delete/{id:guid}"), ValidateAntiForgeryToken] public async Task<IActionResult> Delete(Guid id){var p=await context.PhysicalProducts.SingleOrDefaultAsync(x=>x.Id==id);if(p is null)return NotFound();p.DeletedAt=DateTime.UtcNow;p.UpdatedAt=DateTime.UtcNow;await audit.LogAsync("SoftDelete", "PhysicalProduct", p.Id.ToString(), null, null, "system", null);await context.SaveChangesAsync();TempData["Success"]="Producto eliminado.";return RedirectToAction(nameof(Index));}
     [HttpGet("Delete/{id:guid}")] public async Task<IActionResult> DeleteConfirmation(Guid id){var product=await context.PhysicalProducts.AsNoTracking().SingleOrDefaultAsync(p=>p.Id==id);return product is null?NotFound():View("Delete",product);}
     private async Task SkuAsync(string sku, Guid? id=null){if(await context.PhysicalProducts.AnyAsync(p=>p.SKU==sku.Trim()&&p.Id!=id))ModelState.AddModelError(nameof(ProductFormViewModel.SKU),"El SKU ya está registrado.");}
     private async Task SpeciesAsync()=>ViewBag.SpeciesId=new SelectList(await context.Species.OrderBy(s=>s.CommonName).ToListAsync(),"Id","CommonName");

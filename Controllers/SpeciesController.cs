@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BioGamaEcuador.Data;
 using BioGamaEcuador.Models;
+using BioGamaEcuador.Services;
 
 namespace BioGamaEcuador.Controllers
 {
@@ -11,10 +12,12 @@ namespace BioGamaEcuador.Controllers
     public class SpeciesController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IAuditService _audit;
 
-        public SpeciesController(AppDbContext context)
+        public SpeciesController(AppDbContext context, IAuditService audit)
         {
             _context = context;
+            _audit = audit;
         }
 
         // GET: Species — los 3 roles
@@ -218,6 +221,7 @@ namespace BioGamaEcuador.Controllers
             {
                 species.IsActive = false;
                 species.DeletedAt = DateTime.UtcNow;
+                await _audit.LogAsync("SoftDelete", "Species", species.Id.ToString(), null, null, "system", null);
             }
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

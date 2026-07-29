@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BioGamaEcuador.Data;
 using BioGamaEcuador.Models;
+using BioGamaEcuador.Services;
 
 namespace BioGamaEcuador.Controllers
 {
@@ -10,10 +11,12 @@ namespace BioGamaEcuador.Controllers
     public class FamiliesController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IAuditService _audit;
 
-        public FamiliesController(AppDbContext context)
+        public FamiliesController(AppDbContext context, IAuditService audit)
         {
             _context = context;
+            _audit = audit;
         }
 
         [Authorize(Roles = "Administrador,Investigador,UsuarioPublico")]
@@ -154,6 +157,7 @@ namespace BioGamaEcuador.Controllers
             {
                 family.IsActive = false;
                 family.DeletedAt = DateTime.UtcNow;
+                await _audit.LogAsync("SoftDelete", "Family", family.Id.ToString(), null, null, "system", null);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));

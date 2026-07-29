@@ -327,6 +327,8 @@ public class OrdersController : Controller
             await RecalculateOrderTotalsAsync(detail.OrderId);
             await tx.CommitAsync();
 
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+            await _audit.LogAsync("OrderDetailUpdated", "OrderDetail", detailId.ToString(), detail.Quantity.ToString(), quantity.ToString(), userId, ip);
             TempData["Success"] = "Cantidad actualizada.";
             return RedirectToAction(nameof(Cart));
         }
@@ -378,6 +380,8 @@ public class OrdersController : Controller
 
             await tx.CommitAsync();
 
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+            await _audit.LogAsync("OrderDetailRemoved", "OrderDetail", detailId.ToString(), detail.Quantity.ToString(), null, userId, ip);
             TempData["Success"] = "Artículo eliminado del carrito.";
             return RedirectToAction(nameof(Cart));
         }
@@ -565,6 +569,8 @@ public class OrdersController : Controller
         }
         await _context.SaveChangesAsync();
 
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+        await _audit.LogAsync("PayPalOrderCreated", "Payment", payment.Id.ToString(), null, $"PayPalOrderId={result.OrderId}", userId, ip);
         return Json(new { success = true, orderId = result.OrderId });
     }
 

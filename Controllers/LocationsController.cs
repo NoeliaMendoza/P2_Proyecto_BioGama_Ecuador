@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BioGamaEcuador.Data;
 using BioGamaEcuador.Models;
+using BioGamaEcuador.Services;
 
 namespace BioGamaEcuador.Controllers
 {
@@ -15,10 +16,12 @@ namespace BioGamaEcuador.Controllers
     public class LocationsController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IAuditService _audit;
 
-        public LocationsController(AppDbContext context)
+        public LocationsController(AppDbContext context, IAuditService audit)
         {
             _context = context;
+            _audit = audit;
         }
 
         // GET: Locations
@@ -202,6 +205,7 @@ namespace BioGamaEcuador.Controllers
             {
                 location.IsActive = false;
                 location.DeletedAt = DateTime.UtcNow;
+                await _audit.LogAsync("SoftDelete", "Location", location.Id.ToString(), null, null, "system", null);
             }
 
             await _context.SaveChangesAsync();
