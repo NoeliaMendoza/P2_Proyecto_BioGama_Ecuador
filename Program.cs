@@ -89,9 +89,9 @@ builder.Services.Configure<BioGamaEcuador.Settings.EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
 
 // Configuración y Servicio de IA Local Ollama
-builder.Services.Configure<BioGamaEcuador.Settings.OllamaSettings>(
-    builder.Configuration.GetSection("Ollama"));
-builder.Services.AddHttpClient<BioGamaEcuador.Services.Ollama.IOllamaService, BioGamaEcuador.Services.Ollama.OllamaService>();
+//builder.Services.Configure<BioGamaEcuador.Settings.OllamaSettings>(
+//    builder.Configuration.GetSection("Ollama"));
+//builder.Services.AddHttpClient<BioGamaEcuador.Services.Ollama.IOllamaService, BioGamaEcuador.Services.Ollama.OllamaService>();
 
 // ── Compartir cookies de autenticación entre réplicas ──────
 builder.Services.AddDataProtection()
