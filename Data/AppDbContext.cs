@@ -33,6 +33,9 @@ public class AppDbContext : IdentityDbContext
     // Mail queue
     public DbSet<PendingEmail> PendingEmails { get; set; }
 
+    // Audit log
+    public DbSet<AuditLog> AuditLogs { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
