@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using BioGamaEcuador.Services;
 
 namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
 {
@@ -17,15 +18,18 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<DeletePersonalDataModel> _logger;
+        private readonly IAuditService _audit;
 
         public DeletePersonalDataModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            ILogger<DeletePersonalDataModel> logger)
+            ILogger<DeletePersonalDataModel> logger,
+            IAuditService audit)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
+            _audit = audit;
         }
 
         /// <summary>
@@ -97,6 +101,7 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             await _signInManager.SignOutAsync();
 
             _logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
+            await _audit.LogAsync("UserDeleted", "User", userId, null, null, userId, HttpContext.Connection.RemoteIpAddress?.ToString());
 
             return Redirect("~/");
         }

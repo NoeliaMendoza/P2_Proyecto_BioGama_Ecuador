@@ -24,13 +24,15 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account
         private readonly ILogger<LoginModel> _logger;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IEmailService _bioGamaEmail;
+        private readonly IAuditService _audit;
 
-        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger, UserManager<IdentityUser> userManager, IEmailService bioGamaEmail)
+        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger, UserManager<IdentityUser> userManager, IEmailService bioGamaEmail, IAuditService audit)
         {
             _signInManager = signInManager;
             _logger = logger;
             _userManager = userManager;
             _bioGamaEmail = bioGamaEmail;
+            _audit = audit;
         }
 
         /// <summary>
@@ -114,10 +116,14 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+                    var user = await _userManager.FindByEmailAsync(Input.Email);
+                    if (user != null)
+                        await _audit.LogLoginAsync(user.Id, true, ip);
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
@@ -130,6 +136,7 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account
                     var user = await _userManager.FindByEmailAsync(Input.Email);
                     if (user != null)
                     {
+                        await _audit.LogLoginAsync(user.Id, false, ip);
                         var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
                         await _bioGamaEmail.SendAccountLockedAsync(Input.Email, (lockoutEnd ?? DateTimeOffset.UtcNow).DateTime);
                     }
@@ -137,6 +144,9 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account
                 }
                 else
                 {
+                    var user = await _userManager.FindByEmailAsync(Input.Email);
+                    if (user != null)
+                        await _audit.LogLoginAsync(user.Id, false, ip);
                     ModelState.AddModelError(string.Empty, "Correo o contraseña incorrectos.");
                     return Page();
                 }

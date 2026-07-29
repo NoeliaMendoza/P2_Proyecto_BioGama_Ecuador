@@ -24,6 +24,7 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
         private readonly ILogger<EnableAuthenticatorModel> _logger;
         private readonly UrlEncoder _urlEncoder;
         private readonly IEmailService _bioGamaEmail;
+        private readonly IAuditService _audit;
 
         private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
 
@@ -31,12 +32,14 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             UserManager<IdentityUser> userManager,
             ILogger<EnableAuthenticatorModel> logger,
             UrlEncoder urlEncoder,
-            IEmailService bioGamaEmail)
+            IEmailService bioGamaEmail,
+            IAuditService audit)
         {
             _userManager = userManager;
             _logger = logger;
             _urlEncoder = urlEncoder;
             _bioGamaEmail = bioGamaEmail;
+            _audit = audit;
         }
 
         /// <summary>
@@ -136,6 +139,7 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             _logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", userId);
             var email = await _userManager.GetEmailAsync(user);
             if (email != null) await _bioGamaEmail.SendMfaActivatedAsync(email);
+            await _audit.LogMfaChangeAsync(userId, true, HttpContext.Connection.RemoteIpAddress?.ToString());
 
             StatusMessage = "Su aplicación de autenticación ha sido verificada.";
 

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using BioGamaEcuador.Services;
 
 namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
 {
@@ -15,13 +16,16 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogger<Disable2faModel> _logger;
+        private readonly IAuditService _audit;
 
         public Disable2faModel(
             UserManager<IdentityUser> userManager,
-            ILogger<Disable2faModel> logger)
+            ILogger<Disable2faModel> logger,
+            IAuditService audit)
         {
             _userManager = userManager;
             _logger = logger;
+            _audit = audit;
         }
 
         /// <summary>
@@ -61,7 +65,9 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
                 throw new InvalidOperationException($"Unexpected error occurred disabling 2FA.");
             }
 
-            _logger.LogInformation("User with ID '{UserId}' has disabled 2fa.", _userManager.GetUserId(User));
+            var userId = _userManager.GetUserId(User);
+            _logger.LogInformation("User with ID '{UserId}' has disabled 2fa.", userId);
+            await _audit.LogMfaChangeAsync(userId, false, HttpContext.Connection.RemoteIpAddress?.ToString());
             StatusMessage = "La autenticación en dos pasos ha sido deshabilitada. Puede volver a activarla configurando una aplicación de autenticación.";
             return RedirectToPage("./TwoFactorAuthentication");
         }

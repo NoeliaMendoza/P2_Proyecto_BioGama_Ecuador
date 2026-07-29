@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using BioGamaEcuador.Services;
 
 namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
 {
@@ -16,13 +17,16 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IAuditService _audit;
 
         public IndexModel(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+            SignInManager<IdentityUser> signInManager,
+            IAuditService audit)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _audit = audit;
         }
 
         /// <summary>
@@ -108,6 +112,8 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
                     StatusMessage = "Error inesperado al configurar el número de teléfono.";
                     return RedirectToPage();
                 }
+                var userId = await _userManager.GetUserIdAsync(user);
+                await _audit.LogAsync("ProfileUpdated", "User", userId, phoneNumber, Input.PhoneNumber, userId, HttpContext.Connection.RemoteIpAddress?.ToString());
             }
 
             await _signInManager.RefreshSignInAsync(user);

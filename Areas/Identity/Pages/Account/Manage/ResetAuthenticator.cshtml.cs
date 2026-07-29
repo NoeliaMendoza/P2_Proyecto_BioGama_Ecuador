@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using BioGamaEcuador.Services;
 
 namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
 {
@@ -16,15 +17,18 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<ResetAuthenticatorModel> _logger;
+        private readonly IAuditService _audit;
 
         public ResetAuthenticatorModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            ILogger<ResetAuthenticatorModel> logger)
+            ILogger<ResetAuthenticatorModel> logger,
+            IAuditService audit)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
+            _audit = audit;
         }
 
         /// <summary>
@@ -56,7 +60,8 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             await _userManager.SetTwoFactorEnabledAsync(user, false);
             await _userManager.ResetAuthenticatorKeyAsync(user);
             var userId = await _userManager.GetUserIdAsync(user);
-            _logger.LogInformation("User with ID '{UserId}' has reset their authentication app key.", user.Id);
+            _logger.LogInformation("User with ID '{UserId}' has reset their authentication app key.", userId);
+            await _audit.LogMfaChangeAsync(userId, false, HttpContext.Connection.RemoteIpAddress?.ToString());
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "La clave de su aplicación de autenticación ha sido restablecida. Deberá configurar su aplicación de autenticación con la nueva clave.";

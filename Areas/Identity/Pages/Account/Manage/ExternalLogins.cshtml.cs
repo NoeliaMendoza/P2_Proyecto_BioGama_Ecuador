@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using BioGamaEcuador.Services;
 
 namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
 {
@@ -19,15 +20,18 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IUserStore<IdentityUser> _userStore;
+        private readonly IAuditService _audit;
 
         public ExternalLoginsModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            IUserStore<IdentityUser> userStore)
+            IUserStore<IdentityUser> userStore,
+            IAuditService audit)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _userStore = userStore;
+            _audit = audit;
         }
 
         /// <summary>
@@ -94,6 +98,8 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             }
 
             await _signInManager.RefreshSignInAsync(user);
+            var userId = await _userManager.GetUserIdAsync(user);
+            await _audit.LogAsync("ExternalLoginRemoved", "User", userId, loginProvider, null, userId, HttpContext.Connection.RemoteIpAddress?.ToString());
             StatusMessage = "El inicio de sesión externo fue eliminado.";
             return RedirectToPage();
         }
@@ -134,6 +140,8 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
+            var userId2 = await _userManager.GetUserIdAsync(user);
+            await _audit.LogAsync("ExternalLoginAdded", "User", userId2, null, info.LoginProvider, userId2, HttpContext.Connection.RemoteIpAddress?.ToString());
             StatusMessage = "El inicio de sesión externo fue añadido.";
             return RedirectToPage();
         }

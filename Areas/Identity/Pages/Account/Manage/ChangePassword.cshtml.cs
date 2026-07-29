@@ -19,17 +19,20 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<ChangePasswordModel> _logger;
         private readonly IEmailService _bioGamaEmail;
+        private readonly IAuditService _audit;
 
         public ChangePasswordModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
             ILogger<ChangePasswordModel> logger,
-            IEmailService bioGamaEmail)
+            IEmailService bioGamaEmail,
+            IAuditService audit)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _bioGamaEmail = bioGamaEmail;
+            _audit = audit;
         }
 
         /// <summary>
@@ -123,6 +126,8 @@ namespace BioGamaEcuador.Areas.Identity.Pages.Account.Manage
 
             await _signInManager.RefreshSignInAsync(user);
             _logger.LogInformation("User changed their password successfully.");
+            var userId = await _userManager.GetUserIdAsync(user);
+            await _audit.LogAsync("PasswordChanged", "User", userId, null, null, userId, HttpContext.Connection.RemoteIpAddress?.ToString());
             var email = await _userManager.GetEmailAsync(user);
             if (email != null) await _bioGamaEmail.SendPasswordChangedAsync(email);
             StatusMessage = "Su contraseña ha sido cambiada.";
