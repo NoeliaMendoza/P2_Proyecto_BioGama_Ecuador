@@ -48,5 +48,15 @@ public static class IdentitySeeder
             await userManager.CreateAsync(pub, "Usuario123*");
             await userManager.AddToRoleAsync(pub, "UsuarioPublico");
         }
+
+        // Usuario administrador
+        string emailWiliam = "wminerva252@gmail.com";
+        var wiliam = await userManager.FindByEmailAsync(emailWiliam);
+        if (wiliam == null)
+        {
+            wiliam = new IdentityUser { UserName = emailWiliam, Email = emailWiliam, EmailConfirmed = true };
+            await userManager.CreateAsync(wiliam, "Admin123*");
+            await userManager.AddToRoleAsync(wiliam, "Administrador");
+        }
     }
 }
