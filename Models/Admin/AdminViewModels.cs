@@ -53,6 +53,27 @@ public sealed class InventoryAdjustmentViewModel : InventoryTransactionViewModel
     [Range(0, 10000)] public int NewStock { get; set; }
 }
 
+public sealed class UserListViewModel
+{
+    public string UserId { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public bool EmailConfirmed { get; set; }
+    public IList<string> Roles { get; set; } = new List<string>();
+}
+
+public sealed class UserEditViewModel
+{
+    public string UserId { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public List<RoleCheckItem> Roles { get; set; } = new();
+}
+
+public sealed class RoleCheckItem
+{
+    public string RoleName { get; set; } = string.Empty;
+    public bool IsAssigned { get; set; }
+}
+
 public sealed class AdminDashboardViewModel
 {
     public int ActiveCourses { get; set; }

@@ -124,6 +124,10 @@
                     <i class="bi bi-shield-check"></i>
                     <span class="sidebar-label">Panel admin</span>
                 </a>
+                <a class="sidebar-link @(IsActive("AdminUsers") ? "active" : "")" asp-controller="AdminUsers" asp-action="Index">
+                    <i class="bi bi-people"></i>
+                    <span class="sidebar-label">Usuarios</span>
+                </a>
             }
         }
     </nav>
